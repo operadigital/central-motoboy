@@ -1,0 +1,6 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+<rect width="512" height="512" rx="80" fill="#7c3aed"/>
+<text x="256" y="180" text-anchor="middle" fill="white" font-size="120" font-weight="800" font-family="Arial">CM</text>
+<text x="256" y="340" text-anchor="middle" fill="white" font-size="50" font-weight="600" font-family="Arial">CENTRAL</text>
+<text x="256" y="400" text-anchor="middle" fill="rgba(255,255,255,.8)" font-size="45" font-weight="400" font-family="Arial">MOTOBOY</text>
+</svg>

@@ -1,0 +1,16 @@
+{
+  "name": "central-motoboy",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node api/index.js",
+    "vercel-build": "echo 'Build done'"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "jsonwebtoken": "^9.0.2",
+    "@supabase/supabase-js": "^2.39.0",
+    "serverless-http": "^3.2.0"
+  }
+}
