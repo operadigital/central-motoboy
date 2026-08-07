@@ -197,8 +197,8 @@ tr:hover td{background:#f8fafc}
     background:var(--w) !important;
     overflow:hidden;
     min-width:0 !important;
+    width:100% !important;
   }
-  .card + .card{margin-top:12px !important}
   .card-h{padding:16px 18px !important;font-size:15px !important;font-weight:700 !important;border-bottom:0.5px solid rgba(0,0,0,.06) !important}
   .card-b{padding:16px 18px !important}
   
@@ -929,7 +929,7 @@ async function renderAdminMotoboys(el){
       // Fotos dos documentos
       if(docsCount>0){
         h+='<div style="padding:0 16px 16px">';
-        h+='<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">';
+        h+='<div class="grid5" style="margin-bottom:0">';
         var photos=[
           ['CNH Frente',docs.cnhFront,'&#128196;'],
           ['CNH Verso',docs.cnhBack,'&#128196;'],
@@ -1028,7 +1028,7 @@ async function viewMotoboyDetail(id){
   // Info do veiculo
   h+='<div style="background:var(--gl);border-radius:12px;padding:14px;margin-bottom:16px">';
   h+='<div style="font-size:12px;font-weight:700;color:var(--g);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">&#128668; Veiculo</div>';
-  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">';
+  h+='<div class="grid2" style="margin-bottom:0;font-size:13px">';
   h+='<div><span style="color:var(--g)">Placa:</span> <b>'+m.vehiclePlate+'</b></div>';
   h+='<div><span style="color:var(--g)">Tipo:</span> <b>'+m.vehicleType+'</b></div>';
   h+='<div><span style="color:var(--g)">Marca:</span> <b>'+m.vehicleBrand+'</b></div>';
@@ -1038,7 +1038,7 @@ async function viewMotoboyDetail(id){
   h+='</div></div>';
 
   // Metricas
-  h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">';
+  h+='<div class="grid3" style="margin-bottom:16px">';
   h+='<div style="background:var(--gl);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--gn)">&#9733; '+Number(m.averageRating).toFixed(1)+'</div><div style="font-size:10px;color:var(--g);font-weight:600">Avaliacao</div></div>';
   h+='<div style="background:var(--gl);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800">'+(m.completedDeliveries||0)+'</div><div style="font-size:10px;color:var(--g);font-weight:600">Entregas</div></div>';
   h+='<div style="background:var(--gl);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800">'+(m.isOnline?'&#128994;':'&#128308;')+'</div><div style="font-size:10px;color:var(--g);font-weight:600">'+(m.isOnline?'Online':'Offline')+'</div></div>';
@@ -1046,7 +1046,7 @@ async function viewMotoboyDetail(id){
 
   // Documentos
   h+='<div style="font-size:12px;font-weight:700;color:var(--g);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">&#128196; Documentos</div>';
-  h+='<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">';
+  h+='<div class="grid2" style="margin-bottom:0">';
   var allDocs=[
     ['CNH Frente',docs.cnhFront],
     ['CNH Verso',docs.cnhBack],
@@ -1211,7 +1211,7 @@ async function renderAdminReports(el){
 
 async function renderAdminSettings(el){
   var h='<div class="header-bar"><h1 style="font-size:22px;font-weight:800">Configuracoes</h1></div>';
-  h+='<div class="mobile-grid-patch"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" class="admin-bottom-grid">';
+  h+='<div class="mobile-grid-patch"><div class="admin-bottom-grid">';
   h+='<div class="card"><div class="card-h">&#128176; Comissoes</div><div class="card-b">';
   h+='<div class="form-g"><label class="label">Taxa de Comissao (%)</label><input class="input" type="number" value="20" min="0" max="50"></div>';
   h+='<div class="form-g"><label class="label">Valor Minimo de Saque (R$)</label><input class="input" type="number" value="50" min="10"></div>';
