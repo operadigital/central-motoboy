@@ -2,142 +2,260 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#f97316">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/icon.svg">
+<link rel="apple-touch-icon" href="/icon.svg">
 <title>Central Motoboy</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{--p:#f97316;--pd:#ea580c;--pl:#fff7ed;--d:#0f172a;--d2:#1e293b;--g:#64748b;--gl:#f1f5f9;--w:#fff;--gn:#22c55e;--r:#ef4444;--b:#3b82f6;--y:#eab308;--radius:12px}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:var(--d);background:var(--gl);line-height:1.5}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;border-radius:8px;font-weight:600;font-size:14px;border:none;cursor:pointer;transition:all .2s;font-family:inherit}
-.btn-p{background:var(--p);color:#fff}.btn-p:hover{background:var(--pd)}
-.btn-s{background:var(--gl);color:var(--d)}.btn-s:hover{background:#e2e8f0}
-.btn-g{background:var(--gn);color:#fff}.btn-g:hover{background:#16a34a}
-.btn-r{background:var(--r);color:#fff}.btn-r:hover{background:#dc2626}
-.btn-b{background:var(--b);color:#fff}.btn-b:hover{background:#2563eb}
-.btn-o{background:transparent;color:var(--d);border:2px solid #e2e8f0}.btn-o:hover{border-color:var(--p);color:var(--p)}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.btn-sm{padding:6px 14px;font-size:12px}.btn-lg{padding:14px 28px;font-size:16px}
-.input{width:100%;padding:10px 14px;border:1.5px solid #d1d5db;border-radius:8px;font-size:14px;outline:none;transition:all .2s;font-family:inherit}
-.input:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(249,115,22,.15)}
-.label{display:block;font-size:13px;font-weight:600;color:var(--g);margin-bottom:4px}
-.form-g{margin-bottom:16px}
-select.input{appearance:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center;padding-right:36px}
-textarea.input{resize:vertical;min-height:60px}
-.badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.3px}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--p:#f97316;--pd:#ea580c;--pl:#fff7ed;--d:#0f172a;--d2:#1e293b;--g:#64748b;--gl:#f8fafc;--w:#fff;--gn:#22c55e;--r:#ef4444;--b:#3b82f6;--y:#eab308;--radius:16px;--safe-b:env(safe-area-inset-bottom,0px);--safe-t:env(safe-area-inset-top,0px)}
+html{height:100%;overflow:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;color:var(--d);background:var(--gl);line-height:1.5;height:100%;overflow:hidden;-webkit-font-smoothing:antialiased}
+input,button,textarea,select{font-family:inherit}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 24px;border-radius:12px;font-weight:700;font-size:15px;border:none;cursor:pointer;transition:all .2s ease;-webkit-user-select:none;user-select:none;position:relative;overflow:hidden}
+.btn:active{transform:scale(.97)}
+.btn-p{background:linear-gradient(135deg,var(--p),#fb923c);color:#fff;box-shadow:0 4px 15px rgba(249,115,22,.35)}.btn-p:hover{box-shadow:0 6px 20px rgba(249,115,22,.45)}
+.btn-s{background:var(--gl);color:var(--d);border:1px solid #e2e8f0}.btn-s:hover{background:#e2e8f0}
+.btn-g{background:linear-gradient(135deg,var(--gn),#4ade80);color:#fff;box-shadow:0 4px 15px rgba(34,197,94,.35)}.btn-g:hover{box-shadow:0 6px 20px rgba(34,197,94,.45)}
+.btn-r{background:linear-gradient(135deg,var(--r),#f87171);color:#fff;box-shadow:0 4px 15px rgba(239,68,68,.35)}
+.btn-b{background:linear-gradient(135deg,var(--b),#60a5fa);color:#fff;box-shadow:0 4px 15px rgba(59,130,246,.35)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-sm{padding:8px 16px;font-size:13px;border-radius:10px}
+.btn-lg{padding:16px 32px;font-size:16px;border-radius:14px}
+
+.input{width:100%;padding:14px 16px;border:1.5px solid #e2e8f0;border-radius:12px;font-size:15px;outline:none;transition:all .2s;background:#fff;-webkit-appearance:none;appearance:none}
+.input:focus{border-color:var(--p);box-shadow:0 0 0 4px rgba(249,115,22,.1)}
+.label{display:block;font-size:13px;font-weight:700;color:var(--g);margin-bottom:6px;letter-spacing:.3px}
+.form-g{margin-bottom:18px}
+select.input{background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center;padding-right:40px}
+textarea.input{resize:vertical;min-height:80px}
+
+.badge{display:inline-flex;align-items:center;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.3px}
 .bg{background:#dcfce7;color:#166534}.by{background:#fef9c3;color:#854d0e}.br{background:#fecaca;color:#991b1b}.bb{background:#dbeafe;color:#1e40af}.bgr{background:#f3f4f6;color:#374151}
-.card{background:var(--w);border-radius:var(--radius);border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,.04);overflow:hidden}
-.card-h{padding:16px 20px;border-bottom:1px solid #f3f4f6;font-weight:600;font-size:14px}
-.card-b{padding:20px}
-.stat-c{padding:20px;background:var(--w);border-radius:var(--radius);border:1px solid #e5e7eb}
-.stat-v{font-size:28px;font-weight:800;color:var(--d);margin-top:8px}
-.stat-l{font-size:13px;color:var(--g);margin-top:2px}
-.table-w{overflow-x:auto}
+
+.card{background:var(--w);border-radius:var(--radius);border:1px solid rgba(0,0,0,.04);box-shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.03);overflow:hidden;transition:box-shadow .2s}
+.card-h{padding:18px 22px;border-bottom:1px solid #f1f5f9;font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px}
+.card-b{padding:20px 22px}
+
+.stat-c{padding:20px;background:var(--w);border-radius:var(--radius);border:1px solid rgba(0,0,0,.04);box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.stat-v{font-size:28px;font-weight:800;color:var(--d);margin-top:8px;line-height:1.1}
+.stat-l{font-size:13px;color:var(--g);margin-top:4px;font-weight:500}
+
+.table-w{overflow-x:auto;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse}
-th{padding:10px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:.5px;background:#f9fafb}
-td{padding:12px 16px;font-size:13px;border-top:1px solid #f3f4f6}
-tr:hover td{background:#f9fafb}
-.sidebar{position:fixed;left:0;top:0;height:100vh;width:240px;background:var(--w);border-right:1px solid #e5e7eb;z-index:50;display:flex;flex-direction:column}
-.sidebar .logo{padding:16px 20px;border-bottom:1px solid #f3f4f6;font-size:18px;font-weight:800}
+th{padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:.5px;background:#f8fafc;white-space:nowrap}
+td{padding:14px 16px;font-size:13px;border-top:1px solid #f1f5f9}
+tr:hover td{background:#f8fafc}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.modal-overlay.show{display:flex}
+.modal{background:var(--w);border-radius:20px 20px 0 0;width:100%;max-width:500px;max-height:85vh;overflow-y:auto;padding:24px 24px calc(24px + var(--safe-b));animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+
+.online-dot{width:8px;height:8px;border-radius:50%;background:var(--gn);display:inline-block;margin-right:6px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.spinner{width:32px;height:32px;border:3px solid #e5e7eb;border-top-color:var(--p);border-radius:50%;animation:spin .6s linear infinite;margin:40px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.photo-upload{border:2px dashed #d1d5db;border-radius:16px;padding:28px;text-align:center;cursor:pointer;transition:all .2s;background:#f8fafc;min-height:110px;display:flex;align-items:center;justify-content:center;flex-direction:column}
+.photo-upload:hover,.photo-upload:active{border-color:var(--p);background:#fff7ed}
+.photo-upload img{max-width:100%;max-height:160px;border-radius:12px;object-fit:cover}
+
+.empty{text-align:center;padding:48px 20px;color:var(--g)}
+.empty p:first-child{font-size:48px;margin-bottom:12px}
+
+.avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--p),#fb923c);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
+
+/* ============ DESKTOP SIDEBAR ============ */
+.sidebar{position:fixed;left:0;top:0;height:100vh;width:260px;background:var(--w);border-right:1px solid #f1f5f9;z-index:50;display:flex;flex-direction:column;transition:transform .3s ease}
+.sidebar .logo{padding:24px 24px 20px;border-bottom:1px solid #f1f5f9}
+.sidebar .logo h1{font-size:22px;font-weight:800;letter-spacing:-.5px}
 .sidebar .logo span{color:var(--p)}
-.sidebar nav{flex:1;padding:12px;overflow-y:auto}
-.sidebar nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;font-size:14px;font-weight:500;color:var(--g);text-decoration:none;transition:all .15s;margin-bottom:2px}
+.sidebar .logo small{display:block;font-size:11px;color:var(--g);font-weight:500;margin-top:2px}
+.sidebar nav{flex:1;padding:12px 10px;overflow-y:auto}
+.sidebar nav a{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;font-size:14px;font-weight:600;color:var(--g);text-decoration:none;transition:all .15s;margin-bottom:2px}
 .sidebar nav a:hover{background:var(--gl);color:var(--d)}
-.sidebar nav a.active{background:var(--pl);color:var(--p);font-weight:600}
-.sidebar .user-box{padding:12px 16px;border-top:1px solid #f3f4f6;display:flex;align-items:center;gap:10px}
-.sidebar .avatar{width:36px;height:36px;border-radius:50%;background:var(--p);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
-.main{margin-left:240px;padding:24px;min-height:100vh}
+.sidebar nav a.active{background:linear-gradient(135deg,var(--pl),#fff);color:var(--p);font-weight:700;box-shadow:0 1px 4px rgba(249,115,22,.12)}
+.sidebar nav a .nav-icon{font-size:18px;width:24px;text-align:center}
+.sidebar .user-box{padding:16px 18px;border-top:1px solid #f1f5f9;display:flex;align-items:center;gap:12px;background:#fafbfc}
+.sidebar .user-box .avatar{width:38px;height:38px;font-size:13px}
+
+.main{margin-left:260px;padding:28px 32px;min-height:100vh;overflow-y:auto;height:100vh}
 .page{display:none}.page.active{display:block}
-.header-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.header-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px}
 .grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;display:none;align-items:center;justify-content:center}
-.modal-overlay.show{display:flex}
-.modal{background:var(--w);border-radius:16px;width:90%;max-width:500px;max-height:90vh;overflow-y:auto;padding:24px}
-.online-dot{width:8px;height:8px;border-radius:50%;background:var(--gn);display:inline-block;margin-right:6px;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-.spinner{width:32px;height:32px;border:3px solid #e5e7eb;border-top-color:var(--p);border-radius:50%;animation:spin .6s linear infinite;margin:40px auto}
-.photo-upload{border:2px dashed #d1d5db;border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:all .2s;background:#f9fafb;min-height:100px;display:flex;align-items:center;justify-content:center}
-.photo-upload:hover{border-color:var(--p);background:#faf5ff}
-.photo-upload img{max-width:100%;max-height:160px;border-radius:8px;object-fit:cover}
-@keyframes spin{to{transform:rotate(360deg)}}
+.grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+
+/* ============ MOBILE ============ */
+.mobile-header{display:none}
+.bottom-nav{display:none}
+
 @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
-.empty{text-align:center;padding:40px;color:var(--g)}
-.empty svg{margin-bottom:12px;opacity:.4}
-@media(max-width:768px){.sidebar{display:none}.main{margin-left:0}.grid4,.grid3{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
+
+@media(max-width:768px){
+  .sidebar{display:none !important}
+  .main{margin-left:0 !important;padding:0 !important;height:100vh;padding-top:60px;padding-bottom:calc(72px + var(--safe-b));overflow-y:auto}
+  
+  .mobile-header{display:flex !important;position:fixed;top:0;left:0;right:0;height:60px;padding-top:var(--safe-t);background:var(--w);border-bottom:1px solid rgba(0,0,0,.06);z-index:100;align-items:center;padding-left:16px;padding-right:16px;gap:12px;box-shadow:0 1px 8px rgba(0,0,0,.04)}
+  .mobile-header .logo{font-size:18px;font-weight:800;letter-spacing:-.3px}
+  .mobile-header .logo span{color:var(--p)}
+  .mobile-header .hdr-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+  .mobile-header .avatar{width:34px;height:34px;font-size:12px}
+  
+  .bottom-nav{display:flex !important;position:fixed;bottom:0;left:0;right:0;height:calc(64px + var(--safe-b));padding-bottom:var(--safe-b);background:var(--w);border-top:1px solid rgba(0,0,0,.06);z-index:100;align-items:center;justify-content:space-around;box-shadow:0 -2px 12px rgba(0,0,0,.06)}
+  .bottom-nav a{display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;color:var(--g);font-size:10px;font-weight:600;padding:6px 4px;border-radius:10px;transition:all .15s;min-width:56px}
+  .bottom-nav a .bn-icon{font-size:22px;line-height:1;transition:transform .15s}
+  .bottom-nav a.active{color:var(--p)}
+  .bottom-nav a.active .bn-icon{transform:scale(1.1)}
+  .bottom-nav a.logout-btn{color:var(--r)}
+  
+  .header-bar{padding:0 16px !important;margin-bottom:20px !important}
+  .header-bar h1{font-size:20px !important}
+  .grid4,.grid3{grid-template-columns:repeat(2,1fr) !important;gap:10px !important;padding:0 16px}
+  .grid4 .stat-c,.grid3 .stat-c{padding:16px !important}
+  .grid4 .stat-v,.grid3 .stat-v{font-size:22px !important}
+  .grid5{grid-template-columns:repeat(3,1fr) !important;gap:8px !important;padding:0 16px}
+  .grid2{grid-template-columns:1fr !important}
+  
+  .card{margin:0 16px 16px;border-radius:14px !important}
+  .card:first-child{margin-top:0}
+  .card-h{padding:14px 18px !important;font-size:14px !important}
+  .card-b{padding:16px 18px !important}
+  
+  .table-w{margin:0 16px}
+  table{font-size:12px}
+  th{padding:10px 12px;font-size:10px}
+  td{padding:10px 12px;font-size:12px}
+  
+  .btn{padding:14px 24px !important;font-size:15px !important;border-radius:14px !important}
+  .btn-lg{padding:16px 28px !important;font-size:16px !important}
+  
+  .modal{border-radius:20px 20px 0 0 !important;max-height:80vh !important;padding:20px 20px calc(20px + var(--safe-b)) !important}
+  .modal-overlay{align-items:flex-end !important}
+  
+  .input{padding:14px 16px !important;font-size:16px !important}
+}
+
+@media(min-width:769px) and (max-width:1024px){
+  .sidebar{width:220px}
+  .main{margin-left:220px;padding:24px}
+  .grid4{grid-template-columns:repeat(2,1fr)}
+  .grid5{grid-template-columns:repeat(3,1fr)}
+}
+
+/* ============ ANIMATIONS ============ */
+.fade-in{animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ============ SCROLLBAR ============ */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#9ca3af}
+
+/* ============ KPI CARDS ============ */
+.kpi-card{border-radius:var(--radius);padding:22px;color:#fff;position:relative;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,.15)}
+.kpi-card .kpi-icon{position:absolute;top:-8px;right:-8px;font-size:64px;opacity:.12}
+.kpi-card .kpi-label{font-size:13px;opacity:.85;margin-bottom:6px;font-weight:600}
+.kpi-card .kpi-value{font-size:30px;font-weight:800;line-height:1}
+
+@media(max-width:768px){
+  .kpi-card{padding:18px !important;border-radius:14px !important}
+  .kpi-card .kpi-icon{font-size:50px !important}
+  .kpi-card .kpi-value{font-size:24px !important}
+}
+
+/* ============ TOGGLE BUTTON ============ */
+.toggle-wrap{position:relative;display:inline-flex;align-items:center;gap:0;border-radius:14px;overflow:hidden;border:2px solid transparent}
+.toggle-wrap button{padding:12px 24px;border:none;font-weight:700;font-size:14px;cursor:pointer;transition:all .2s;background:transparent;color:var(--g)}
+.toggle-wrap button.active{color:#fff}
+.toggle-wrap .t-online{background:var(--gn);box-shadow:0 4px 12px rgba(34,197,94,.3)}
+.toggle-wrap .t-offline{background:#94a3b8}
 </style>
 </head>
 <body>
 
+<!-- ============ MOBILE HEADER ============ -->
+<div class="mobile-header" id="mobile-header">
+  <div class="logo">Central <span>Motoboy</span></div>
+  <div class="hdr-right">
+    <div class="avatar" id="m-avatar">A</div>
+  </div>
+</div>
+
 <!-- ============ LOGIN ============ -->
-<div id="login-page" style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,var(--pl),#fff)">
-  <div style="width:100%;max-width:400px;padding:20px">
-    <div style="text-align:center;margin-bottom:32px">
-      <h1 style="font-size:32px;font-weight:800">Central <span style="color:var(--p)">Motoboy</span></h1>
-      <p style="color:var(--g);margin-top:8px">Acesse sua conta</p>
+<div id="login-page" style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;padding-top:var(--safe-t);background:linear-gradient(160deg,#fff7ed 0%,#ffffff 50%,#f0f9ff 100%)">
+  <div style="width:100%;max-width:420px">
+    <div style="text-align:center;margin-bottom:36px">
+      <div style="width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,var(--p),#fb923c);margin:0 auto 20px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(249,115,22,.3)"><span style="font-size:36px">&#128690;</span></div>
+      <h1 style="font-size:30px;font-weight:800;letter-spacing:-.5px">Central <span style="color:var(--p)">Motoboy</span></h1>
+      <p style="color:var(--g);margin-top:6px;font-size:15px">Acesse sua conta</p>
     </div>
-    <div class="card" style="padding:32px">
+    <div class="card" style="padding:28px">
       <form id="login-form">
         <div class="form-g"><label class="label">Email</label><input class="input" type="email" id="login-email" placeholder="seu@email.com" required></div>
         <div class="form-g"><label class="label">Senha</label><input class="input" type="password" id="login-pass" placeholder="Sua senha" required></div>
-        <div id="login-error" style="display:none;color:var(--r);font-size:13px;margin-bottom:12px"></div>
-        <button type="submit" class="btn btn-p" style="width:100%;margin-top:4px">Entrar</button>
+        <div id="login-error" style="display:none;color:var(--r);font-size:13px;margin-bottom:12px;padding:10px;background:#fef2f2;border-radius:8px"></div>
+        <button type="submit" class="btn btn-p btn-lg" style="width:100%;margin-top:8px">Entrar</button>
       </form>
-      <div style="text-align:center;margin-top:20px;font-size:13px">
-        <a href="#" onclick="event.preventDefault();showRegister()" style="color:var(--p);font-weight:600;text-decoration:none">Criar conta profissional &#8594;</a>
+      <div style="text-align:center;margin-top:20px">
+        <a href="#" onclick="event.preventDefault();showRegister()" style="color:var(--p);font-weight:700;text-decoration:none;font-size:14px">Criar conta profissional &#8594;</a>
       </div>
-      <div style="text-align:center;margin-top:20px;font-size:13px;color:var(--g)">
-        <p>Contas de teste:</p>
-        <p style="margin-top:8px"><b>Admin:</b> admin@central.com / admin123</p>
-        <p><b>Cliente:</b> cliente@email.com / cliente123</p>
-        <p><b>Motoboy:</b> motoboy@email.com / motoboy123</p>
-      </div>
+    </div>
+    <div style="margin-top:20px;padding:16px;background:rgba(255,255,255,.7);border-radius:12px;border:1px solid #f1f5f9;text-align:center">
+      <p style="font-size:11px;color:var(--g);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Credenciais Admin</p>
+      <p style="font-size:13px;color:var(--d2)"><b>empwilliamtavares@gmail.com</b></p>
+      <p style="font-size:13px;color:var(--g)">inf4j61imc5f15</p>
     </div>
   </div>
 </div>
 
 <!-- ============ REGISTRO ============ -->
-<div id="register-page" style="display:none;min-height:100vh;background:linear-gradient(135deg,var(--pl),#fff);padding:20px">
+<div id="register-page" style="display:none;min-height:100vh;padding:20px;padding-top:var(--safe-t);background:linear-gradient(160deg,#fff7ed 0%,#ffffff 50%,#f0f9ff 100%)">
   <div style="max-width:520px;margin:0 auto">
-    <div style="text-align:center;margin-bottom:24px">
-      <h1 style="font-size:28px;font-weight:800">Central <span style="color:var(--p)">Motoboy</span></h1>
-      <p style="color:var(--g);margin-top:4px">Cadastro profissional</p>
+    <div style="text-align:center;margin-bottom:28px">
+      <h1 style="font-size:26px;font-weight:800">Central <span style="color:var(--p)">Motoboy</span></h1>
+      <p style="color:var(--g);margin-top:4px;font-size:14px">Cadastro profissional</p>
     </div>
 
-    <!-- STEP 1: Tipo -->
     <div id="reg-step1" class="card" style="padding:28px">
-      <h2 style="font-size:18px;font-weight:700;margin-bottom:16px;text-align:center">Voce e:</h2>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <button onclick="selectRole('CLIENT')" id="reg-role-client" style="padding:20px;border:2px solid #e5e7eb;border-radius:12px;background:#fff;cursor:pointer;text-align:center;transition:all .2s">
-          <div style="font-size:36px;margin-bottom:8px">&#128100;</div>
-          <div style="font-weight:700;font-size:15px">Cliente</div>
+      <h2 style="font-size:18px;font-weight:800;margin-bottom:20px;text-align:center">Voce e:</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <button onclick="selectRole('CLIENT')" id="reg-role-client" style="padding:24px;border:2px solid #e5e7eb;border-radius:16px;background:#fff;cursor:pointer;text-align:center;transition:all .2s">
+          <div style="font-size:42px;margin-bottom:10px">&#128100;</div>
+          <div style="font-weight:800;font-size:16px">Cliente</div>
           <div style="font-size:12px;color:var(--g);margin-top:4px">Enviar entregas</div>
         </button>
-        <button onclick="selectRole('MOTOBOY')" id="reg-role-motoboy" style="padding:20px;border:2px solid #e5e7eb;border-radius:12px;background:#fff;cursor:pointer;text-align:center;transition:all .2s">
-          <div style="font-size:36px;margin-bottom:8px">&#128690;</div>
-          <div style="font-weight:700;font-size:15px">Motoboy</div>
+        <button onclick="selectRole('MOTOBOY')" id="reg-role-motoboy" style="padding:24px;border:2px solid #e5e7eb;border-radius:16px;background:#fff;cursor:pointer;text-align:center;transition:all .2s">
+          <div style="font-size:42px;margin-bottom:10px">&#128690;</div>
+          <div style="font-weight:800;font-size:16px">Motoboy</div>
           <div style="font-size:12px;color:var(--g);margin-top:4px">Realizar entregas</div>
         </button>
       </div>
     </div>
 
-    <!-- STEP 2: Dados pessoais -->
     <div id="reg-step2" class="card" style="padding:28px;display:none">
-      <h2 style="font-size:18px;font-weight:700;margin-bottom:16px">Dados Pessoais</h2>
+      <h2 style="font-size:18px;font-weight:800;margin-bottom:20px">Dados Pessoais</h2>
       <div class="form-g"><label class="label">Nome *</label><input class="input" id="reg-first" placeholder="Seu nome" required></div>
       <div class="form-g"><label class="label">Sobrenome *</label><input class="input" id="reg-last" placeholder="Seu sobrenome" required></div>
       <div class="form-g"><label class="label">Email *</label><input class="input" type="email" id="reg-email" placeholder="seu@email.com" required></div>
       <div class="form-g"><label class="label">Telefone *</label><input class="input" type="tel" id="reg-phone" placeholder="(11) 99999-9999" required></div>
       <div class="form-g"><label class="label">CPF *</label><input class="input" id="reg-cpf" placeholder="000.000.000-00" maxlength="14" required></div>
       <div class="form-g"><label class="label">Senha *</label><input class="input" type="password" id="reg-pass" placeholder="Minimo 6 caracteres" required></div>
-      <div id="reg2-error" style="display:none;color:var(--r);font-size:13px;margin-bottom:12px"></div>
-      <button onclick="goStep(3)" class="btn btn-p" style="width:100%;margin-top:4px">Proximo &#8594;</button>
-      <div style="text-align:center;margin-top:12px"><a href="#" onclick="event.preventDefault();showLogin()" style="color:var(--g);font-size:13px;text-decoration:none">&#8592; Voltar ao login</a></div>
+      <div id="reg2-error" style="display:none;color:var(--r);font-size:13px;margin-bottom:12px;padding:10px;background:#fef2f2;border-radius:8px"></div>
+      <button onclick="goStep(3)" class="btn btn-p btn-lg" style="width:100%;margin-top:8px">Proximo &#8594;</button>
+      <div style="text-align:center;margin-top:14px"><a href="#" onclick="event.preventDefault();showLogin()" style="color:var(--g);font-size:13px;text-decoration:none">&#8592; Voltar ao login</a></div>
     </div>
 
-    <!-- STEP 3: Veiculo (só motoboy) -->
     <div id="reg-step3" class="card" style="padding:28px;display:none">
-      <h2 style="font-size:18px;font-weight:700;margin-bottom:16px">&#128690; Dados do Veiculo</h2>
+      <h2 style="font-size:18px;font-weight:800;margin-bottom:20px">&#128690; Dados do Veiculo</h2>
       <div class="form-g"><label class="label">Placa *</label><input class="input" id="reg-plate" placeholder="ABC1D23" maxlength="7" style="text-transform:uppercase" required></div>
       <div class="form-g"><label class="label">Tipo *</label>
         <select class="input" id="reg-vtype"><option value="MOTORCYCLE">Motocicleta</option><option value="MOTORCYCLE_150">Motocicleta 150cc</option><option value="MOTORCYCLE_250">Motocicleta 250cc</option><option value="SCOOTER">Scooter</option><option value="ELECTRIC">Eletrica</option></select>
@@ -151,98 +269,102 @@ tr:hover td{background:#f9fafb}
         <div class="form-g"><label class="label">Cor *</label><input class="input" id="reg-color" placeholder="Preta" required></div>
       </div>
       <div id="reg3-error" style="display:none;color:var(--r);font-size:13px;margin-bottom:12px"></div>
-      <button onclick="goStep(4)" class="btn btn-p" style="width:100%;margin-top:4px">Proximo &#8594;</button>
-      <div style="text-align:center;margin-top:12px"><a href="#" onclick="event.preventDefault();goStep(2)" style="color:var(--g);font-size:13px;text-decoration:none">&#8592; Voltar</a></div>
+      <button onclick="goStep(4)" class="btn btn-p btn-lg" style="width:100%;margin-top:8px">Proximo &#8594;</button>
+      <div style="text-align:center;margin-top:14px"><a href="#" onclick="event.preventDefault();goStep(2)" style="color:var(--g);font-size:13px;text-decoration:none">&#8592; Voltar</a></div>
     </div>
 
-    <!-- STEP 4: Documentos e Fotos -->
     <div id="reg-step4" class="card" style="padding:28px;display:none">
-      <h2 style="font-size:18px;font-weight:700;margin-bottom:6px">Documentos e Fotos</h2>
-      <p style="font-size:13px;color:var(--g);margin-bottom:16px">Tire fotos claras e legiveis</p>
+      <h2 style="font-size:18px;font-weight:800;margin-bottom:6px">Documentos e Fotos</h2>
+      <p style="font-size:13px;color:var(--g);margin-bottom:20px">Tire fotos claras e legiveis</p>
 
       <div style="margin-bottom:20px">
-        <label style="font-weight:600;font-size:13px;display:block;margin-bottom:8px">&#128196; CNH (Frente) *</label>
-        <div class="photo-upload" id="photo-cnh-front" onclick="document.getElementById('input-cnh-front').click()">
+        <label style="font-weight:700;font-size:13px;display:block;margin-bottom:8px">&#128196; CNH (Frente) *</label>
+        <div class="photo-upload" onclick="document.getElementById('input-cnh-front').click()">
           <input type="file" id="input-cnh-front" accept="image/*" capture="environment" style="display:none" onchange="handlePhoto(this,'preview-cnh-front','data-cnh-front')">
-          <div id="preview-cnh-front"><div style="font-size:32px;margin-bottom:8px">&#128247;</div><div style="font-size:13px;color:var(--g)">Toque para foto da CNH frente</div></div>
+          <div id="preview-cnh-front"><div style="font-size:36px;margin-bottom:8px">&#128247;</div><div style="font-size:13px;color:var(--g);font-weight:500">Toque para foto da CNH frente</div></div>
         </div>
       </div>
 
       <div style="margin-bottom:20px">
-        <label style="font-weight:600;font-size:13px;display:block;margin-bottom:8px">&#128196; CNH (Verso) *</label>
-        <div class="photo-upload" id="photo-cnh-back" onclick="document.getElementById('input-cnh-back').click()">
+        <label style="font-weight:700;font-size:13px;display:block;margin-bottom:8px">&#128196; CNH (Verso) *</label>
+        <div class="photo-upload" onclick="document.getElementById('input-cnh-back').click()">
           <input type="file" id="input-cnh-back" accept="image/*" capture="environment" style="display:none" onchange="handlePhoto(this,'preview-cnh-back','data-cnh-back')">
-          <div id="preview-cnh-back"><div style="font-size:32px;margin-bottom:8px">&#128247;</div><div style="font-size:13px;color:var(--g)">Toque para foto da CNH verso</div></div>
+          <div id="preview-cnh-back"><div style="font-size:36px;margin-bottom:8px">&#128247;</div><div style="font-size:13px;color:var(--g);font-weight:500">Toque para foto da CNH verso</div></div>
         </div>
       </div>
 
       <div style="margin-bottom:20px">
-        <label style="font-weight:600;font-size:13px;display:block;margin-bottom:8px">&#128196; Documento do Veiculo (CRLV) *</label>
-        <div class="photo-upload" id="photo-crlv" onclick="document.getElementById('input-crlv').click()">
+        <label style="font-weight:700;font-size:13px;display:block;margin-bottom:8px">&#128196; Documento do Veiculo (CRLV) *</label>
+        <div class="photo-upload" onclick="document.getElementById('input-crlv').click()">
           <input type="file" id="input-crlv" accept="image/*" capture="environment" style="display:none" onchange="handlePhoto(this,'preview-crlv','data-crlv')">
-          <div id="preview-crlv"><div style="font-size:32px;margin-bottom:8px">&#128247;</div><div style="font-size:13px;color:var(--g)">Toque para foto do CRLV</div></div>
+          <div id="preview-crlv"><div style="font-size:36px;margin-bottom:8px">&#128247;</div><div style="font-size:13px;color:var(--g);font-weight:500">Toque para foto do CRLV</div></div>
         </div>
       </div>
 
       <div style="margin-bottom:20px">
-        <label style="font-weight:600;font-size:13px;display:block;margin-bottom:8px">&#128668; Foto do Veiculo (lateral) *</label>
-        <div class="photo-upload" id="photo-vehicle" onclick="document.getElementById('input-vehicle').click()">
+        <label style="font-weight:700;font-size:13px;display:block;margin-bottom:8px">&#128668; Foto do Veiculo (lateral) *</label>
+        <div class="photo-upload" onclick="document.getElementById('input-vehicle').click()">
           <input type="file" id="input-vehicle" accept="image/*" capture="environment" style="display:none" onchange="handlePhoto(this,'preview-vehicle','data-vehicle')">
-          <div id="preview-vehicle"><div style="font-size:32px;margin-bottom:8px">&#128247;</div><div style="font-size:13px;color:var(--g)">Toque para foto lateral do veiculo</div></div>
+          <div id="preview-vehicle"><div style="font-size:36px;margin-bottom:8px">&#128247;</div><div style="font-size:13px;color:var(--g);font-weight:500">Toque para foto lateral do veiculo</div></div>
         </div>
       </div>
 
       <div style="margin-bottom:20px">
-        <label style="font-weight:600;font-size:13px;display:block;margin-bottom:8px">&#128100; Selfie com Documento *</label>
-        <div class="photo-upload" id="photo-selfie" onclick="document.getElementById('input-selfie').click()">
+        <label style="font-weight:700;font-size:13px;display:block;margin-bottom:8px">&#128100; Selfie com Documento *</label>
+        <div class="photo-upload" onclick="document.getElementById('input-selfie').click()">
           <input type="file" id="input-selfie" accept="image/*" capture="user" style="display:none" onchange="handlePhoto(this,'preview-selfie','data-selfie')">
-          <div id="preview-selfie"><div style="font-size:32px;margin-bottom:8px">&#128247;</div><div style="font-size:13px;color:var(--g)">Selfie segurando CNH</div></div>
+          <div id="preview-selfie"><div style="font-size:36px;margin-bottom:8px">&#128247;</div><div style="font-size:13px;color:var(--g);font-weight:500">Selfie segurando CNH</div></div>
         </div>
       </div>
 
-      <div id="reg4-error" style="display:none;color:var(--r);font-size:13px;margin-bottom:12px"></div>
-      <button onclick="submitRegister()" class="btn btn-g" id="reg-submit-btn" style="width:100%;margin-top:4px;font-size:16px;padding:14px">&#10004; Finalizar Cadastro</button>
-      <div style="text-align:center;margin-top:12px"><a href="#" onclick="event.preventDefault();goStep(3)" style="color:var(--g);font-size:13px;text-decoration:none">&#8592; Voltar</a></div>
+      <div id="reg4-error" style="display:none;color:var(--r);font-size:13px;margin-bottom:12px;padding:10px;background:#fef2f2;border-radius:8px"></div>
+      <button onclick="submitRegister()" class="btn btn-g btn-lg" id="reg-submit-btn" style="width:100%;margin-top:8px">&#10004; Finalizar Cadastro</button>
+      <div style="text-align:center;margin-top:14px"><a href="#" onclick="event.preventDefault();goStep(3)" style="color:var(--g);font-size:13px;text-decoration:none">&#8592; Voltar</a></div>
     </div>
 
-    <!-- STEP 4: Cadastro Cliente (sem veiculo) -->
     <div id="reg-step4-client" class="card" style="padding:28px;display:none">
-      <h2 style="font-size:18px;font-weight:700;margin-bottom:16px">Foto de Perfil</h2>
-      <div style="margin-bottom:20px">
-        <div class="photo-upload" onclick="document.getElementById('input-photo-client').click()">
-          <input type="file" id="input-photo-client" accept="image/*" capture="user" style="display:none" onchange="handlePhoto(this,'preview-photo-client','data-photo-client')">
-          <div id="preview-photo-client"><div style="font-size:32px;margin-bottom:8px">&#128247;</div><div style="font-size:13px;color:var(--g)">Toque para foto de perfil</div></div>
-        </div>
+      <h2 style="font-size:18px;font-weight:800;margin-bottom:16px">Foto de Perfil</h2>
+      <div class="photo-upload" onclick="document.getElementById('input-photo-client').click()">
+        <input type="file" id="input-photo-client" accept="image/*" capture="user" style="display:none" onchange="handlePhoto(this,'preview-photo-client','data-photo-client')">
+        <div id="preview-photo-client"><div style="font-size:36px;margin-bottom:8px">&#128247;</div><div style="font-size:13px;color:var(--g);font-weight:500">Toque para foto de perfil</div></div>
       </div>
-      <button onclick="submitRegister()" class="btn btn-p" style="width:100%;margin-top:4px;font-size:16px;padding:14px">&#10004; Finalizar Cadastro</button>
-      <div style="text-align:center;margin-top:12px"><a href="#" onclick="event.preventDefault();showLogin()" style="color:var(--g);font-size:13px;text-decoration:none">&#8592; Voltar ao login</a></div>
+      <button onclick="submitRegister()" class="btn btn-p btn-lg" style="width:100%;margin-top:16px">&#10004; Finalizar Cadastro</button>
+      <div style="text-align:center;margin-top:14px"><a href="#" onclick="event.preventDefault();showLogin()" style="color:var(--g);font-size:13px;text-decoration:none">&#8592; Voltar ao login</a></div>
     </div>
 
-    <!-- STEP 5: Sucesso -->
-    <div id="reg-step5" class="card" style="padding:28px;display:none;text-align:center">
-      <div style="font-size:60px;margin-bottom:16px">&#127881;</div>
+    <div id="reg-step5" class="card" style="padding:32px;display:none;text-align:center">
+      <div style="font-size:64px;margin-bottom:16px">&#127881;</div>
       <h2 style="font-size:22px;font-weight:800;color:var(--gn);margin-bottom:8px">Cadastro Enviado!</h2>
-      <p style="color:var(--g);font-size:14px;margin-bottom:20px" id="reg-success-msg"></p>
-      <button onclick="showLogin()" class="btn btn-p" style="width:100%">Ir para o Login</button>
+      <p style="color:var(--g);font-size:14px;margin-bottom:24px" id="reg-success-msg"></p>
+      <button onclick="showLogin()" class="btn btn-p btn-lg" style="width:100%">Ir para o Login</button>
     </div>
   </div>
 </div>
 
 <!-- ============ APP ============ -->
 <div id="app" style="display:none">
-  <div class="sidebar">
-    <div class="logo">Central <span>Motoboy</span></div>
+  <!-- Desktop Sidebar -->
+  <div class="sidebar" id="sidebar-desktop">
+    <div class="logo">
+      <h1>Central <span>Motoboy</span></h1>
+      <small>Painel de Controle</small>
+    </div>
     <nav id="sidebar-nav"></nav>
     <div class="user-box">
       <div class="avatar" id="user-avatar">A</div>
       <div style="flex:1;min-width:0">
-        <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="user-name"></div>
-        <div style="font-size:11px;color:var(--g)" id="user-role"></div>
+        <div style="font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="user-name"></div>
+        <div style="font-size:11px;color:var(--g);font-weight:500" id="user-role"></div>
       </div>
-      <button onclick="logout()" style="background:none;border:none;cursor:pointer;color:var(--r);font-size:18px" title="Sair">&#x2190;</button>
+      <button onclick="logout()" style="background:none;border:none;cursor:pointer;color:var(--r);font-size:20px;padding:4px" title="Sair">&#x2190;</button>
     </div>
   </div>
+
+  <!-- Main Content -->
   <div class="main" id="main-content"></div>
+
+  <!-- Bottom Nav (Mobile) -->
+  <div class="bottom-nav" id="bottom-nav"></div>
 </div>
 
 <!-- ============ MODAL ============ -->
@@ -283,7 +405,7 @@ function playNotifSound(){
 }
 function showNotifToast(msg,type){
   var t=document.createElement('div');
-  t.style.cssText='position:fixed;top:20px;right:20px;z-index:99999;max-width:380px;padding:16px 20px;border-radius:12px;color:#fff;font-size:14px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.25);animation:slideIn .3s ease;cursor:pointer;';
+  t.style.cssText='position:fixed;top:calc(20px + var(--safe-t));left:16px;right:16px;z-index:99999;max-width:400px;margin:0 auto;padding:16px 20px;border-radius:16px;color:#fff;font-size:14px;font-weight:600;box-shadow:0 8px 32px rgba(0,0,0,.3);animation:fadeIn .3s ease;cursor:pointer;backdrop-filter:blur(10px);';
   t.style.background=type==='new'?'linear-gradient(135deg,#f59e0b,#d97706)':type==='accepted'?'linear-gradient(135deg,#22c55e,#16a34a)':'linear-gradient(135deg,#3b82f6,#2563eb)';
   t.innerHTML=msg;
   t.onclick=function(){t.remove()};
@@ -333,16 +455,26 @@ document.getElementById('login-form').onsubmit=async(e)=>{
 };
 
 function logout(){TOKEN='';USER=null;localStorage.clear();showLogin();}
-function showLogin(){document.getElementById('app').style.display='none';document.getElementById('login-page').style.display='flex';document.getElementById('register-page').style.display='none';}
-function showRegister(){document.getElementById('login-page').style.display='none';document.getElementById('register-page').style.display='block';resetRegister();}
+function showLogin(){
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-page').style.display='flex';
+  document.getElementById('register-page').style.display='none';
+  document.getElementById('mobile-header').style.display='none';
+}
+function showRegister(){
+  document.getElementById('login-page').style.display='none';
+  document.getElementById('register-page').style.display='block';
+  document.getElementById('mobile-header').style.display='none';
+  resetRegister();
+}
 
 var regRole='';
 function selectRole(r){
   regRole=r;
   document.getElementById('reg-role-client').style.borderColor=r==='CLIENT'?'var(--p)':'#e5e7eb';
-  document.getElementById('reg-role-client').style.background=r==='CLIENT'?'#faf5ff':'#fff';
+  document.getElementById('reg-role-client').style.background=r==='CLIENT'?'#fff7ed':'#fff';
   document.getElementById('reg-role-motoboy').style.borderColor=r==='MOTOBOY'?'var(--p)':'#e5e7eb';
-  document.getElementById('reg-role-motoboy').style.background=r==='MOTOBOY'?'#faf5ff':'#fff';
+  document.getElementById('reg-role-motoboy').style.background=r==='MOTOBOY'?'#fff7ed':'#fff';
   setTimeout(function(){goStep(2)},300);
 }
 function goStep(n){
@@ -397,8 +529,7 @@ document.addEventListener('DOMContentLoaded',function(){
   if(cpf)cpf.oninput=function(){this.value=cpfMask(this.value);};
 });
 async function submitRegister(){
-  var errId=regRole==='MOTOBOY'?'reg4-error':'reg4-error';
-  var errEl=document.getElementById(errId);
+  var errEl=document.getElementById('reg4-error');
   errEl.style.display='none';
   if(regRole==='MOTOBOY'){
     var cnhF=document.getElementById('data-cnh-front').value;
@@ -448,17 +579,32 @@ async function submitRegister(){
 
 function showApp(){
   document.getElementById('login-page').style.display='none';
+  document.getElementById('register-page').style.display='none';
   document.getElementById('app').style.display='flex';
+  document.getElementById('mobile-header').style.display='flex';
   document.getElementById('user-name').textContent=USER.firstName+' '+USER.lastName;
   document.getElementById('user-avatar').textContent=USER.firstName[0]+USER.lastName[0];
+  document.getElementById('m-avatar').textContent=USER.firstName[0]+USER.lastName[0];
   const rl={ADMIN:'Administrador',CLIENT:'Cliente',MOTOBOY:'Motoboy'};
   document.getElementById('user-role').textContent=rl[USER.role]||USER.role;
-  buildNav();navigate(USER.role==='ADMIN'?'admin-dash':USER.role==='CLIENT'?'client-dash':'motoboy-dash');
+  buildNav();buildBottomNav();
+  navigate(USER.role==='ADMIN'?'admin-dash':USER.role==='CLIENT'?'client-dash':'motoboy-dash');
   connectSSE();
 }
 
 function buildNav(){
   const nav=document.getElementById('sidebar-nav');
+  const items=getNavItems();
+  nav.innerHTML=items.map(i=>'<a href="#" onclick="event.preventDefault();navigate(\''+i.id+'\')" data-page="'+i.id+'"><span class="nav-icon">'+i.icon+'</span> '+i.label+'</a>').join('');
+}
+
+function buildBottomNav(){
+  const bn=document.getElementById('bottom-nav');
+  const items=getNavItems();
+  bn.innerHTML=items.map(i=>'<a href="#" onclick="event.preventDefault();navigate(\''+i.id+'\')" data-page="'+i.id+'"><span class="bn-icon">'+i.icon+'</span><span>'+i.label+'</span></a>').join('')+'<a href="#" onclick="event.preventDefault();logout()" class="logout-btn"><span class="bn-icon">&#x2190;</span><span>Sair</span></a>';
+}
+
+function getNavItems(){
   const items={
     ADMIN:[
       {id:'admin-dash',icon:'&#9632;',label:'Dashboard'},
@@ -467,7 +613,6 @@ function buildNav(){
       {id:'admin-deliveries',icon:'&#9992;',label:'Entregas'},
       {id:'admin-financial',icon:'&#9830;',label:'Financeiro'},
       {id:'admin-reports',icon:'&#128200;',label:'Relatorios'},
-      {id:'admin-settings',icon:'&#9881;',label:'Configuracoes'},
     ],
     CLIENT:[
       {id:'client-dash',icon:'&#9632;',label:'Inicio'},
@@ -481,14 +626,16 @@ function buildNav(){
       {id:'motoboy-wallet',icon:'&#9670;',label:'Carteira'},
     ],
   };
-  nav.innerHTML=(items[USER.role]||[]).map(i=>`<a href="#" onclick="event.preventDefault();navigate('${i.id}')" data-page="${i.id}">${i.icon} ${i.label}</a>`).join('');
+  return items[USER.role]||[];
 }
 
 function navigate(page){
   CURRENT_PAGE=page;
-  document.querySelectorAll('.sidebar nav a').forEach(a=>a.classList.toggle('active',a.dataset.page===page));
+  document.querySelectorAll('.sidebar nav a').forEach(function(a){a.classList.toggle('active',a.dataset.page===page)});
+  document.querySelectorAll('.bottom-nav a').forEach(function(a){a.classList.toggle('active',a.dataset.page===page)});
   const main=document.getElementById('main-content');
   main.innerHTML='<div class="spinner"></div>';
+  main.scrollTop=0;
   const renderers={
     'admin-dash':renderAdminDash,'admin-motoboys':renderAdminMotoboys,'admin-clients':renderAdminClients,'admin-deliveries':renderAdminDeliveries,'admin-financial':renderAdminFinancial,'admin-reports':renderAdminReports,'admin-settings':renderAdminSettings,
     'client-dash':renderClientDash,'client-new':renderClientNew,'client-history':renderClientHistory,'client-wallet':renderClientWallet,
@@ -505,23 +652,23 @@ function fmtDate(d){return d?new Date(d).toLocaleDateString('pt-BR',{day:'2-digi
 const ST={PENDING:['badge by','Pendente'],ACCEPTED:['badge bb','Aceita'],PICKED_UP:['badge bb','Coletada'],IN_TRANSIT:['badge bb','Em Transito'],DELIVERED:['badge bg','Entregue'],CANCELLED:['badge br','Cancelada'],FAILED:['badge br','Falhou']};
 
 // ============ ADMIN ============
-function buildAdminKPI(label,value,color,icon,gradient){
-  return '<div style="background:linear-gradient(135deg,'+gradient+');border-radius:16px;padding:20px;color:#fff;position:relative;overflow:hidden">'+
-    '<div style="position:absolute;top:-10px;right:-10px;font-size:60px;opacity:.1">'+icon+'</div>'+
-    '<div style="font-size:12px;opacity:.8;margin-bottom:4px">'+label+'</div>'+
-    '<div style="font-size:28px;font-weight:800">'+value+'</div></div>';
+function buildAdminKPI(label,value,icon,gradient){
+  return '<div class="kpi-card" style="background:linear-gradient(135deg,'+gradient+')">'+
+    '<div class="kpi-icon">'+icon+'</div>'+
+    '<div class="kpi-label">'+label+'</div>'+
+    '<div class="kpi-value">'+value+'</div></div>';
 }
 function buildMiniStat(label,value,color,icon){
-  return '<div style="background:#fff;border:1px solid #f3f4f6;border-radius:12px;padding:16px;text-align:center">'+
-    '<div style="font-size:20px;margin-bottom:6px">'+icon+'</div>'+
-    '<div style="font-size:22px;font-weight:800;color:'+color+'">'+value+'</div>'+
-    '<div style="font-size:11px;color:var(--g);margin-top:2px">'+label+'</div></div>';
+  return '<div class="stat-c" style="text-align:center">'+
+    '<div style="font-size:22px;margin-bottom:6px">'+icon+'</div>'+
+    '<div class="stat-v" style="color:'+color+'">'+value+'</div>'+
+    '<div class="stat-l">'+label+'</div></div>';
 }
 function buildTimelineItem(time,icon,text,color){
-  return '<div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #f9fafb">'+
-    '<div style="width:32px;height:32px;border-radius:50%;background:'+color+';display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">'+icon+'</div>'+
-    '<div style="flex:1"><div style="font-size:13px;font-weight:500">'+text+'</div>'+
-    '<div style="font-size:11px;color:var(--g);margin-top:2px">'+time+'</div></div></div>';
+  return '<div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f1f5f9">'+
+    '<div style="width:36px;height:36px;border-radius:50%;background:'+color+';display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">'+icon+'</div>'+
+    '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600">'+text+'</div>'+
+    '<div style="font-size:11px;color:var(--g);margin-top:3px">'+time+'</div></div></div>';
 }
 async function renderAdminDash(el){
   var s=(await api('/admin/stats')).data;
@@ -533,71 +680,75 @@ async function renderAdminDash(el){
   var greeting=hours<12?'Bom dia':hours<18?'Boa tarde':'Boa noite';
   var pendingM=(await api('/admin/motoboys')).data.filter(function(m){return !m.approvedAt}).length;
   var h='';
-  h+='<div class="header-bar"><div><h1 style="font-size:24px;font-weight:800">'+greeting+', '+USER.firstName+'!</h1><p style="color:var(--g);font-size:13px">'+now.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})+'</p></div>';
+  h+='<div class="header-bar"><div><h1 style="font-size:24px;font-weight:800;letter-spacing:-.5px">'+greeting+', '+USER.firstName+'!</h1><p style="color:var(--g);font-size:13px;margin-top:2px">'+now.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})+'</p></div>';
   h+='<div style="display:flex;align-items:center;gap:12px">';
   if(pendingM>0) h+='<button class="btn btn-p btn-sm" onclick="navigate(\'admin-motoboys\')" style="position:relative">'+pendingM+' pendente(s)</button>';
-  h+='<div style="display:flex;align-items:center;gap:6px"><span class="online-dot"></span><span style="font-size:12px;color:var(--g)">Tempo real</span></div></div></div>';
-  h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">';
-  h+=buildAdminKPI('Motoboys Online',s.activeMotoboys,'#fff','&#128690;','#6366f1,#8b5cf6');
-  h+=buildAdminKPI('Pedidos Ativos',s.activeDeliveries+s.pendingDeliveries,'#fff','&#128230;','#f59e0b,#d97706');
-  h+=buildAdminKPI('Concluidos Hoje',s.completedToday,'#fff','&#10004;','#22c55e,#16a34a');
-  h+=buildAdminKPI('Faturamento Hoje',fmt(s.dailyRevenue),'#fff','&#128176;','#3b82f6,#2563eb');
-  h+='</div>';
-  h+='<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px">';
+  h+='<div style="display:flex;align-items:center;gap:6px"><span class="online-dot"></span><span style="font-size:12px;color:var(--g);font-weight:500">Tempo real</span></div></div></div>';
+  
+  h+='<div style="padding:0 16px" class="mobile-grid-patch"><div class="grid4" style="margin-bottom:20px">';
+  h+=buildAdminKPI('Motoboys Online',s.activeMotoboys,'&#128690;','#6366f1,#8b5cf6');
+  h+=buildAdminKPI('Pedidos Ativos',s.activeDeliveries+s.pendingDeliveries,'&#128230;','#f59e0b,#d97706');
+  h+=buildAdminKPI('Concluidos Hoje',s.completedToday,'&#10004;','#22c55e,#16a34a');
+  h+=buildAdminKPI('Faturamento Hoje',fmt(s.dailyRevenue),'&#128176;','#3b82f6,#2563eb');
+  h+='</div></div>';
+  
+  h+='<div style="padding:0 16px" class="mobile-grid-patch"><div class="grid5" style="margin-bottom:20px">';
   h+=buildMiniStat('Clientes',s.totalClients,'#6366f1','&#128100;');
   h+=buildMiniStat('Total Motoboys',s.totalMotoboys,'#8b5cf6','&#128690;');
   h+=buildMiniStat('Pendentes',s.pendingDeliveries,'#f59e0b','&#9203;');
   h+=buildMiniStat('Comissoes',fmt(s.commissions),'#22c55e','&#9830;');
   h+=buildMiniStat('Cancelados',s.cancelledToday,'#ef4444','&#10008;');
-  h+='</div>';
-  h+='<div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px">';
-  h+='<div class="card"><div class="card-h" style="display:flex;justify-content:space-between"><span>&#128506; Mapa em Tempo Real</span><span style="font-size:12px;color:var(--g)">'+(loc.motoboys||[]).length+' motoboys | '+(loc.activeDeliveries||[]).length+' entregas</span></div><div class="card-b">';
-  h+='<div style="background:linear-gradient(135deg,#dbeafe,#dcfce7);border-radius:12px;height:300px;position:relative;overflow:hidden">';
+  h+='</div></div>';
+  
+  h+='<div style="padding:0 16px" class="mobile-grid-patch"><div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:20px" class="admin-main-grid">';
+  h+='<div class="card"><div class="card-h" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px"><span>&#128506; Mapa em Tempo Real</span><span style="font-size:12px;color:var(--g);font-weight:500">'+(loc.motoboys||[]).length+' motoboys | '+(loc.activeDeliveries||[]).length+' entregas</span></div><div class="card-b">';
+  h+='<div style="background:linear-gradient(135deg,#dbeafe,#dcfce7);border-radius:14px;height:320px;position:relative;overflow:hidden">';
   h+='<div style="position:absolute;inset:0;background:url(\'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><rect fill=%22none%22 width=%2260%22 height=%2260%22/><path d=%22M0 30h60M30 0v60%22 stroke=%22%23e5e7eb%22 stroke-width=%221%22/></svg>\');opacity:.5"></div>';
   (loc.motoboys||[]).forEach(function(m,i){
     var left=15+((i*17)%60);
     var top=10+((i*23)%70);
     h+='<div title="'+m.user.firstName+' '+m.user.lastName+'" onclick="openModal(\'<div style=text-align:center><h3 style=margin-bottom:8px>'+m.user.firstName+' '+m.user.lastName+'</h3><p style=color:var(--g)>Online | Entregas ativas</p></div>\')" style="position:absolute;cursor:pointer;left:'+left+'%;top:'+top+'%">';
-    h+='<div style="width:32px;height:32px;background:#3b82f6;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(59,130,246,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700">'+m.user.firstName[0]+'</div>';
-    h+='<div style="background:#fff;padding:2px 6px;border-radius:4px;font-size:9px;text-align:center;margin-top:2px;box-shadow:0 1px 4px rgba(0,0,0,.1);white-space:nowrap">'+m.user.firstName+'</div></div>';
+    h+='<div style="width:36px;height:36px;background:#3b82f6;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 12px rgba(59,130,246,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700">'+m.user.firstName[0]+'</div>';
+    h+='<div style="background:#fff;padding:3px 8px;border-radius:6px;font-size:10px;text-align:center;margin-top:3px;box-shadow:0 2px 6px rgba(0,0,0,.1);white-space:nowrap;font-weight:600">'+m.user.firstName+'</div></div>';
   });
   (loc.activeDeliveries||[]).forEach(function(d,i){
     var left=25+((i*19)%55);
     var top=20+((i*27)%60);
     h+='<div title="'+d.trackingCode+' - '+d.status+'" style="position:absolute;left:'+left+'%;top:'+top+'%">';
-    h+='<div style="width:18px;height:18px;background:#f59e0b;border:2px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(245,158,11,.4)"></div>';
-    h+='<div style="background:#fef3c7;padding:1px 4px;border-radius:3px;font-size:8px;text-align:center;margin-top:1px;font-weight:600;color:#92400e">'+d.trackingCode+'</div></div>';
+    h+='<div style="width:20px;height:20px;background:#f59e0b;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(245,158,11,.4)"></div>';
+    h+='<div style="background:#fef3c7;padding:2px 6px;border-radius:4px;font-size:9px;text-align:center;margin-top:2px;font-weight:700;color:#92400e">'+d.trackingCode+'</div></div>';
   });
-  h+='<div style="position:absolute;bottom:10px;right:10px;display:flex;gap:12px;font-size:11px;background:rgba(255,255,255,.95);padding:8px 14px;border-radius:20px;box-shadow:0 2px 8px rgba(0,0,0,.1)">';
+  h+='<div style="position:absolute;bottom:12px;right:12px;display:flex;gap:14px;font-size:11px;background:rgba(255,255,255,.95);padding:8px 16px;border-radius:20px;box-shadow:0 2px 10px rgba(0,0,0,.1);backdrop-filter:blur(8px)">';
   h+='<span>&#9679; <b style="color:#3b82f6">Motoboys</b></span><span>&#9679; <b style="color:#f59e0b">Entregas</b></span></div></div></div></div>';
   h+='<div style="display:flex;flex-direction:column;gap:12px">';
-  h+='<div class="card" style="flex:1"><div class="card-h">&#128336; Atividade Recente</div><div class="card-b" style="max-height:280px;overflow-y:auto">';
+  h+='<div class="card" style="flex:1"><div class="card-h">&#128336; Atividade Recente</div><div class="card-b" style="max-height:300px;overflow-y:auto">';
   dels.slice(0,8).forEach(function(d){
     var ic=d.status==='DELIVERED'?'&#10004;':d.status==='PENDING'?'&#9203;':d.status==='ACCEPTED'?'&#128666;':'&#9888;';
     var cl=d.status==='DELIVERED'?'#dcfce7':d.status==='PENDING'?'#fef9c3':d.status==='ACCEPTED'?'#dbeafe':'#fee2e2';
     var tx=d.status==='DELIVERED'?'Entregue':d.status==='PENDING'?'Pendente':d.status==='ACCEPTED'?'Aceita':d.status;
     h+=buildTimelineItem(fmtDate(d.createdAt),ic,d.trackingCode+' - '+tx+' - '+fmt(d.totalPrice),cl);
   });
-  h+='</div></div></div></div>';
-  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">';
+  h+='</div></div></div></div></div></div>';
+  
+  h+='<div style="padding:0 16px" class="mobile-grid-patch"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px" class="admin-bottom-grid">';
   h+='<div class="card"><div class="card-h">&#127942; Top Motoboys</div><div class="card-b">';
   var topM=(rep.topMotoboys||[]).slice(0,5);
   topM.forEach(function(m,i){
     var medals=['&#129351;','&#129352;','&#129353;','&#127942;','&#127942;'];
-    h+='<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f9fafb">';
+    h+='<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f1f5f9">';
     h+='<div style="font-size:20px">'+medals[i]+'</div>';
-    h+='<div class="avatar" style="width:36px;height:36px;font-size:12px">'+(m.user?.firstName||'M')[0]+''+(m.user?.lastName||'B')[0]+'</div>';
-    h+='<div style="flex:1"><div style="font-weight:600;font-size:13px">'+m.user?.firstName+' '+m.user?.lastName+'</div><div style="font-size:11px;color:var(--g)">'+m.vehicleModel||''+'</div></div>';
+    h+='<div class="avatar" style="width:38px;height:38px;font-size:12px">'+(m.user?.firstName||'M')[0]+''+(m.user?.lastName||'B')[0]+'</div>';
+    h+='<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:13px">'+m.user?.firstName+' '+m.user?.lastName+'</div><div style="font-size:11px;color:var(--g)">'+m.vehicleModel||''+'</div></div>';
     h+='<div style="text-align:right"><div style="font-weight:700;color:var(--gn)">&#9733; '+Number(m.averageRating).toFixed(1)+'</div><div style="font-size:11px;color:var(--g)">'+m.completedDeliveries+' entregas</div></div></div>';
   });
   h+='</div></div>';
-  h+='<div class="card"><div class="card-h" style="display:flex;justify-content:space-between"><span>&#9889; Acoes Rapidas</span></div><div class="card-b" style="display:flex;flex-direction:column;gap:10px">';
-  h+='<button class="btn btn-p" onclick="navigate(\'admin-deliveries\')" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px">&#128230; Gerenciar Entregas</button>';
-  h+='<button class="btn btn-s" onclick="navigate(\'admin-motoboys\')" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px">&#128690; Aprovar Motoboys'+(pendingM>0?' ('+pendingM+')':'')+'</button>';
-  h+='<button class="btn btn-s" onclick="navigate(\'admin-financial\')" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px">&#128176; Financeiro</button>';
-  h+='<button class="btn btn-s" onclick="navigate(\'admin-clients\')" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px">&#128100; Clientes</button>';
-  h+='<button class="btn btn-s" onclick="navigate(\'admin-reports\')" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px">&#128200; Relatorios</button>';
-  h+='</div></div></div>';
+  h+='<div class="card"><div class="card-h">&#9889; Acoes Rapidas</div><div class="card-b" style="display:flex;flex-direction:column;gap:10px">';
+  h+='<button class="btn btn-p" onclick="navigate(\'admin-deliveries\')" style="width:100%">&#128230; Gerenciar Entregas</button>';
+  h+='<button class="btn btn-s" onclick="navigate(\'admin-motoboys\')" style="width:100%">&#128690; Aprovar Motoboys'+(pendingM>0?' ('+pendingM+')':'')+'</button>';
+  h+='<button class="btn btn-s" onclick="navigate(\'admin-financial\')" style="width:100%">&#128176; Financeiro</button>';
+  h+='<button class="btn btn-s" onclick="navigate(\'admin-clients\')" style="width:100%">&#128100; Clientes</button>';
+  h+='<button class="btn btn-s" onclick="navigate(\'admin-reports\')" style="width:100%">&#128200; Relatorios</button>';
+  h+='</div></div></div></div></div>';
   el.innerHTML=h;
 }
 
@@ -610,8 +761,8 @@ async function renderAdminMotoboys(el){
     h+='<div class="card" style="margin-bottom:16px;border:2px solid var(--y)"><div class="card-h" style="background:#fef9c3;color:#854d0e">&#9888; Aguardando Aprovacao ('+pending.length+')</div><div class="card-b">';
     pending.forEach(function(m){
       var docs=m.documents||{};
-      h+='<div style="padding:16px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;margin-bottom:12px">';
-      h+='<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px">';
+      h+='<div style="padding:16px;background:#fffbeb;border:1px solid #fde68a;border-radius:12px;margin-bottom:12px">';
+      h+='<div style="display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:8px;margin-bottom:12px">';
       h+='<div><div style="font-weight:700;font-size:15px">'+m.user?.firstName+' '+m.user?.lastName+'</div>';
       h+='<div style="font-size:12px;color:var(--g)">'+m.user?.email+' | '+m.user?.phone+'</div>';
       h+='<div style="font-size:12px;color:var(--g)">'+m.vehiclePlate+' - '+m.vehicleModel+' '+m.vehicleColor+'</div></div>';
@@ -620,7 +771,7 @@ async function renderAdminMotoboys(el){
         h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px">';
         var photos=[['&#128196; CNH Frente',docs.cnhFront],['&#128196; CNH Verso',docs.cnhBack],['&#128196; CRLV',docs.crlv],['&#128668; Veiculo',docs.vehiclePhoto],['&#128100; Selfie',docs.selfie]];
         photos.forEach(function(p){
-          if(p[1]) h+='<div style="cursor:pointer;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb" onclick="openModal(\'<div style=text-align:center><img src='+p[1]+' style=max-width:100%;max-height:70vh;border-radius:8px></div>\')"><img src="'+p[1]+'" style="width:100%;height:90px;object-fit:cover" alt="'+p[0]+'"><div style="font-size:10px;text-align:center;padding:4px;background:#f9fafb">'+p[0]+'</div></div>';
+          if(p[1]) h+='<div style="cursor:pointer;border-radius:10px;overflow:hidden;border:1px solid #e5e7eb" onclick="openModal(\'<div style=text-align:center><img src='+p[1]+' style=max-width:100%;max-height:70vh;border-radius:12px></div>\')"><img src="'+p[1]+'" style="width:100%;height:90px;object-fit:cover" alt="'+p[0]+'"><div style="font-size:10px;text-align:center;padding:5px;background:#f9fafb;font-weight:600">'+p[0]+'</div></div>';
         });
         h+='</div>';
       }
@@ -631,7 +782,7 @@ async function renderAdminMotoboys(el){
   h+='<div class="card"><div class="card-h">Todos os Motoboys ('+data.length+')</div><div class="table-w"><table><thead><tr><th>Motoboy</th><th>Telefone</th><th>Status</th><th>Veiculo</th><th>Avaliacao</th><th>Entregas</th></tr></thead><tbody>';
   data.forEach(function(m){
     var statusBadge=m.user?.status==='PENDING'?'<span class="badge by">Pendente</span>':m.user?.status==='ACTIVE'?'<span class="badge bg">Ativo</span>':'<span class="badge br">Inativo</span>';
-    h+='<tr><td><div style="display:flex;align-items:center;gap:10px"><div class="avatar" style="width:32px;height:32px;font-size:11px">'+(m.user?.firstName||'M')[0]+''+(m.user?.lastName||'B')[0]+'</div><div><div style="font-weight:600;font-size:13px">'+m.user?.firstName+' '+m.user?.lastName+'</div><div style="font-size:11px;color:var(--g)">'+m.user?.email+'</div></div></div></td>';
+    h+='<tr><td><div style="display:flex;align-items:center;gap:10px"><div class="avatar" style="width:34px;height:34px;font-size:11px">'+(m.user?.firstName||'M')[0]+''+(m.user?.lastName||'B')[0]+'</div><div><div style="font-weight:700;font-size:13px">'+m.user?.firstName+' '+m.user?.lastName+'</div><div style="font-size:11px;color:var(--g)">'+m.user?.email+'</div></div></div></td>';
     h+='<td>'+(m.user?.phone||'-')+'</td><td>'+statusBadge+'</td>';
     h+='<td>'+(m.vehiclePlate||'-')+' '+(m.vehicleModel||'')+'</td>';
     h+='<td>&#9733; '+Number(m.averageRating).toFixed(1)+' ('+m.totalRatings+')</td>';
@@ -641,8 +792,8 @@ async function renderAdminMotoboys(el){
   el.innerHTML=h;
 }
 
-async function approveMb(id){await api(`/admin/motoboys/${id}/approve`,{method:'PUT'});navigate('admin-motoboys');}
-async function rejectMb(id){await api(`/admin/motoboys/${id}/reject`,{method:'PUT',body:JSON.stringify({reason:'Rejeitado'})});navigate('admin-motoboys');}
+async function approveMb(id){await api('/admin/motoboys/'+id+'/approve',{method:'PUT'});navigate('admin-motoboys');}
+async function rejectMb(id){await api('/admin/motoboys/'+id+'/reject',{method:'PUT',body:JSON.stringify({reason:'Rejeitado'})});navigate('admin-motoboys');}
 
 async function renderAdminDeliveries(el){
   var data=(await api('/admin/deliveries')).data;
@@ -651,17 +802,16 @@ async function renderAdminDeliveries(el){
   var delivered=data.filter(function(d){return d.status==='DELIVERED'});
   var cancelled=data.filter(function(d){return d.status==='CANCELLED'});
   var h='<div class="header-bar"><div><h1 style="font-size:22px;font-weight:800">Entregas</h1><p style="color:var(--g);font-size:13px">'+data.length+' total</p></div></div>';
-  h+='<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px">';
+  h+='<div style="padding:0 16px" class="mobile-grid-patch"><div class="grid5" style="margin-bottom:20px">';
   h+=buildMiniStat('Todas',data.length,'#6b7280','&#128230;');
   h+=buildMiniStat('Pendentes',pending.length,'#f59e0b','&#9203;');
   h+=buildMiniStat('Ativas',active.length,'#3b82f6','&#128666;');
   h+=buildMiniStat('Entregues',delivered.length,'#22c55e','&#10004;');
   h+=buildMiniStat('Canceladas',cancelled.length,'#ef4444','&#10008;');
-  h+='</div>';
-  h+='<div class="card"><div class="card-h" style="display:flex;justify-content:space-between"><span>Todas as Entregas</span>';
-  h+='<div style="display:flex;gap:8px">';
-  h+='<select id="del-filter" onchange="filterDeliveries()" style="padding:6px 10px;border:1px solid #e5e7eb;border-radius:8px;font-size:12px;background:#fff"><option value="">Todos Status</option><option value="PENDING">Pendente</option><option value="ACCEPTED">Aceita</option><option value="IN_TRANSIT">Em Transito</option><option value="DELIVERED">Entregue</option><option value="CANCELLED">Cancelada</option></select>';
-  h+='</div></div><div class="card-b table-w"><table><thead><tr><th>Codigo</th><th>Cliente</th><th>Motoboy</th><th>Origem</th><th>Destino</th><th>Valor</th><th>Pagamento</th><th>Status</th><th>Data</th></tr></thead><tbody id="del-table-body">';
+  h+='</div></div>';
+  h+='<div class="card"><div class="card-h" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px"><span>Todas as Entregas</span>';
+  h+='<select id="del-filter" onchange="filterDeliveries()" style="padding:6px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:12px;background:#fff"><option value="">Todos Status</option><option value="PENDING">Pendente</option><option value="ACCEPTED">Aceita</option><option value="IN_TRANSIT">Em Transito</option><option value="DELIVERED">Entregue</option><option value="CANCELLED">Cancelada</option></select>';
+  h+='</div><div class="table-w"><table><thead><tr><th>Codigo</th><th>Cliente</th><th>Motoboy</th><th>Origem</th><th>Destino</th><th>Valor</th><th>Pagamento</th><th>Status</th><th>Data</th></tr></thead><tbody id="del-table-body">';
   data.forEach(function(d){
     var clientName=d.client?(d.client.user?d.client.user.firstName+' '+d.client.user.lastName:'-'):'-';
     var mbName=d.motoboy?(d.motoboy.user?d.motoboy.user.firstName+' '+d.motoboy.user.lastName:'<i style="color:var(--g)">Aguardando</i>'):'<i style="color:var(--g)">-</i>';
@@ -672,7 +822,7 @@ async function renderAdminDeliveries(el){
     h+='<td style="max-width:140px"><div style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+d.originAddress+'</div><div style="font-size:10px;color:var(--g)">'+(d.originNeighborhood||'')+', '+(d.originCity||'')+'</div></td>';
     h+='<td style="max-width:140px"><div style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+d.destinationAddress+'</div><div style="font-size:10px;color:var(--g)">'+(d.destinationNeighborhood||'')+', '+(d.destinationCity||'')+'</div></td>';
     h+='<td><span style="font-weight:700">'+fmt(d.totalPrice)+'</span></td>';
-    h+='<td><span class="badge" style="background:#f3f4f6">'+d.paymentMethod+'</span></td>';
+    h+='<td><span class="badge bgr">'+d.paymentMethod+'</span></td>';
     h+='<td><span class="'+(ST[d.status]||['',''])[0]+'">'+(ST[d.status]||['',''])[1]+'</span></td>';
     h+='<td><div style="font-size:12px">'+fmtDate(d.createdAt)+'</div></td>';
     h+='</tr>';
@@ -693,21 +843,21 @@ async function renderAdminFinancial(el){
   var byPayment={PIX:0,CREDIT_CARD:0,CASH:0,DEBIT_CARD:0,WALLET:0};
   delivered.forEach(function(d){byPayment[d.paymentMethod]=(byPayment[d.paymentMethod]||0)+d.totalPrice});
   var h='<div class="header-bar"><div><h1 style="font-size:22px;font-weight:800">Financeiro</h1><p style="color:var(--g);font-size:13px">Controle completo da Central</p></div></div>';
-  h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">';
-  h+=buildAdminKPI('Receita Total',fmt(f.totalRevenue),'#fff','&#128176;','#22c55e,#16a34a');
-  h+=buildAdminKPI('Comissoes',fmt(f.totalCommissions),'#fff','&#9830;','#8b5cf6,#7c3aed');
-  h+=buildAdminKPI('Ganhos Motoboys',fmt(f.totalMotoboyEarnings),'#fff','&#128690;','#3b82f6,#2563eb');
-  h+=buildAdminKPI('Lucro',fmt(f.profit),'#fff','&#128200;','#f59e0b,#d97706');
-  h+='</div>';
-  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">';
+  h+='<div style="padding:0 16px" class="mobile-grid-patch"><div class="grid4" style="margin-bottom:20px">';
+  h+=buildAdminKPI('Receita Total',fmt(f.totalRevenue),'&#128176;','#22c55e,#16a34a');
+  h+=buildAdminKPI('Comissoes',fmt(f.totalCommissions),'&#9830;','#8b5cf6,#7c3aed');
+  h+=buildAdminKPI('Ganhos Motoboys',fmt(f.totalMotoboyEarnings),'&#128690;','#3b82f6,#2563eb');
+  h+=buildAdminKPI('Lucro',fmt(f.profit),'&#128200;','#f59e0b,#d97706');
+  h+='</div></div>';
+  h+='<div style="padding:0 16px" class="mobile-grid-patch"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px" class="admin-bottom-grid">';
   h+='<div class="card"><div class="card-h">&#128179; Por Forma de Pagamento</div><div class="card-b">';
   var total=Object.values(byPayment).reduce(function(a,b){return a+b},0)||1;
   var colors={PIX:'#22c55e',CREDIT_CARD:'#3b82f6',CASH:'#f59e0b',DEBIT_CARD:'#8b5cf6',WALLET:'#ec4899'};
   var labels={PIX:'PIX',CREDIT_CARD:'Cartao Credito',CASH:'Dinheiro',DEBIT_CARD:'Cartao Debito',WALLET:'Carteira'};
   Object.keys(byPayment).forEach(function(k){
     var pct=total>0?Math.round(byPayment[k]/total*100):0;
-    h+='<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px;font-weight:500">'+labels[k]+'</span><span style="font-size:13px;font-weight:700">'+fmt(byPayment[k])+' ('+pct+'%)</span></div>';
-    h+='<div style="background:#f3f4f6;border-radius:6px;height:8px;overflow:hidden"><div style="background:'+colors[k]+';height:100%;width:'+pct+'%;border-radius:6px;transition:width .5s"></div></div></div>';
+    h+='<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:13px;font-weight:600">'+labels[k]+'</span><span style="font-size:13px;font-weight:700">'+fmt(byPayment[k])+' ('+pct+'%)</span></div>';
+    h+='<div style="background:#f1f5f9;border-radius:8px;height:10px;overflow:hidden"><div style="background:'+colors[k]+';height:100%;width:'+pct+'%;border-radius:8px;transition:width .5s"></div></div></div>';
   });
   h+='</div></div>';
   h+='<div class="card"><div class="card-h">&#128202; Resumo Operacional</div><div class="card-b">';
@@ -720,18 +870,17 @@ async function renderAdminFinancial(el){
     ['Taxa Comissao','20%','var(--g)','&#9878;']
   ];
   items.forEach(function(it){
-    h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f9fafb">';
-    h+='<div style="display:flex;align-items:center;gap:8px"><span>'+it[3]+'</span><span style="font-size:13px">'+it[0]+'</span></div>';
+    h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid #f1f5f9">';
+    h+='<div style="display:flex;align-items:center;gap:10px"><span>'+it[3]+'</span><span style="font-size:13px">'+it[0]+'</span></div>';
     h+='<span style="font-weight:700;color:'+it[2]+'">'+it[1]+'</span></div>';
   });
-  h+='</div></div></div>';
+  h+='</div></div></div></div></div>';
   el.innerHTML=h;
 }
 
 async function renderAdminClients(el){
-  var users=(await api('/admin/motoboys')).data;
   var h='<div class="header-bar"><h1 style="font-size:22px;font-weight:800">Clientes</h1></div>';
-  h+='<div class="card"><div class="card-b" style="padding:20px;text-align:center;color:var(--g)">Gerenciamento de clientes em breve</div></div>';
+  h+='<div class="card"><div class="card-b" style="padding:32px;text-align:center;color:var(--g)">Gerenciamento de clientes em breve</div></div>';
   el.innerHTML=h;
 }
 
@@ -739,21 +888,21 @@ async function renderAdminReports(el){
   var rep=(await api('/reports/dashboard')).data;
   var s=(await api('/admin/stats')).data;
   var h='<div class="header-bar"><h1 style="font-size:22px;font-weight:800">Relatorios</h1></div>';
-  h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">';
-  h+=buildAdminKPI('Entregas Dia',rep.deliveries.daily,'#fff','&#128230;','#3b82f6,#2563eb');
-  h+=buildAdminKPI('Entregas Semana',rep.deliveries.weekly,'#fff','&#128197;','#8b5cf6,#7c3aed');
-  h+=buildAdminKPI('Entregas Mes',rep.deliveries.monthly,'#fff','&#128200;','#22c55e,#16a34a');
-  h+='</div>';
-  h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">';
+  h+='<div style="padding:0 16px" class="mobile-grid-patch"><div class="grid3" style="margin-bottom:20px">';
+  h+=buildAdminKPI('Entregas Dia',rep.deliveries.daily,'&#128230;','#3b82f6,#2563eb');
+  h+=buildAdminKPI('Entregas Semana',rep.deliveries.weekly,'&#128197;','#8b5cf6,#7c3aed');
+  h+=buildAdminKPI('Entregas Mes',rep.deliveries.monthly,'&#128200;','#22c55e,#16a34a');
+  h+='</div></div>';
+  h+='<div style="padding:0 16px" class="mobile-grid-patch"><div class="grid3" style="margin-bottom:20px">';
   h+=buildMiniStat('Receita Dia',fmt(rep.revenue.daily),'#22c55e','&#128176;');
   h+=buildMiniStat('Receita Semana',fmt(rep.revenue.weekly),'#3b82f6','&#128176;');
   h+=buildMiniStat('Receita Mes',fmt(rep.revenue.monthly),'#8b5cf6','&#128176;');
-  h+='</div>';
-  h+='<div class="card" style="margin-bottom:16px"><div class="card-h">&#127942; Ranking Motoboys</div><div class="card-b table-w"><table><thead><tr><th>#</th><th>Motoboy</th><th>Avaliacao</th><th>Entregas</th><th>Comissao</th></tr></thead><tbody>';
+  h+='</div></div>';
+  h+='<div class="card" style="margin-bottom:20px"><div class="card-h">&#127942; Ranking Motoboys</div><div class="card-b table-w"><table><thead><tr><th>#</th><th>Motoboy</th><th>Avaliacao</th><th>Entregas</th><th>Comissao</th></tr></thead><tbody>';
   (rep.topMotoboys||[]).forEach(function(m,i){
     var medals=['&#129351;','&#129352;','&#129353;','&#127942;','&#127942;'];
     h+='<tr><td style="font-size:20px">'+medals[i]+'</td>';
-    h+='<td><div style="display:flex;align-items:center;gap:10px"><div class="avatar" style="width:32px;height:32px;font-size:11px">'+(m.user?.firstName||'M')[0]+''+(m.user?.lastName||'B')[0]+'</div><div><div style="font-weight:600">'+m.user?.firstName+' '+m.user?.lastName+'</div><div style="font-size:11px;color:var(--g)">'+m.vehicleModel+'</div></div></div></td>';
+    h+='<td><div style="display:flex;align-items:center;gap:10px"><div class="avatar" style="width:34px;height:34px;font-size:11px">'+(m.user?.firstName||'M')[0]+''+(m.user?.lastName||'B')[0]+'</div><div><div style="font-weight:700">'+m.user?.firstName+' '+m.user?.lastName+'</div><div style="font-size:11px;color:var(--g)">'+m.vehicleModel+'</div></div></div></td>';
     h+='<td style="font-weight:700;color:var(--gn)">&#9733; '+Number(m.averageRating).toFixed(1)+'</td>';
     h+='<td>'+m.completedDeliveries+'</td>';
     h+='<td>'+fmt(m.totalCommissions||0)+'</td></tr>';
@@ -769,8 +918,8 @@ async function renderAdminReports(el){
     ['Taxa de Sucesso',s.completedToday+s.cancelledToday>0?Math.round(s.completedToday/(s.completedToday+s.cancelledToday)*100)+'%':'-','&#10004;']
   ];
   metrics.forEach(function(m){
-    h+='<div style="display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid #f9fafb">';
-    h+='<div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px">'+m[2]+'</span><span style="font-size:14px">'+m[0]+'</span></div>';
+    h+='<div style="display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid #f1f5f9">';
+    h+='<div style="display:flex;align-items:center;gap:10px"><span style="font-size:18px">'+m[2]+'</span><span style="font-size:14px">'+m[0]+'</span></div>';
     h+='<span style="font-weight:700;font-size:15px">'+m[1]+'</span></div>';
   });
   h+='</div></div>';
@@ -779,7 +928,7 @@ async function renderAdminReports(el){
 
 async function renderAdminSettings(el){
   var h='<div class="header-bar"><h1 style="font-size:22px;font-weight:800">Configuracoes</h1></div>';
-  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">';
+  h+='<div style="padding:0 16px" class="mobile-grid-patch"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" class="admin-bottom-grid">';
   h+='<div class="card"><div class="card-h">&#128176; Comissoes</div><div class="card-b">';
   h+='<div class="form-g"><label class="label">Taxa de Comissao (%)</label><input class="input" type="number" value="20" min="0" max="50"></div>';
   h+='<div class="form-g"><label class="label">Valor Minimo de Saque (R$)</label><input class="input" type="number" value="50" min="10"></div>';
@@ -789,132 +938,135 @@ async function renderAdminSettings(el){
   h+='<div class="form-g"><label class="label">Tempo Maximo Aceitacao (seg)</label><input class="input" type="number" value="30" min="10" max="120"></div>';
   h+='<button class="btn btn-p" style="width:100%;margin-top:8px">Salvar</button></div></div>';
   h+='<div class="card"><div class="card-h">&#128274; Seguranca</div><div class="card-b">';
-  h+='<div class="form-g"><label class="label">Chave JWT</label><input class="input" value="central-motoboy-portable-key" readonly style="background:#f9fafb"></div>';
-  h+='<div class="form-g"><label class="label">Porta do Servidor</label><input class="input" value="3000" readonly style="background:#f9fafb"></div>';
+  h+='<div class="form-g"><label class="label">Chave JWT</label><input class="input" value="central-motoboy-portable-key" readonly style="background:#f8fafc"></div>';
+  h+='<div class="form-g"><label class="label">Porta do Servidor</label><input class="input" value="3000" readonly style="background:#f8fafc"></div>';
   h+='<p style="font-size:12px;color:var(--g);margin-top:8px">&#9888; Alteracoes aqui afetam todos os usuarios</p></div></div>';
   h+='<div class="card"><div class="card-h">&#128231; Notificacoes</div><div class="card-b">';
-  h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f9fafb"><span style="font-size:14px">Sons de Notificacao</span><span style="color:var(--gn);font-weight:700">&#10004; Ativado</span></div>';
-  h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f9fafb"><span style="font-size:14px">Alerta Novo Cadastro</span><span style="color:var(--gn);font-weight:700">&#10004; Ativado</span></div>';
-  h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0"><span style="font-size:14px">Alerta Nova Entrega</span><span style="color:var(--gn);font-weight:700">&#10004; Ativado</span></div>';
-  h+='</div></div></div>';
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:14px">Sons de Notificacao</span><span style="color:var(--gn);font-weight:700">&#10004; Ativado</span></div>';
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:14px">Alerta Novo Cadastro</span><span style="color:var(--gn);font-weight:700">&#10004; Ativado</span></div>';
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0"><span style="font-size:14px">Alerta Nova Entrega</span><span style="color:var(--gn);font-weight:700">&#10004; Ativado</span></div>';
+  h+='</div></div></div></div></div>';
   el.innerHTML=h;
 }
+
+// ============ CLIENT ============
 async function renderClientDash(el){
   const data=(await api('/deliveries')).data;
   const w=(await api('/wallets')).data;
   const active=data.filter(d=>['PENDING','ACCEPTED','PICKED_UP','IN_TRANSIT'].includes(d.status));
   const recent=data.filter(d=>['DELIVERED','CANCELLED'].includes(d.status)).slice(0,5);
-  el.innerHTML=`
-    <div class="header-bar"><div><h1 style="font-size:22px;font-weight:800">Ola, ${USER.firstName}!</h1><p style="color:var(--g);font-size:13px">O que voce precisa hoje?</p></div>
-    <button class="btn btn-p btn-lg" onclick="navigate('client-new')">+ Nova Entrega</button></div>
-    <div class="grid4" style="margin-bottom:16px">
-      <div class="stat-c"><div class="stat-v" style="color:var(--p)">${active.length}</div><div class="stat-l">Ativas</div></div>
-      <div class="stat-c"><div class="stat-v" style="color:var(--gn)">${recent.filter(d=>d.status==='DELIVERED').length}</div><div class="stat-l">Concluidas</div></div>
-      <div class="stat-c"><div class="stat-v">${data.length}</div><div class="stat-l">Total</div></div>
-      <div class="stat-c"><div class="stat-v" style="color:var(--b)">${fmt(w.wallet?.balance||0)}</div><div class="stat-l">Saldo</div></div>
-    </div>
-    ${active.length?`<div class="card" style="margin-bottom:16px"><div class="card-h">Entregas Ativas</div><div class="card-b">${active.map(d=>`
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--gl);border-radius:8px;margin-bottom:8px">
-        <div><div style="font-weight:600;font-family:monospace">${d.trackingCode}</div><div style="font-size:12px;color:var(--g)">${d.originAddress} &#8594; ${d.destinationAddress}</div></div>
-        <div style="text-align:right"><span class="${(ST[d.status]||['',''])[0]}">${(ST[d.status]||['',''])[1]}</span><div style="font-size:12px;color:var(--g);margin-top:4px">${fmt(d.totalPrice)}</div></div>
-      </div>`).join('')}</div></div>`:''}
-    ${recent.length?`<div class="card"><div class="card-h" style="display:flex;justify-content:space-between"><span>Historico Recente</span><a href="#" onclick="event.preventDefault();navigate('client-history')" style="color:var(--p);font-size:13px;text-decoration:none">Ver tudo &#8594;</a></div><div class="card-b">${recent.map(d=>`
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--gl);border-radius:8px;margin-bottom:8px">
-        <div><div style="font-weight:600;font-family:monospace">${d.trackingCode}</div><div style="font-size:12px;color:var(--g)">${d.originAddress} &#8594; ${d.destinationAddress}</div></div>
-        <div style="text-align:right"><span class="${d.status==='DELIVERED'?'badge bg':'badge br'}">${d.status==='DELIVERED'?'Entregue':'Cancelada'}</span><div style="font-size:12px;color:var(--g);margin-top:4px">${fmt(d.totalPrice)}</div></div>
-      </div>`).join('')}</div></div>`:''}`;
+  var h='';
+  h+='<div class="header-bar"><div><h1 style="font-size:22px;font-weight:800">Ola, '+USER.firstName+'!</h1><p style="color:var(--g);font-size:13px">O que voce precisa hoje?</p></div>';
+  h+='<button class="btn btn-p btn-lg" onclick="navigate(\'client-new\')" style="white-space:nowrap">+ Nova Entrega</button></div>';
+  h+='<div style="padding:0 16px" class="mobile-grid-patch"><div class="grid4" style="margin-bottom:20px">';
+  h+=buildMiniStat('Ativas',active.length,'#f59e0b','&#128230;');
+  h+=buildMiniStat('Concluidas',recent.filter(d=>d.status==='DELIVERED').length,'#22c55e','&#10004;');
+  h+=buildMiniStat('Total',data.length,'#6b7280','&#128202;');
+  h+=buildMiniStat('Saldo',fmt(w.wallet?.balance||0),'#3b82f6','&#128176;');
+  h+='</div></div>';
+  if(active.length){
+    h+='<div class="card"><div class="card-h">&#128230; Entregas Ativas</div><div class="card-b">';
+    active.forEach(function(d){
+      h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:14px;background:var(--gl);border-radius:12px;margin-bottom:10px;gap:12px">';
+      h+='<div style="min-width:0"><div style="font-weight:700;font-family:monospace;font-size:14px">'+d.trackingCode+'</div><div style="font-size:12px;color:var(--g);margin-top:2px">'+d.originAddress+' &#8594; '+d.destinationAddress+'</div></div>';
+      h+='<div style="text-align:right;flex-shrink:0"><span class="'+(ST[d.status]||['',''])[0]+'">'+(ST[d.status]||['',''])[1]+'</span><div style="font-size:12px;color:var(--g);margin-top:4px;font-weight:600">'+fmt(d.totalPrice)+'</div></div></div>';
+    });
+    h+='</div></div>';
+  }
+  if(recent.length){
+    h+='<div class="card" style="margin-top:16px"><div class="card-h" style="display:flex;justify-content:space-between"><span>&#128336; Historico Recente</span><a href="#" onclick="event.preventDefault();navigate(\'client-history\')" style="color:var(--p);font-size:13px;font-weight:600;text-decoration:none">Ver tudo &#8594;</a></div><div class="card-b">';
+    recent.forEach(function(d){
+      h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:14px;background:var(--gl);border-radius:12px;margin-bottom:10px;gap:12px">';
+      h+='<div style="min-width:0"><div style="font-weight:700;font-family:monospace;font-size:14px">'+d.trackingCode+'</div><div style="font-size:12px;color:var(--g);margin-top:2px">'+d.originAddress+' &#8594; '+d.destinationAddress+'</div></div>';
+      h+='<div style="text-align:right;flex-shrink:0"><span class="'+(d.status==='DELIVERED'?'badge bg':'badge br')+'">'+(d.status==='DELIVERED'?'Entregue':'Cancelada')+'</span><div style="font-size:12px;color:var(--g);margin-top:4px;font-weight:600">'+fmt(d.totalPrice)+'</div></div></div>';
+    });
+    h+='</div></div>';
+  }
+  el.innerHTML=h;
 }
 
 function renderClientNew(el){
-  el.innerHTML=`
-    <div class="header-bar"><h1 style="font-size:22px;font-weight:800">Nova Entrega</h1></div>
-    <div class="card" style="max-width:600px"><div class="card-b">
-      <form id="new-delivery-form">
-        <h3 style="font-size:15px;margin-bottom:12px">&#128205; Endereco de Origem</h3>
-        <div class="form-g"><label class="label">Endereco</label><input class="input" id="nd-oa" value="Rua Augusta, 1500" required></div>
-        <div class="grid3 form-g">
-          <div><label class="label">Cidade</label><input class="input" id="nd-oc" value="Sao Paulo"></div>
-          <div><label class="label">Estado</label><input class="input" id="nd-os" value="SP" maxlength="2"></div>
-          <div><label class="label">Bairro</label><input class="input" id="nd-ob" value="Consolacao"></div>
-        </div>
-        <h3 style="font-size:15px;margin:16px 0 12px">&#128205; Endereco de Destino</h3>
-        <div class="form-g"><label class="label">Endereco</label><input class="input" id="nd-da" value="Av. Paulista, 1000" required></div>
-        <div class="grid3 form-g">
-          <div><label class="label">Cidade</label><input class="input" id="nd-dc" value="Sao Paulo"></div>
-          <div><label class="label">Estado</label><input class="input" id="nd-ds" value="SP" maxlength="2"></div>
-          <div><label class="label">Bairro</label><input class="input" id="nd-db" value="Bela Vista"></div>
-        </div>
-        <div class="form-g"><label class="label">Descricao</label><input class="input" id="nd-desc" placeholder="O que esta enviando?"></div>
-        <div class="grid2 form-g">
-          <div><label class="label">Peso (kg)</label><input class="input" type="number" step="0.1" id="nd-w"></div>
-          <div><label class="label">Valor Declarado</label><input class="input" type="number" step="0.01" id="nd-v"></div>
-        </div>
-        <div class="form-g"><label class="label">Forma de Pagamento</label>
-          <select class="input" id="nd-pm"><option value="PIX">PIX</option><option value="CREDIT_CARD">Cartao de Credito</option><option value="CASH">Dinheiro</option><option value="WALLET">Carteira</option></select>
-        </div>
-        <div class="form-g"><label class="label">Observacoes</label><textarea class="input" id="nd-obs" rows="2"></textarea></div>
-        <div id="nd-error" style="display:none;color:var(--r);font-size:13px;margin-bottom:12px"></div>
-        <button type="submit" class="btn btn-p btn-lg" style="width:100%">Criar Entrega</button>
-      </form>
-    </div></div>`;
-  document.getElementById('new-delivery-form').onsubmit=async(e)=>{
+  el.innerHTML='<div class="header-bar"><h1 style="font-size:22px;font-weight:800">Nova Entrega</h1></div>'+
+    '<div class="card"><div class="card-b">'+
+    '<form id="new-delivery-form">'+
+    '<h3 style="font-size:16px;margin-bottom:14px;font-weight:700">&#128205; Endereco de Origem</h3>'+
+    '<div class="form-g"><label class="label">Endereco</label><input class="input" id="nd-oa" value="Rua Augusta, 1500" required></div>'+
+    '<div class="grid3 form-g">'+
+    '<div><label class="label">Cidade</label><input class="input" id="nd-oc" value="Sao Paulo"></div>'+
+    '<div><label class="label">Estado</label><input class="input" id="nd-os" value="SP" maxlength="2"></div>'+
+    '<div><label class="label">Bairro</label><input class="input" id="nd-ob" value="Consolacao"></div>'+
+    '</div>'+
+    '<h3 style="font-size:16px;margin:20px 0 14px;font-weight:700">&#128205; Endereco de Destino</h3>'+
+    '<div class="form-g"><label class="label">Endereco</label><input class="input" id="nd-da" value="Av. Paulista, 1000" required></div>'+
+    '<div class="grid3 form-g">'+
+    '<div><label class="label">Cidade</label><input class="input" id="nd-dc" value="Sao Paulo"></div>'+
+    '<div><label class="label">Estado</label><input class="input" id="nd-ds" value="SP" maxlength="2"></div>'+
+    '<div><label class="label">Bairro</label><input class="input" id="nd-db" value="Bela Vista"></div>'+
+    '</div>'+
+    '<div class="form-g"><label class="label">Descricao</label><input class="input" id="nd-desc" placeholder="O que esta enviando?"></div>'+
+    '<div class="form-g"><label class="label">Forma de Pagamento</label>'+
+    '<select class="input" id="nd-pm"><option value="PIX">PIX</option><option value="CREDIT_CARD">Cartao de Credito</option><option value="CASH">Dinheiro</option><option value="WALLET">Carteira</option></select></div>'+
+    '<div class="form-g"><label class="label">Observacoes</label><textarea class="input" id="nd-obs" rows="2"></textarea></div>'+
+    '<div id="nd-error" style="display:none;color:var(--r);font-size:13px;margin-bottom:12px;padding:10px;background:#fef2f2;border-radius:8px"></div>'+
+    '<button type="submit" class="btn btn-p btn-lg" style="width:100%">Criar Entrega</button>'+
+    '</form></div></div>';
+  document.getElementById('new-delivery-form').onsubmit=async function(e){
     e.preventDefault();
     try{
-      const body={
+      var body={
         originAddress:document.getElementById('nd-oa').value,originCity:document.getElementById('nd-oc').value,originState:document.getElementById('nd-os').value,originNeighborhood:document.getElementById('nd-ob').value,
         originLatitude:-23.5505,originLongitude:-46.6333,
         destinationAddress:document.getElementById('nd-da').value,destinationCity:document.getElementById('nd-dc').value,destinationState:document.getElementById('nd-ds').value,destinationNeighborhood:document.getElementById('nd-db').value,
         destinationLatitude:-23.5614,destinationLongitude:-46.6558,
         description:document.getElementById('nd-desc').value,paymentMethod:document.getElementById('nd-pm').value,observations:document.getElementById('nd-obs').value,
       };
-      const r=await api('/deliveries',{method:'POST',body:JSON.stringify(body)});
-      openModal(`<div style="text-align:center"><h2 style="color:var(--gn);margin-bottom:8px">&#10004; Entrega Criada!</h2><p style="font-size:14px;color:var(--g);margin-bottom:16px">Codigo de rastreio:</p><p style="font-size:28px;font-family:monospace;font-weight:800;color:var(--p)">${r.data.trackingCode}</p><p style="font-size:14px;color:var(--g);margin:12px 0">Valor: <b>${fmt(r.data.totalPrice)}</b></p><button class="btn btn-p" onclick="closeModal();navigate('client-dash')" style="margin-top:12px">Voltar ao Dashboard</button></div>`);
+      var r=await api('/deliveries',{method:'POST',body:JSON.stringify(body)});
+      openModal('<div style="text-align:center;padding:8px 0"><h2 style="color:var(--gn);margin-bottom:8px;font-size:20px">&#10004; Entrega Criada!</h2><p style="font-size:14px;color:var(--g);margin-bottom:16px">Codigo de rastreio:</p><p style="font-size:32px;font-family:monospace;font-weight:800;color:var(--p)">'+r.data.trackingCode+'</p><p style="font-size:14px;color:var(--g);margin:16px 0">Valor: <b>'+fmt(r.data.totalPrice)+'</b></p><button class="btn btn-p btn-lg" onclick="closeModal();navigate(\'client-dash\')" style="margin-top:12px;width:100%">Voltar ao Dashboard</button></div>');
     }catch(err){document.getElementById('nd-error').textContent=err.message;document.getElementById('nd-error').style.display='block';}
   };
 }
 
 async function renderClientHistory(el){
-  const data=(await api('/deliveries')).data;
-  el.innerHTML=`<div class="header-bar"><h1 style="font-size:22px;font-weight:800">Historico</h1></div>
-    <div class="card"><div class="table-w"><table><thead><tr><th>Codigo</th><th>Origem</th><th>Destino</th><th>Valor</th><th>Status</th><th>Data</th></tr></thead><tbody>
-    ${data.map(d=>`<tr><td style="font-family:monospace;font-weight:600;color:var(--p)">${d.trackingCode}</td><td>${d.originAddress}</td><td>${d.destinationAddress}</td><td style="font-weight:600">${fmt(d.totalPrice)}</td><td><span class="${(ST[d.status]||['',''])[0]}">${(ST[d.status]||['',''])[1]}</span></td><td style="font-size:12px">${fmtDate(d.createdAt)}</td></tr>`).join('')}
-    </tbody></table></div></div>`;
+  var data=(await api('/deliveries')).data;
+  el.innerHTML='<div class="header-bar"><h1 style="font-size:22px;font-weight:800">Historico</h1></div>'+
+    '<div class="card"><div class="table-w"><table><thead><tr><th>Codigo</th><th>Origem</th><th>Destino</th><th>Valor</th><th>Status</th><th>Data</th></tr></thead><tbody>'+
+    data.map(function(d){return '<tr><td style="font-family:monospace;font-weight:700;color:var(--p)">'+d.trackingCode+'</td><td>'+d.originAddress+'</td><td>'+d.destinationAddress+'</td><td style="font-weight:700">'+fmt(d.totalPrice)+'</td><td><span class="'+(ST[d.status]||['',''])[0]+'">'+(ST[d.status]||['',''])[1]+'</span></td><td style="font-size:12px">'+fmtDate(d.createdAt)+'</td></tr>'}).join('')+
+    '</tbody></table></div></div>';
 }
 
 async function renderClientWallet(el){
-  const w=(await api('/wallets')).data;
-  el.innerHTML=`<div class="header-bar"><h1 style="font-size:22px;font-weight:800">Carteira</h1></div>
-    <div class="grid3" style="margin-bottom:16px">
-      <div class="stat-c" style="background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff"><div style="font-size:28px;font-weight:800;margin-top:8px">${fmt(w.wallet?.balance)}</div><div style="opacity:.8;font-size:13px">Saldo Disponivel</div></div>
-      <div class="stat-c" style="background:linear-gradient(135deg,#eab308,#ca8a04);color:#fff"><div style="font-size:28px;font-weight:800;margin-top:8px">${fmt(w.wallet?.pendingBalance)}</div><div style="opacity:.8;font-size:13px">Saldo Pendente</div></div>
-      <div class="stat-c" style="background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff"><div style="font-size:28px;font-weight:800;margin-top:8px">${fmt(w.wallet?.blockedBalance)}</div><div style="opacity:.8;font-size:13px">Bloqueado</div></div>
-    </div>
-    <div class="card"><div class="card-h">Extrato</div><div class="table-w"><table><thead><tr><th>Data</th><th>Tipo</th><th>Descricao</th><th>Valor</th><th>Saldo</th></tr></thead><tbody>
-    ${w.transactions?.length?w.transactions.map(t=>`<tr><td style="font-size:12px">${fmtDate(t.createdAt)}</td><td><span class="${t.amount>0?'badge bg':'badge br'}">${t.type}</span></td><td>${t.description}</td><td style="font-weight:700;color:${t.amount>0?'var(--gn)':'var(--r)'}">${t.amount>0?'+':''} ${fmt(t.amount)}</td><td style="font-family:monospace;font-size:12px">${fmt(t.balance)}</td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--g);padding:24px">Nenhuma transacao</td></tr>'}
-    </tbody></table></div></div>`;
+  var w=(await api('/wallets')).data;
+  el.innerHTML='<div class="header-bar"><h1 style="font-size:22px;font-weight:800">Carteira</h1></div>'+
+    '<div style="padding:0 16px" class="mobile-grid-patch"><div class="grid3" style="margin-bottom:20px">'+
+    '<div class="stat-c" style="background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border-radius:var(--radius)"><div style="font-size:28px;font-weight:800;margin-top:8px">'+fmt(w.wallet?.balance)+'</div><div style="opacity:.85;font-size:13px;font-weight:600">Saldo Disponivel</div></div>'+
+    '<div class="stat-c" style="background:linear-gradient(135deg,#eab308,#ca8a04);color:#fff;border-radius:var(--radius)"><div style="font-size:28px;font-weight:800;margin-top:8px">'+fmt(w.wallet?.pendingBalance)+'</div><div style="opacity:.85;font-size:13px;font-weight:600">Saldo Pendente</div></div>'+
+    '<div class="stat-c" style="background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;border-radius:var(--radius)"><div style="font-size:28px;font-weight:800;margin-top:8px">'+fmt(w.wallet?.blockedBalance)+'</div><div style="opacity:.85;font-size:13px;font-weight:600">Bloqueado</div></div>'+
+    '</div></div>'+
+    '<div class="card"><div class="card-h">&#128179; Extrato</div><div class="table-w"><table><thead><tr><th>Data</th><th>Tipo</th><th>Descricao</th><th>Valor</th><th>Saldo</th></tr></thead><tbody>'+
+    (w.transactions&&w.transactions.length?w.transactions.map(function(t){return '<tr><td style="font-size:12px">'+fmtDate(t.createdAt)+'</td><td><span class="'+(t.amount>0?'badge bg':'badge br')+'">'+t.type+'</span></td><td>'+t.description+'</td><td style="font-weight:700;color:'+(t.amount>0?'var(--gn)':'var(--r)')+'">'+(t.amount>0?'+':'')+' '+fmt(t.amount)+'</td><td style="font-family:monospace;font-size:12px">'+fmt(t.balance)+'</td></tr>'}).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--g);padding:32px">Nenhuma transacao</td></tr>')+
+    '</tbody></table></div></div>';
 }
 
 // ============ MOTOBOY ============
 function buildAvailableCard(d){
   var typeLabel=d.type==='SCHEDULED'?'Agendada':'Imediata';
-  var weightHtml=d.weight?'<span>&#9878; '+d.weight+'kg</span>':'';
-  return '<div style="padding:16px;background:var(--gl);border-radius:10px;margin-bottom:10px;border:1px solid #e5e7eb">'+
-    '<div style="display:flex;justify-content:space-between;align-items:start">'+
-    '<div style="flex:1">'+
-    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'+
-    '<span style="font-family:monospace;font-weight:700;color:var(--p);font-size:15px">'+d.trackingCode+'</span>'+
+  return '<div style="padding:18px;background:var(--gl);border-radius:14px;margin-bottom:12px;border:1px solid #e5e7eb">'+
+    '<div style="display:flex;justify-content:space-between;align-items:start;gap:12px">'+
+    '<div style="flex:1;min-width:0">'+
+    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">'+
+    '<span style="font-family:monospace;font-weight:800;color:var(--p);font-size:16px">'+d.trackingCode+'</span>'+
     '<span class="badge by">'+typeLabel+'</span></div>'+
-    '<div style="display:flex;align-items:start;gap:8px;margin-bottom:4px"><span style="color:var(--gn);font-weight:700">&#9679;</span><div><div style="font-size:12px;color:var(--g)">Origem</div><div style="font-size:14px;font-weight:500">'+d.originAddress+', '+(d.originNumber||'')+' - '+(d.originNeighborhood||'')+', '+d.originCity+'</div></div></div>'+
-    '<div style="display:flex;align-items:start;gap:8px;margin-bottom:8px"><span style="color:var(--r);font-weight:700">&#9679;</span><div><div style="font-size:12px;color:var(--g)">Destino</div><div style="font-size:14px;font-weight:500">'+d.destinationAddress+', '+(d.destinationNumber||'')+' - '+(d.destinationNeighborhood||'')+', '+d.destinationCity+'</div></div></div>'+
-    '<div style="display:flex;gap:16px;font-size:13px;color:var(--g)">'+
+    '<div style="display:flex;align-items:start;gap:8px;margin-bottom:6px"><span style="color:var(--gn);font-weight:700;font-size:10px">&#9679;</span><div><div style="font-size:11px;color:var(--g);font-weight:600">ORIGEM</div><div style="font-size:14px;font-weight:500">'+d.originAddress+', '+(d.originNumber||'')+' - '+(d.originNeighborhood||'')+', '+d.originCity+'</div></div></div>'+
+    '<div style="display:flex;align-items:start;gap:8px;margin-bottom:10px"><span style="color:var(--r);font-weight:700;font-size:10px">&#9679;</span><div><div style="font-size:11px;color:var(--g);font-weight:600">DESTINO</div><div style="font-size:14px;font-weight:500">'+d.destinationAddress+', '+(d.destinationNumber||'')+' - '+(d.destinationNeighborhood||'')+', '+d.destinationCity+'</div></div></div>'+
+    '<div style="display:flex;gap:14px;font-size:12px;color:var(--g);font-weight:500;flex-wrap:wrap">'+
     '<span>&#128207; '+d.distance+' km</span>'+
     '<span>&#9201; ~'+d.estimatedTime+' min</span>'+
     '<span>&#128230; '+(d.description||'Sem desc')+'</span>'+
-    weightHtml+'</div></div>'+
-    '<div style="text-align:right;min-width:120px">'+
-    '<div style="font-size:24px;font-weight:800;color:var(--gn)">'+fmt(d.totalPrice)+'</div>'+
-    '<div style="font-size:13px;color:var(--gn);margin-bottom:8px">Seu ganho: <b>'+fmt(d.motoboyEarning)+'</b></div>'+
-    '<div style="font-size:12px;color:var(--g);margin-bottom:10px">Pagamento: '+d.paymentMethod+'</div>'+
+    '</div></div>'+
+    '<div style="text-align:right;min-width:130px;flex-shrink:0">'+
+    '<div style="font-size:26px;font-weight:800;color:var(--gn)">'+fmt(d.totalPrice)+'</div>'+
+    '<div style="font-size:13px;color:var(--gn);margin-bottom:6px;font-weight:600">Seu ganho: '+fmt(d.motoboyEarning)+'</div>'+
+    '<div style="font-size:11px;color:var(--g);margin-bottom:12px">'+d.paymentMethod+'</div>'+
     '<button class="btn btn-g" onclick="acceptDel(\''+d.id+'\')" style="width:100%">&#10004; Aceitar</button>'+
     '</div></div></div>';
 }
@@ -922,75 +1074,72 @@ async function renderMotoboyDash(el){
   var m=(await api('/motoboys')).data;
   var e=(await api('/motoboys/earnings')).data;
   var available=(await api('/deliveries/available')).data;
-  var onlineBg=m.isOnline?'var(--gn)':'#e5e7eb';
-  var onlineFg=m.isOnline?'#fff':'var(--d)';
-  var onlineBox=m.isOnline?'rgba(34,197,94,.3)':'rgba(0,0,0,.1)';
-  var onlineLabel=m.isOnline?'&#9889; ONLINE':'&#9898; OFFLINE';
   var h='';
   h+='<div class="header-bar"><div><h1 style="font-size:22px;font-weight:800">Ola, '+USER.firstName+'!</h1><p style="color:var(--g);font-size:13px">'+(m.vehiclePlate||'')+' - '+(m.vehicleModel||'')+'</p></div>';
-  h+='<button onclick="toggleOnline()" style="padding:14px 32px;border-radius:12px;font-weight:800;font-size:16px;border:none;cursor:pointer;transition:all .2s;box-shadow:0 4px 12px '+onlineBox+';background:'+onlineBg+';color:'+onlineFg+'">'+onlineLabel+'</button></div>';
-  h+='<div class="grid4" style="margin-bottom:16px">';
-  h+='<div class="stat-c"><div class="stat-v" style="color:var(--gn)">'+fmt(e.daily)+'</div><div class="stat-l">Ganhos Hoje</div></div>';
-  h+='<div class="stat-c"><div class="stat-v" style="color:var(--b)">'+fmt(e.weekly)+'</div><div class="stat-l">Ganhos Semana</div></div>';
-  h+='<div class="stat-c"><div class="stat-v" style="color:var(--p)">'+fmt(e.monthly)+'</div><div class="stat-l">Ganhos Mes</div></div>';
-  h+='<div class="stat-c"><div class="stat-v">&#9733; '+Number(e.averageRating).toFixed(1)+'</div><div class="stat-l">Avaliacao</div></div></div>';
+  h+='<button onclick="toggleOnline()" class="toggle-wrap"><button class="'+(m.isOnline?'active t-online':'t-offline')+'" style="border-radius:12px">'+(m.isOnline?'&#9889; ONLINE':'&#9898; OFFLINE')+'</button></button></div>';
+  h+='<div style="padding:0 16px" class="mobile-grid-patch"><div class="grid4" style="margin-bottom:20px">';
+  h+=buildMiniStat('Ganhos Hoje',fmt(e.daily),'#22c55e','&#128176;');
+  h+=buildMiniStat('Ganhos Semana',fmt(e.weekly),'#3b82f6','&#128176;');
+  h+=buildMiniStat('Ganhos Mes',fmt(e.monthly),'#8b5cf6','&#128176;');
+  h+=buildMiniStat('Avaliacao','&#9733; '+Number(e.averageRating).toFixed(1),'#f59e0b','&#11088;');
+  h+='</div></div>';
   if(available.length){
-    h+='<div class="card" style="margin-bottom:16px;border:2px solid var(--y)"><div class="card-h" style="background:#fef9c3;color:#854d0e">&#128276; Corridas Disponiveis ('+available.length+')</div><div class="card-b">';
+    h+='<div class="card" style="border:2px solid var(--y)"><div class="card-h" style="background:#fef9c3;color:#854d0e">&#128276; Corridas Disponiveis ('+available.length+')</div><div class="card-b">';
     h+=available.map(buildAvailableCard).join('');
     h+='</div></div>';
   } else {
     var emptyMsg=m.isOnline?'Aguardando novas corridas...':'Fique online para receber corridas';
-    h+='<div class="card"><div class="card-b empty"><p style="font-size:40px">&#128269;</p><p>Nenhuma corrida disponivel no momento</p><p style="font-size:13px;margin-top:4px">'+emptyMsg+'</p></div></div>';
+    h+='<div class="card"><div class="card-b empty" style="padding:48px 20px"><p style="font-size:52px;margin-bottom:12px">&#128269;</p><p style="font-size:16px;font-weight:600;color:var(--d)">Nenhuma corrida disponivel</p><p style="font-size:14px;margin-top:4px">'+emptyMsg+'</p></div></div>';
   }
   el.innerHTML=h;
 }
 
 async function toggleOnline(){
-  const m=(await api('/motoboys')).data;
+  var m=(await api('/motoboys')).data;
   if(m.isOnline) await api('/motoboys/offline',{method:'PUT'});
   else await api('/motoboys/online',{method:'PUT'});
   navigate('motoboy-dash');
 }
 
-async function acceptDel(id){await api(`/deliveries/${id}/accept`,{method:'PUT'});navigate('motoboy-dash');}
-async function completeDel(id){await api(`/deliveries/${id}/complete`,{method:'PUT'});navigate('motoboy-dash');}
+async function acceptDel(id){await api('/deliveries/'+id+'/accept',{method:'PUT'});navigate('motoboy-dash');}
+async function completeDel(id){await api('/deliveries/'+id+'/complete',{method:'PUT'});navigate('motoboy-dash');}
 
 async function renderMotoboyEarnings(el){
-  const e=(await api('/motoboys/earnings')).data;
-  el.innerHTML=`<div class="header-bar"><h1 style="font-size:22px;font-weight:800">Meus Ganhos</h1></div>
-    <div class="grid4" style="margin-bottom:16px">
-      <div class="stat-c" style="background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff"><div style="font-size:28px;font-weight:800;margin-top:8px">${fmt(e.daily)}</div><div style="opacity:.8;font-size:13px">Hoje</div></div>
-      <div class="stat-c" style="background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff"><div style="font-size:28px;font-weight:800;margin-top:8px">${fmt(e.weekly)}</div><div style="opacity:.8;font-size:13px">Semana</div></div>
-      <div class="stat-c" style="background:linear-gradient(135deg,#a855f7,#9333ea);color:#fff"><div style="font-size:28px;font-weight:800;margin-top:8px">${fmt(e.monthly)}</div><div style="opacity:.8;font-size:13px">Mes</div></div>
-      <div class="stat-c" style="background:linear-gradient(135deg,var(--p),var(--pd));color:#fff"><div style="font-size:28px;font-weight:800;margin-top:8px">${fmt(e.totalCommissions)}</div><div style="opacity:.8;font-size:13px">Total Comissoes</div></div>
-    </div>
-    <div class="grid4">
-      <div class="stat-c"><div class="stat-v">${e.completedDeliveries}</div><div class="stat-l">Concluidas</div></div>
-      <div class="stat-c"><div class="stat-v">${e.cancelledDeliveries}</div><div class="stat-l">Canceladas</div></div>
-      <div class="stat-c"><div class="stat-v">&#9733; ${Number(e.averageRating).toFixed(1)}</div><div class="stat-l">Avaliacao</div></div>
-      <div class="stat-c"><div class="stat-v">${e.acceptanceRate}%</div><div class="stat-l">Aceitacao</div></div>
-    </div>`;
+  var e=(await api('/motoboys/earnings')).data;
+  el.innerHTML='<div class="header-bar"><h1 style="font-size:22px;font-weight:800">Meus Ganhos</h1></div>'+
+    '<div style="padding:0 16px" class="mobile-grid-patch"><div class="grid4" style="margin-bottom:20px">'+
+    '<div class="stat-c" style="background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border-radius:var(--radius)"><div style="font-size:28px;font-weight:800;margin-top:8px">'+fmt(e.daily)+'</div><div style="opacity:.85;font-size:13px;font-weight:600">Hoje</div></div>'+
+    '<div class="stat-c" style="background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;border-radius:var(--radius)"><div style="font-size:28px;font-weight:800;margin-top:8px">'+fmt(e.weekly)+'</div><div style="opacity:.85;font-size:13px;font-weight:600">Semana</div></div>'+
+    '<div class="stat-c" style="background:linear-gradient(135deg,#a855f7,#9333ea);color:#fff;border-radius:var(--radius)"><div style="font-size:28px;font-weight:800;margin-top:8px">'+fmt(e.monthly)+'</div><div style="opacity:.85;font-size:13px;font-weight:600">Mes</div></div>'+
+    '<div class="stat-c" style="background:linear-gradient(135deg,var(--p),var(--pd));color:#fff;border-radius:var(--radius)"><div style="font-size:28px;font-weight:800;margin-top:8px">'+fmt(e.totalCommissions)+'</div><div style="opacity:.85;font-size:13px;font-weight:600">Total Comissoes</div></div>'+
+    '</div></div>'+
+    '<div style="padding:0 16px" class="mobile-grid-patch"><div class="grid4">'+
+    '<div class="stat-c" style="text-align:center"><div class="stat-v">'+e.completedDeliveries+'</div><div class="stat-l">Concluidas</div></div>'+
+    '<div class="stat-c" style="text-align:center"><div class="stat-v">'+e.cancelledDeliveries+'</div><div class="stat-l">Canceladas</div></div>'+
+    '<div class="stat-c" style="text-align:center"><div class="stat-v">&#9733; '+Number(e.averageRating).toFixed(1)+'</div><div class="stat-l">Avaliacao</div></div>'+
+    '<div class="stat-c" style="text-align:center"><div class="stat-v">'+e.acceptanceRate+'%</div><div class="stat-l">Aceitacao</div></div>'+
+    '</div></div>';
 }
 
 async function renderMotoboyWallet(el){
-  const w=(await api('/wallets')).data;
-  el.innerHTML=`<div class="header-bar"><h1 style="font-size:22px;font-weight:800">Carteira</h1><button class="btn btn-p">Solicitar Saque</button></div>
-    <div class="grid3" style="margin-bottom:16px">
-      <div class="stat-c" style="background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff"><div style="font-size:28px;font-weight:800;margin-top:8px">${fmt(w.wallet?.balance)}</div><div style="opacity:.8;font-size:13px">Saldo Disponivel</div></div>
-      <div class="stat-c" style="background:linear-gradient(135deg,#eab308,#ca8a04);color:#fff"><div style="font-size:28px;font-weight:800;margin-top:8px">${fmt(w.wallet?.pendingBalance)}</div><div style="opacity:.8;font-size:13px">Saldo Pendente</div></div>
-      <div class="stat-c" style="background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff"><div style="font-size:28px;font-weight:800;margin-top:8px">${fmt(w.wallet?.blockedBalance)}</div><div style="opacity:.8;font-size:13px">Bloqueado</div></div>
-    </div>
-    <div class="card"><div class="card-h">Extrato</div><div class="table-w"><table><thead><tr><th>Data</th><th>Tipo</th><th>Descricao</th><th>Valor</th><th>Saldo</th></tr></thead><tbody>
-    ${w.transactions?.length?w.transactions.map(t=>`<tr><td style="font-size:12px">${fmtDate(t.createdAt)}</td><td><span class="${t.amount>0?'badge bg':'badge br'}">${t.type}</span></td><td>${t.description}</td><td style="font-weight:700;color:${t.amount>0?'var(--gn)':'var(--r)'}">${t.amount>0?'+':''} ${fmt(t.amount)}</td><td style="font-family:monospace;font-size:12px">${fmt(t.balance)}</td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--g);padding:24px">Nenhuma transacao</td></tr>'}
-    </tbody></table></div></div>`;
+  var w=(await api('/wallets')).data;
+  el.innerHTML='<div class="header-bar"><h1 style="font-size:22px;font-weight:800">Carteira</h1><button class="btn btn-p">Solicitar Saque</button></div>'+
+    '<div style="padding:0 16px" class="mobile-grid-patch"><div class="grid3" style="margin-bottom:20px">'+
+    '<div class="stat-c" style="background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border-radius:var(--radius)"><div style="font-size:28px;font-weight:800;margin-top:8px">'+fmt(w.wallet?.balance)+'</div><div style="opacity:.85;font-size:13px;font-weight:600">Saldo Disponivel</div></div>'+
+    '<div class="stat-c" style="background:linear-gradient(135deg,#eab308,#ca8a04);color:#fff;border-radius:var(--radius)"><div style="font-size:28px;font-weight:800;margin-top:8px">'+fmt(w.wallet?.pendingBalance)+'</div><div style="opacity:.85;font-size:13px;font-weight:600">Saldo Pendente</div></div>'+
+    '<div class="stat-c" style="background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;border-radius:var(--radius)"><div style="font-size:28px;font-weight:800;margin-top:8px">'+fmt(w.wallet?.blockedBalance)+'</div><div style="opacity:.85;font-size:13px;font-weight:600">Bloqueado</div></div>'+
+    '</div></div>'+
+    '<div class="card"><div class="card-h">&#128179; Extrato</div><div class="table-w"><table><thead><tr><th>Data</th><th>Tipo</th><th>Descricao</th><th>Valor</th><th>Saldo</th></tr></thead><tbody>'+
+    (w.transactions&&w.transactions.length?w.transactions.map(function(t){return '<tr><td style="font-size:12px">'+fmtDate(t.createdAt)+'</td><td><span class="'+(t.amount>0?'badge bg':'badge br')+'">'+t.type+'</span></td><td>'+t.description+'</td><td style="font-weight:700;color:'+(t.amount>0?'var(--gn)':'var(--r)')+'">'+(t.amount>0?'+':'')+' '+fmt(t.amount)+'</td><td style="font-family:monospace;font-size:12px">'+fmt(t.balance)+'</td></tr>'}).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--g);padding:32px">Nenhuma transacao</td></tr>')+
+    '</tbody></table></div></div>';
 }
 
 // ============ INIT ============
-const saved=localStorage.getItem('token');
-const savedUser=localStorage.getItem('user');
+var saved=localStorage.getItem('token');
+var savedUser=localStorage.getItem('user');
 if(saved&&savedUser){
   TOKEN=saved;USER=JSON.parse(savedUser);
-  api('/auth/me').then(()=>showApp()).catch(()=>{localStorage.clear();TOKEN='';USER=null;showLogin();});
+  api('/auth/me').then(function(){showApp()}).catch(function(){localStorage.clear();TOKEN='';USER=null;showLogin();});
 }
 </script>
 </body>
