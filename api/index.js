@@ -297,8 +297,65 @@ app.put('/api/deliveries/:id/reject', auth, async (req, res) => {
 });
 
 app.put('/api/deliveries/:id/complete', auth, async (req, res) => {
-  await supabase.from('deliveries').update({ status: 'DELIVERED', delivered_at: new Date().toISOString(), payment_status: 'COMPLETED' }).eq('id', req.params.id);
-  res.json({ success: true });
+  try {
+    const { data: d } = await supabase.from('deliveries').select('*').eq('id', req.params.id).single();
+    if (!d) return res.status(404).json({ success: false, message: 'Entrega nao encontrada' });
+
+    await supabase.from('deliveries').update({ status: 'DELIVERED', delivered_at: new Date().toISOString(), payment_status: 'COMPLETED' }).eq('id', req.params.id);
+
+    const motoboyEarning = Number(d.motoboy_earning || 0);
+    const commission = Number(d.commission_amount || 0);
+
+    if (motoboyEarning > 0 && d.motoboy_id) {
+      const { data: mb } = await supabase.from('motoboys').select('id,user_id,completed_deliveries,daily_earnings,weekly_earnings,monthly_earnings').eq('id', d.motoboy_id).single();
+      if (mb) {
+        let { data: mWallet } = await supabase.from('wallets').select('id,balance').eq('user_id', mb.user_id).single();
+        if (!mWallet) {
+          const { data: nw } = await supabase.from('wallets').insert({ user_id: mb.user_id, name: 'Principal', balance: motoboyEarning }).select('id,balance').single();
+          mWallet = nw;
+        } else {
+          const newBal = Number(mWallet.balance) + motoboyEarning;
+          await supabase.from('wallets').update({ balance: newBal }).eq('id', mWallet.id);
+          mWallet.balance = newBal;
+        }
+        await supabase.from('transactions').insert({
+          wallet_id: mWallet.id, type: 'CREDIT', amount: motoboyEarning,
+          balance: Number(mWallet.balance), description: 'Entrega #' + d.tracking_code + ' - Pagamento automatico'
+        });
+        await supabase.from('motoboys').update({
+          completed_deliveries: (mb.completed_deliveries || 0) + 1,
+          daily_earnings: Number(mb.daily_earnings || 0) + motoboyEarning,
+          weekly_earnings: Number(mb.weekly_earnings || 0) + motoboyEarning,
+          monthly_earnings: Number(mb.monthly_earnings || 0) + motoboyEarning,
+          total_commissions: Number(mb.total_commissions || 0) + motoboyEarning
+        }).eq('id', mb.id);
+      }
+    }
+
+    if (commission > 0) {
+      const { data: adminUser } = await supabase.from('users').select('id').eq('role', 'ADMIN').limit(1).single();
+      if (adminUser) {
+        let { data: pWallet } = await supabase.from('wallets').select('id,balance').eq('user_id', adminUser.id).single();
+        if (!pWallet) {
+          const { data: nw } = await supabase.from('wallets').insert({ user_id: adminUser.id, name: 'Plataforma', balance: commission }).select('id,balance').single();
+          pWallet = nw;
+        } else {
+          const newBal = Number(pWallet.balance) + commission;
+          await supabase.from('wallets').update({ balance: newBal }).eq('id', pWallet.id);
+          pWallet.balance = newBal;
+        }
+        await supabase.from('transactions').insert({
+          wallet_id: pWallet.id, type: 'CREDIT', amount: commission,
+          balance: Number(pWallet.balance), description: 'Comissao entrega #' + d.tracking_code + ' (20%)'
+        });
+      }
+    }
+
+    res.json({ success: true, data: { motoboyEarning, commission } });
+    sendSSE('delivery-completed', { id: d.id, trackingCode: d.tracking_code, motoboyEarning, commission });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
 });
 
 app.put('/api/deliveries/:id/cancel', auth, async (req, res) => {
