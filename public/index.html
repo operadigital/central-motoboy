@@ -877,43 +877,203 @@ async function renderAdminDash(el){
 }
 
 async function renderAdminMotoboys(el){
-  const data=(await api('/admin/motoboys')).data;
+  var data=(await api('/admin/motoboys')).data;
   var pending=data.filter(function(m){return !m.approvedAt});
   var approved=data.filter(function(m){return m.approvedAt});
-  var h='<div class="header-bar"><h1 style="font-size:22px;font-weight:800">Motoboys</h1></div>';
+  var h='<div class="header-bar"><div><h1 style="font-size:22px;font-weight:800">Motoboys</h1><p style="color:var(--g);font-size:13px">'+data.length+' cadastrados | '+pending.length+' pendentes</p></div></div>';
+
   if(pending.length){
-    h+='<div class="card" style="margin-bottom:16px;border:2px solid var(--y)"><div class="card-h" style="background:#fef9c3;color:#854d0e">&#9888; Aguardando Aprovacao ('+pending.length+')</div><div class="card-b">';
+    h+='<div class="card" style="margin-bottom:16px;border-left:4px solid var(--y)"><div class="card-h" style="background:linear-gradient(135deg,#fef9c3,#fef3c7);color:#92400e">&#128203; Aguardando Analise ('+pending.length+')</div><div class="card-b" style="padding:12px">';
     pending.forEach(function(m){
       var docs=m.documents||{};
-      h+='<div style="padding:16px;background:#fffbeb;border:1px solid #fde68a;border-radius:12px;margin-bottom:12px">';
-      h+='<div style="display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:8px;margin-bottom:12px">';
-      h+='<div><div style="font-weight:700;font-size:15px">'+m.user?.firstName+' '+m.user?.lastName+'</div>';
-      h+='<div style="font-size:12px;color:var(--g)">'+m.user?.email+' | '+m.user?.phone+'</div>';
-      h+='<div style="font-size:12px;color:var(--g)">'+m.vehiclePlate+' - '+m.vehicleModel+' '+m.vehicleColor+'</div></div>';
-      h+='<div style="display:flex;gap:8px"><button class="btn btn-g btn-sm" onclick="approveMb(\''+m.id+'\')">&#10004; Aprovar</button><button class="btn btn-r btn-sm" onclick="rejectMb(\''+m.id+'\')">&#10008; Rejeitar</button></div></div>';
-      if(docs.cnhFront||docs.vehiclePhoto||docs.selfie){
-        h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px">';
-        var photos=[['&#128196; CNH Frente',docs.cnhFront],['&#128196; CNH Verso',docs.cnhBack],['&#128196; CRLV',docs.crlv],['&#128668; Veiculo',docs.vehiclePhoto],['&#128100; Selfie',docs.selfie]];
+      var hasCnhF=!!docs.cnhFront;
+      var hasCnhB=!!docs.cnhBack;
+      var hasCrlv=!!docs.crlv;
+      var hasVehicle=!!docs.vehiclePhoto;
+      var hasSelfie=!!docs.selfie;
+      var docsCount=[hasCnhF,hasCnhB,hasCrlv,hasVehicle,hasSelfie].filter(Boolean).length;
+
+      h+='<div style="background:#fff;border:1px solid #fde68a;border-radius:14px;margin-bottom:12px;overflow:hidden">';
+      
+      // Header do motoboy
+      h+='<div style="padding:16px;display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:12px">';
+      h+='<div style="display:flex;gap:12px;align-items:center">';
+      h+='<div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,var(--p),#fb923c);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0">'+(m.user?.firstName||'M')[0]+''+(m.user?.lastName||'B')[0]+'</div>';
+      h+='<div><div style="font-weight:800;font-size:16px">'+m.user?.firstName+' '+m.user?.lastName+'</div>';
+      h+='<div style="font-size:12px;color:var(--g);margin-top:2px">'+m.user?.email+'</div>';
+      h+='<div style="font-size:12px;color:var(--g)">'+m.user?.phone+'</div>';
+      h+='</div></div>';
+      h+='<div style="text-align:right">';
+      h+='<div style="font-size:12px;color:var(--g);margin-bottom:4px">'+m.vehiclePlate+' - '+m.vehicleModel+'</div>';
+      h+='<div style="font-size:12px;color:var(--g)">'+m.vehicleColor+' | '+m.vehicleType+'</div>';
+      h+='</div></div>';
+
+      // Checklist de documentos
+      h+='<div style="padding:0 16px 12px">';
+      h+='<div style="font-size:12px;font-weight:700;color:var(--g);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Documentos Anexados ('+docsCount+'/5)</div>';
+      h+='<div style="display:flex;flex-wrap:wrap;gap:6px">';
+      var docItems=[
+        ['CNH Frente',hasCnhF],
+        ['CNH Verso',hasCnhB],
+        ['CRLV',hasCrlv],
+        ['Foto Veiculo',hasVehicle],
+        ['Selfie',hasSelfie]
+      ];
+      docItems.forEach(function(d){
+        var color=d[1]?'#dcfce7':'#fef2f2';
+        var textColor=d[1]?'#166534':'#991b1b';
+        var icon=d[1]?'&#10004;':'&#10008;';
+        h+='<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;background:'+color+';color:'+textColor+'">'+icon+' '+d[0]+'</span>';
+      });
+      h+='</div></div>';
+
+      // Fotos dos documentos
+      if(docsCount>0){
+        h+='<div style="padding:0 16px 16px">';
+        h+='<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">';
+        var photos=[
+          ['CNH Frente',docs.cnhFront,'&#128196;'],
+          ['CNH Verso',docs.cnhBack,'&#128196;'],
+          ['CRLV',docs.crlv,'&#128196;'],
+          ['Veiculo',docs.vehiclePhoto,'&#128668;'],
+          ['Selfie',docs.selfie,'&#128100;']
+        ];
         photos.forEach(function(p){
-          if(p[1]) h+='<div style="cursor:pointer;border-radius:10px;overflow:hidden;border:1px solid #e5e7eb" onclick="openModal(\'<div style=text-align:center><img src='+p[1]+' style=max-width:100%;max-height:70vh;border-radius:12px></div>\')"><img src="'+p[1]+'" style="width:100%;height:90px;object-fit:cover" alt="'+p[0]+'"><div style="font-size:10px;text-align:center;padding:5px;background:#f9fafb;font-weight:600">'+p[0]+'</div></div>';
+          if(p[1]){
+            h+='<div style="cursor:pointer;border-radius:10px;overflow:hidden;border:2px solid #e5e7eb;transition:all .2s" onclick="openDocViewer(\''+p[1]+'\',\''+p[0]+'\',\''+m.user?.firstName+' '+m.user?.lastName+'\')" onmouseover="this.style.borderColor=\'var(--p)\'" onmouseout="this.style.borderColor=\'#e5e7eb\'">';
+            h+='<img src="'+p[1]+'" style="width:100%;height:80px;object-fit:cover" alt="'+p[0]+'">';
+            h+='<div style="font-size:9px;text-align:center;padding:4px 2px;background:#f8fafc;font-weight:600;color:var(--g)">'+p[0]+'</div></div>';
+          } else {
+            h+='<div style="border-radius:10px;border:2px dashed #e5e7eb;height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#d1d5db">';
+            h+='<div style="font-size:20px">'+p[2]+'</div><div style="font-size:9px;margin-top:2px">Nao enviado</div></div>';
+          }
         });
-        h+='</div>';
+        h+='</div></div>';
       }
-      h+='</div>';
+
+      // Botoes de acao
+      h+='<div style="padding:12px 16px;background:#f8fafc;border-top:1px solid #f1f5f9;display:flex;gap:10px">';
+      h+='<button class="btn btn-g" style="flex:1" onclick="approveMb(\''+m.id+'\')">&#10004; Aprovar Cadastro</button>';
+      h+='<button class="btn btn-r" style="flex:1" onclick="rejectMbPrompt(\''+m.id+'\',\''+m.user?.firstName+' '+m.user?.lastName+'\')">&#10008; Rejeitar</button>';
+      h+='</div></div>';
     });
     h+='</div></div>';
+  } else {
+    h+='<div class="card" style="margin-bottom:16px"><div class="card-b" style="text-align:center;padding:32px">';
+    h+='<div style="font-size:48px;margin-bottom:8px">&#9989;</div>';
+    h+='<div style="font-weight:700;font-size:16px;color:var(--d)">Nenhum cadastro pendente</div>';
+    h+='<div style="font-size:13px;color:var(--g);margin-top:4px">Todos os motoboys foram analisados</div>';
+    h+='</div></div>';
   }
-  h+='<div class="card"><div class="card-h">Todos os Motoboys ('+data.length+')</div><div class="table-w"><table><thead><tr><th>Motoboy</th><th>Telefone</th><th>Status</th><th>Veiculo</th><th>Avaliacao</th><th>Entregas</th></tr></thead><tbody>';
+
+  // Lista de todos os motoboys
+  h+='<div class="card"><div class="card-h">&#128101; Todos os Motoboys ('+data.length+')</div><div class="table-w"><table><thead><tr><th>Motoboy</th><th>Telefone</th><th>Status</th><th>Veiculo</th><th>Avaliacao</th><th>Entregas</th></tr></thead><tbody>';
   data.forEach(function(m){
     var statusBadge=m.user?.status==='PENDING'?'<span class="badge by">Pendente</span>':m.user?.status==='ACTIVE'?'<span class="badge bg">Ativo</span>':'<span class="badge br">Inativo</span>';
-    h+='<tr><td><div style="display:flex;align-items:center;gap:10px"><div class="avatar" style="width:34px;height:34px;font-size:11px">'+(m.user?.firstName||'M')[0]+''+(m.user?.lastName||'B')[0]+'</div><div><div style="font-weight:700;font-size:13px">'+m.user?.firstName+' '+m.user?.lastName+'</div><div style="font-size:11px;color:var(--g)">'+m.user?.email+'</div></div></div></td>';
+    var isPending=!m.approvedAt;
+    h+='<tr style="'+(isPending?'background:#fffbeb':'')+'" onclick="viewMotoboyDetail(\''+m.id+'\')" style="cursor:pointer">';
+    h+='<td><div style="display:flex;align-items:center;gap:10px"><div class="avatar" style="width:34px;height:34px;font-size:11px">'+(m.user?.firstName||'M')[0]+''+(m.user?.lastName||'B')[0]+'</div><div><div style="font-weight:700;font-size:13px">'+m.user?.firstName+' '+m.user?.lastName+'</div><div style="font-size:11px;color:var(--g)">'+m.user?.email+'</div></div></div></td>';
     h+='<td>'+(m.user?.phone||'-')+'</td><td>'+statusBadge+'</td>';
-    h+='<td>'+(m.vehiclePlate||'-')+' '+(m.vehicleModel||'')+'</td>';
-    h+='<td>&#9733; '+Number(m.averageRating).toFixed(1)+' ('+m.totalRatings+')</td>';
+    h+='<td style="font-size:12px">'+(m.vehiclePlate||'-')+' '+(m.vehicleModel||'')+'</td>';
+    h+='<td style="font-weight:700;color:var(--gn)">&#9733; '+Number(m.averageRating).toFixed(1)+'</td>';
     h+='<td>'+(m.completedDeliveries||0)+'</td></tr>';
   });
   h+='</tbody></table></div></div>';
   el.innerHTML=h;
+}
+
+function openDocViewer(photoUrl, docTitle, motoboyName){
+  openModal('<div style="padding:0">'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:0 4px">'+
+    '<div><div style="font-size:11px;color:var(--g);font-weight:600;text-transform:uppercase;letter-spacing:.5px">'+motoboyName+'</div>'+
+    '<div style="font-weight:800;font-size:16px;margin-top:2px">'+docTitle+'</div></div>'+
+    '<button onclick="closeModal()" style="width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.06);border:none;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">&#10005;</button></div>'+
+    '<img src="'+photoUrl+'" style="width:100%;border-radius:12px;max-height:65vh;object-fit:contain;background:#000" alt="'+docTitle+'">'+
+    '</div>');
+}
+
+function rejectMbPrompt(id, name){
+  openModal('<div style="padding:8px 0">'+
+    '<h3 style="font-weight:800;font-size:18px;margin-bottom:4px">Rejeitar Cadastro</h3>'+
+    '<p style="color:var(--g);font-size:13px;margin-bottom:16px">Motoboy: <b>'+name+'</b></p>'+
+    '<div class="form-g"><label class="label">Motivo da Rejeicao *</label>'+
+    '<textarea class="input" id="reject-reason" rows="3" placeholder="Descreva o motivo da rejeicao..."></textarea></div>'+
+    '<div style="display:flex;gap:10px">'+
+    '<button class="btn btn-s" onclick="closeModal()" style="flex:1">Cancelar</button>'+
+    '<button class="btn btn-r" onclick="confirmRejectMb(\''+id+'\')" style="flex:1">Rejeitar</button>'+
+    '</div></div>');
+}
+
+async function confirmRejectMb(id){
+  var reason=document.getElementById('reject-reason').value;
+  if(!reason){alert('Informe o motivo da rejeicao');return;}
+  await api('/admin/motoboys/'+id+'/reject',{method:'PUT',body:JSON.stringify({reason:reason})});
+  closeModal();
+  navigate('admin-motoboys');
+}
+
+async function viewMotoboyDetail(id){
+  var data=(await api('/admin/motoboys')).data;
+  var m=data.find(function(x){return x.id===id});
+  if(!m)return;
+  var docs=m.documents||{};
+  var h='<div style="padding:0">';
+  
+  // Header
+  h+='<div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">';
+  h+='<div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,var(--p),#fb923c);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px">'+(m.user?.firstName||'M')[0]+''+(m.user?.lastName||'B')[0]+'</div>';
+  h+='<div><h2 style="font-weight:800;font-size:20px">'+m.user?.firstName+' '+m.user?.lastName+'</h2>';
+  h+='<div style="font-size:13px;color:var(--g)">'+m.user?.email+' | '+m.user?.phone+'</div>';
+  h+='<div style="margin-top:4px">'+(m.user?.status==='ACTIVE'?'<span class="badge bg">Ativo</span>':m.user?.status==='PENDING'?'<span class="badge by">Pendente</span>':'<span class="badge br">Inativo</span>')+(m.approvedAt?'<span class="badge bg" style="margin-left:4px">Aprovado</span>':'<span class="badge by" style="margin-left:4px">Aguardando</span>')+'</div></div></div>';
+
+  // Info do veiculo
+  h+='<div style="background:var(--gl);border-radius:12px;padding:14px;margin-bottom:16px">';
+  h+='<div style="font-size:12px;font-weight:700;color:var(--g);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">&#128668; Veiculo</div>';
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">';
+  h+='<div><span style="color:var(--g)">Placa:</span> <b>'+m.vehiclePlate+'</b></div>';
+  h+='<div><span style="color:var(--g)">Tipo:</span> <b>'+m.vehicleType+'</b></div>';
+  h+='<div><span style="color:var(--g)">Marca:</span> <b>'+m.vehicleBrand+'</b></div>';
+  h+='<div><span style="color:var(--g)">Modelo:</span> <b>'+m.vehicleModel+'</b></div>';
+  h+='<div><span style="color:var(--g)">Ano:</span> <b>'+m.vehicleYear+'</b></div>';
+  h+='<div><span style="color:var(--g)">Cor:</span> <b>'+m.vehicleColor+'</b></div>';
+  h+='</div></div>';
+
+  // Metricas
+  h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">';
+  h+='<div style="background:var(--gl);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--gn)">&#9733; '+Number(m.averageRating).toFixed(1)+'</div><div style="font-size:10px;color:var(--g);font-weight:600">Avaliacao</div></div>';
+  h+='<div style="background:var(--gl);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800">'+(m.completedDeliveries||0)+'</div><div style="font-size:10px;color:var(--g);font-weight:600">Entregas</div></div>';
+  h+='<div style="background:var(--gl);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800">'+(m.isOnline?'&#128994;':'&#128308;')+'</div><div style="font-size:10px;color:var(--g);font-weight:600">'+(m.isOnline?'Online':'Offline')+'</div></div>';
+  h+='</div>';
+
+  // Documentos
+  h+='<div style="font-size:12px;font-weight:700;color:var(--g);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">&#128196; Documentos</div>';
+  h+='<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">';
+  var allDocs=[
+    ['CNH Frente',docs.cnhFront],
+    ['CNH Verso',docs.cnhBack],
+    ['CRLV',docs.crlv],
+    ['Foto Veiculo',docs.vehiclePhoto],
+    ['Selfie',docs.selfie]
+  ];
+  allDocs.forEach(function(d){
+    if(d[1]){
+      h+='<div style="border-radius:10px;overflow:hidden;border:1px solid #e5e7eb;cursor:pointer" onclick="openDocViewer(\''+d[1]+'\',\''+d[0]+'\',\''+m.user?.firstName+' '+m.user?.lastName+'\')">';
+      h+='<img src="'+d[1]+'" style="width:100%;height:100px;object-fit:cover" alt="'+d[0]+'">';
+      h+='<div style="font-size:10px;text-align:center;padding:6px;background:#f8fafc;font-weight:600">'+d[0]+'</div></div>';
+    }
+  });
+  h+='</div>';
+
+  // Botoes
+  if(!m.approvedAt){
+    h+='<div style="display:flex;gap:10px;margin-top:20px">';
+    h+='<button class="btn btn-g" style="flex:1" onclick="closeModal();approveMb(\''+m.id+'\')">&#10004; Aprovar</button>';
+    h+='<button class="btn btn-r" style="flex:1" onclick="closeModal();rejectMbPrompt(\''+m.id+'\',\''+m.user?.firstName+' '+m.user?.lastName+'\')">&#10008; Rejeitar</button>';
+    h+='</div>';
+  }
+
+  h+='</div>';
+  openModal(h);
 }
 
 async function approveMb(id){await api('/admin/motoboys/'+id+'/approve',{method:'PUT'});navigate('admin-motoboys');}
