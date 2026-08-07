@@ -321,6 +321,7 @@ function connectSSE(){
 document.getElementById('login-form').onsubmit=async(e)=>{
   e.preventDefault();
   const email=document.getElementById('login-email').value;
+  const password=document.getElementById('login-pass').value;
   const errEl=document.getElementById('login-error');
   errEl.style.display='none';
   try{
