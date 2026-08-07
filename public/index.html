@@ -174,17 +174,20 @@ tr:hover td{background:#f8fafc}
   .header-bar p{font-size:13px !important}
   
   /* ---- GRIDS ---- */
-  .grid4,.grid3{grid-template-columns:repeat(2,1fr) !important;gap:10px !important}
-  .grid4 .stat-c,.grid3 .stat-c{padding:14px !important;border-radius:14px !important}
+  .grid4,.grid3,.grid5,.grid2{display:grid !important;min-width:0 !important;overflow:hidden !important}
+  .grid4{grid-template-columns:repeat(2,1fr) !important;gap:10px !important}
+  .grid3{grid-template-columns:repeat(2,1fr) !important;gap:10px !important}
+  .grid4 .stat-c,.grid3 .stat-c{padding:14px !important;border-radius:14px !important;min-width:0 !important;overflow:hidden !important}
   .grid4 .stat-v,.grid3 .stat-v{font-size:20px !important;font-weight:800 !important}
   .grid4 .stat-l,.grid3 .stat-l{font-size:11px !important;margin-top:2px}
   .grid5{grid-template-columns:repeat(3,1fr) !important;gap:8px !important}
-  .grid5 .stat-c{padding:10px !important;border-radius:12px !important}
+  .grid5 .stat-c{padding:10px !important;border-radius:12px !important;min-width:0 !important;overflow:hidden !important}
   .grid5 .stat-v{font-size:16px !important}
   .grid5 .stat-l{font-size:10px !important}
   .grid2{grid-template-columns:1fr !important}
   
-  .admin-main-grid,.admin-bottom-grid{grid-template-columns:1fr !important;gap:12px !important}
+  .admin-main-grid,.admin-bottom-grid{display:grid !important;grid-template-columns:1fr !important;gap:12px !important;min-width:0 !important;overflow:hidden !important}
+  .admin-main-grid > *,.admin-bottom-grid > *{min-width:0 !important}
   
   /* ---- CARDS ---- */
   .card{
@@ -193,6 +196,7 @@ tr:hover td{background:#f8fafc}
     border:0 !important;
     background:var(--w) !important;
     overflow:hidden;
+    min-width:0 !important;
   }
   .card + .card{margin-top:12px !important}
   .card-h{padding:16px 18px !important;font-size:15px !important;font-weight:700 !important;border-bottom:0.5px solid rgba(0,0,0,.06) !important}
@@ -285,7 +289,7 @@ tr:hover td{background:#f8fafc}
 .kpi-card .kpi-value{font-size:30px;font-weight:800;line-height:1}
 
 @media(max-width:768px){
-  .kpi-card{padding:18px !important;border-radius:14px !important}
+  .kpi-card{padding:18px !important;border-radius:14px !important;min-width:0 !important;overflow:hidden !important}
   .kpi-card .kpi-icon{font-size:50px !important}
   .kpi-card .kpi-value{font-size:24px !important}
 }
