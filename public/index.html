@@ -751,7 +751,7 @@ document.getElementById('login-form').onsubmit=async(e)=>{
   }catch(err){errEl.textContent=err.message;errEl.style.display='block';}
 };
 
-function logout(){TOKEN='';USER=null;localStorage.clear();stopLocationTracking();Object.keys(_maps).forEach(function(k){try{_maps[k].remove();}catch(e){}});Object.keys(_userAccuracyCircles).forEach(function(k){try{_userAccuracyCircles[k].remove();}catch(e){}});_maps={};_mapMarkers={};_userAccuracyCircles={};showLogin();}
+function logout(){TOKEN='';USER=null;localStorage.clear();clearAllCookies();clearSensitiveData();stopLocationTracking();Object.keys(_maps).forEach(function(k){try{_maps[k].remove();}catch(e){}});Object.keys(_userAccuracyCircles).forEach(function(k){try{_userAccuracyCircles[k].remove();}catch(e){}});_maps={};_mapMarkers={};_userAccuracyCircles={};if(_idleTimer)clearTimeout(_idleTimer);showLogin();}
 function showLogin(){
   document.getElementById('app').style.display='none';
   document.getElementById('login-page').style.display='flex';
@@ -1778,11 +1778,51 @@ async function renderMotoboyWallet(el){
     '</tbody></table></div></div>';
 }
 
+// ============ LIMPEZA COOKIES ============
+function clearAllCookies(){
+  document.cookie.split(';').forEach(function(c){
+    var name=c.split('=')[0].trim();
+    document.cookie=name+'=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+    document.cookie=name+'=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain='+location.hostname;
+    document.cookie=name+'=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.'+location.hostname;
+  });
+}
+function clearSensitiveData(){
+  var keep=['token','user'];
+  var keys=Object.keys(localStorage);
+  keys.forEach(function(k){if(keep.indexOf(k)===-1)localStorage.removeItem(k);});
+}
+clearAllCookies();
+clearSensitiveData();
+
+// ============ AUTO LOGOUT POR INATIVIDADE ============
+var _idleTimer=null;
+var IDLE_TIMEOUT=30*60*1000;
+function resetIdleTimer(){
+  if(_idleTimer)clearTimeout(_idleTimer);
+  _idleTimer=setTimeout(function(){
+    if(TOKEN){
+      logout();
+      showNotifLogout('Sessao expirou por inatividade');
+    }
+  },IDLE_TIMEOUT);
+}
+function showNotifLogout(msg){
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999;max-width:340px;width:90%;padding:28px;border-radius:20px;color:#fff;font-size:15px;font-weight:600;text-align:center;background:linear-gradient(135deg,#ef4444,#dc2626);box-shadow:0 12px 40px rgba(239,68,68,.5);animation:fadeIn .3s ease';
+  t.innerHTML='<div style="font-size:48px;margin-bottom:12px">&#128682;</div>'+msg+'<br><button onclick="location.reload()" style="margin-top:16px;padding:10px 24px;border:none;border-radius:10px;background:#fff;color:#ef4444;font-weight:800;cursor:pointer;font-size:14px">Fazer Login</button>';
+  document.body.appendChild(t);
+}
+['click','keypress','mousemove','touchstart','scroll'].forEach(function(evt){
+  document.addEventListener(evt,resetIdleTimer,{passive:true});
+});
+
 // ============ INIT ============
 var saved=localStorage.getItem('token');
 var savedUser=localStorage.getItem('user');
 if(saved&&savedUser){
   TOKEN=saved;USER=JSON.parse(savedUser);
+  resetIdleTimer();
   api('/auth/me').then(function(){showApp()}).catch(function(){localStorage.clear();TOKEN='';USER=null;showLogin();});
 }
 </script>
