@@ -3,9 +3,15 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const { createClient } = require('@supabase/supabase-js');
 const serverless = require('serverless-http');
+const webpush = require('web-push');
 
 const app = express();
 const JWT_SECRET = process.env.JWT_SECRET || 'central-motoboy-portable-key';
+const VAPID_PUBLIC = process.env.VAPID_PUBLIC || 'BIrqXEbrJbhivbzdvRm3X1KG1l34Wp_mPWJXWeE9I7m8YOsXTjleJjF63XJcFk745E6nHKn9zDZcWCZlTGBQTLQ';
+const VAPID_PRIVATE = process.env.VAPID_PRIVATE || '72YdBWeQdVIyg2T5r_I_Be4f6HLAgdLNGUOn9LSLH0M';
+const VAPID_EMAIL = 'mailto:admin@centralmotoboy.com';
+
+webpush.setVapidDetails(VAPID_EMAIL, VAPID_PUBLIC, VAPID_PRIVATE);
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://uixlurredftlspfhibfe.supabase.co';
 const SUPABASE_ANON = process.env.SUPABASE_ANON || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpeGx1cnJlZGZ0bHNwZmhpYmZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxMjc5MzMsImV4cCI6MjEwMTcwMzkzM30.86VEnJI9s6O3lyf_SXpJP0GZF0IQAD7GFpuVwK_jPjo';
@@ -41,6 +47,55 @@ function auth(req, res, next) {
   try { req.user = jwt.verify(t, JWT_SECRET); req.user.firstName = req.user.firstName || req.user.first_name; req.user.lastName = req.user.lastName || req.user.last_name; next(); } catch { return res.status(401).json({ success: false, message: 'Token invalido' }); }
 }
 function admin(req, res, next) { if (req.user?.role !== 'ADMIN') return res.status(403).json({ success: false, message: 'Sem permissao' }); next(); }
+
+// ============ PUSH NOTIFICATIONS ============
+async function sendPushToUser(userId, title, body, url) {
+  try {
+    const { data: subs } = await supabase.from('push_subscriptions').select('endpoint,p256dh,p256dh_key').eq('user_id', userId);
+    if (!subs || !subs.length) return;
+    const payload = JSON.stringify({ title, body, url: url || '/' });
+    for (const sub of subs) {
+      try {
+        await webpush.sendNotification(
+          { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.p256dh_key } },
+          payload
+        );
+      } catch (e) {
+        if (e.statusCode === 410 || e.statusCode === 404) {
+          await supabase.from('push_subscriptions').delete().eq('endpoint', sub.endpoint);
+        }
+      }
+    }
+  } catch (e) {}
+}
+async function sendPushToRole(role, title, body, url) {
+  try {
+    const { data: users } = await supabase.from('users').select('id').eq('role', role);
+    if (!users) return;
+    for (const u of users) { await sendPushToUser(u.id, title, body, url); }
+  } catch (e) {}
+}
+
+app.post('/api/push/subscribe', auth, async (req, res) => {
+  try {
+    const { endpoint, keys } = req.body;
+    if (!endpoint || !keys) return res.status(400).json({ success: false, message: 'Dados obrigatorios' });
+    await supabase.from('push_subscriptions').upsert({ user_id: req.user.id, endpoint, p256dh: keys.p256dh, p256dh_key: keys.auth }, { onConflict: 'endpoint' });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ success: false, message: e.message }); }
+});
+
+app.delete('/api/push/unsubscribe', auth, async (req, res) => {
+  try {
+    const { endpoint } = req.body;
+    if (endpoint) await supabase.from('push_subscriptions').delete().eq('endpoint', endpoint);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ success: false, message: e.message }); }
+});
+
+app.get('/api/push/vapid-key', (req, res) => {
+  res.json({ success: true, data: { publicKey: VAPID_PUBLIC } });
+});
 
 // ============ AUTH ============
 app.post('/api/auth/login', async (req, res) => {
@@ -305,6 +360,7 @@ app.post('/api/deliveries', auth, async (req, res) => {
     if (error) return res.status(500).json({ success: false, message: error.message });
     res.status(201).json({ success: true, data: { id: d.id, trackingCode: d.tracking_code, totalPrice: Number(d.total_price), description: d.description } });
     sendSSE('new-delivery', { id: d.id, trackingCode: d.tracking_code, originAddress: d.origin_address, destinationAddress: d.destination_address, totalPrice: Number(d.total_price), description: d.description });
+    sendPushToRole('MOTOBOY', 'Nova Entrega!', d.origin_address + ' → ' + d.destination_address, '/');
   } catch (e) {
     res.status(500).json({ success: false, message: e.message });
   }
@@ -322,6 +378,7 @@ app.put('/api/deliveries/:id/accept', auth, async (req, res) => {
     await supabase.from('deliveries').update({ status: 'ACCEPTED', motoboy_id: mb.id, accepted_at: new Date().toISOString() }).eq('id', req.params.id);
     res.json({ success: true, data: { id: d.id, trackingCode: d.tracking_code, status: 'ACCEPTED' } });
     sendSSE('delivery-accepted', { id: d.id, trackingCode: d.tracking_code, motoboyName: req.user.firstName + ' ' + req.user.lastName });
+    sendPushToUser(d.client_id, 'Entrega Aceita!', req.user.firstName + ' aceitou sua entrega ' + d.tracking_code, '/');
   } catch (e) {
     res.status(500).json({ success: false, message: e.message });
   }
@@ -389,6 +446,7 @@ app.put('/api/deliveries/:id/complete', auth, async (req, res) => {
 
     res.json({ success: true, data: { motoboyEarning, commission } });
     sendSSE('delivery-completed', { id: d.id, trackingCode: d.tracking_code, motoboyEarning, commission });
+    sendPushToUser(d.client_id, 'Entrega Concluida!', 'Sua entrega ' + d.tracking_code + ' foi entregue com sucesso!', '/');
   } catch (e) {
     res.status(500).json({ success: false, message: e.message });
   }

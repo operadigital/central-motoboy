@@ -675,16 +675,20 @@ function initDarkMode(){if(_darkMode)document.body.classList.add('dark');}
 
 // ============ PUSH NOTIFICATIONS ============
 async function initPushNotifications(){
-  if(!('serviceWorker' in navigator)||!('PushManager' in window))return;
+  if(!('serviceWorker' in navigator)||!('PushManager' in window)||!TOKEN)return;
   try{
     var reg=await navigator.serviceWorker.ready;
     var sub=await reg.pushManager.getSubscription();
     if(!sub){
-      var permission=await Notification.requestPermission();
-      if(permission==='granted'){
-        var vapidKey='BNeLz8J0WnQ0h0C8L5XH2z3K4a9T7v6X3h5N8p2Q5w1E4r7T9y0U2i4O6p8A0s2D4f6G8h0J2k4L6z8';
-        sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:vapidKey});
-      }
+      var keyRes=await api('/push/vapid-key');
+      if(!keyRes.success)return;
+      var vapidKey=keyRes.data.publicKey;
+      var keyBytes=Uint8Array.from(atob(vapidKey.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
+      sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:keyBytes});
+    }
+    if(sub){
+      var subJson=sub.toJSON();
+      await api('/push/subscribe',{method:'POST',body:JSON.stringify({endpoint:subJson.endpoint,keys:subJson.keys})});
     }
   }catch(e){}
 }
@@ -1090,6 +1094,7 @@ function showApp(){
   buildNav();buildBottomNav();
   navigate(USER.role==='ADMIN'?'admin-dash':USER.role==='CLIENT'?'client-dash':'motoboy-dash');
   connectSSE();
+  initPushNotifications();
   if(USER.role==='MOTOBOY')startLocationTracking();
 }
 
