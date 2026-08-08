@@ -97,6 +97,15 @@ app.get('/api/push/vapid-key', (req, res) => {
   res.json({ success: true, data: { publicKey: VAPID_PUBLIC } });
 });
 
+app.get('/api/push/test', auth, async (req, res) => {
+  try {
+    await sendPushToUser(req.user.id, 'Teste Central Motoboy!', 'Se voce recebeu esta mensagem, as notificacoes push estao funcionando!', '/');
+    res.json({ success: true, message: 'Push enviado' });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
 // ============ AUTH ============
 app.post('/api/auth/login', async (req, res) => {
   try {

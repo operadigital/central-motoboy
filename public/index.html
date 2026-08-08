@@ -675,6 +675,12 @@ function initDarkMode(){if(_darkMode)document.body.classList.add('dark');}
 
 // ============ PUSH NOTIFICATIONS ============
 var _swReg=null;
+async function testPush(){
+  try{
+    var r=await api('/push/test');
+    showNotifToast('&#128276; '+r.message,'new');
+  }catch(e){showNotifToast('&#10008; Erro: '+e.message,'');}
+}
 async function initPushNotifications(){
   if(!('serviceWorker' in navigator)||!('PushManager' in window)||!TOKEN)return;
   try{
@@ -1644,6 +1650,7 @@ async function renderAdminSettings(el){
   h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:14px">Sons de Notificacao</span><span style="color:var(--gn);font-weight:700">&#10004; Ativado</span></div>';
   h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:14px">Alerta Novo Cadastro</span><span style="color:var(--gn);font-weight:700">&#10004; Ativado</span></div>';
   h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0"><span style="font-size:14px">Alerta Nova Entrega</span><span style="color:var(--gn);font-weight:700">&#10004; Ativado</span></div>';
+  h+='<div style="margin-top:12px"><button class="btn btn-b" onclick="testPush()" style="width:100%">&#128276; Testar Notificacao Push</button></div>';
   h+='</div></div></div></div></div>';
   el.innerHTML=h;
 }
