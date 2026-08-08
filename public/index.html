@@ -584,13 +584,15 @@ var _maps={};
 var _mapMarkers={};
 var _geoWatchId=null;
 
+var DEFAULT_LAT=-30.8511,DEFAULT_LNG=-50.8075;
+
 function createMap(containerId,opts){
   if(_maps[containerId]){_maps[containerId].remove();delete _maps[containerId];}
   var el=document.getElementById(containerId);
   if(!el)return null;
   var def={zoomControl:false,attributionControl:true,zoom:13};
   if(opts)Object.keys(opts).forEach(function(k){def[k]=opts[k]});
-  var map=L.map(containerId,def).setView([-23.5505,-46.6333],13);
+  var map=L.map(containerId,def).setView([DEFAULT_LAT,DEFAULT_LNG],13);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap',maxZoom:19}).addTo(map);
   L.control.zoom({position:'topright'}).addTo(map);
   _maps[containerId]=map;
@@ -1043,7 +1045,7 @@ function initAdminMap(loc){
   if(motoboys.length||deliveries.length){
     setTimeout(function(){fitMapToMarkers('admin-realtime-map')},300);
   } else {
-    centerMap('admin-realtime-map',-23.5505,-46.6333,12);
+    centerMap('admin-realtime-map',DEFAULT_LAT,DEFAULT_LNG,12);
   }
 }
 
@@ -1452,8 +1454,8 @@ function initClientTrackingMap(delivery){
   var map=createMap('client-tracking-map',{zoomControl:true});
   if(!map)return;
 
-  var origLat=-23.5505+((Math.random()*0.01)-0.005),origLng=-46.6333+((Math.random()*0.01)-0.005);
-  var destLat=-23.5614+((Math.random()*0.01)-0.005),destLng=-46.6558+((Math.random()*0.01)-0.005);
+  var origLat=DEFAULT_LAT+((Math.random()*0.01)-0.005),origLng=DEFAULT_LNG+((Math.random()*0.01)-0.005);
+  var destLat=DEFAULT_LAT+0.0114+((Math.random()*0.01)-0.005),destLng=DEFAULT_LNG-0.0225+((Math.random()*0.01)-0.005);
   var motLat=(origLat+destLat)/2+((Math.random()*0.005)-0.0025),motLng=(origLng+destLng)/2+((Math.random()*0.005)-0.0025);
 
   addMarker('client-tracking-map',origLat,origLng,{color:'#22c55e',emoji:'&#128205;',tooltip:'Origem'});
@@ -1502,8 +1504,10 @@ function renderClientNew(el){
     var map=createMap('client-new-map',{zoomControl:true});
     if(!map)return;
     navigator.geolocation.getCurrentPosition(function(p){
-      centerMap('client-new-map',p.coords.latitude,p.coords.longitude,14);
-    },function(){centerMap('client-new-map',-23.5505,-46.6333,12)},{enableHighAccuracy:true});
+      centerMap('client-new-map',p.coords.latitude,p.coords.longitude,15);
+    },function(){
+      centerMap('client-new-map',DEFAULT_LAT,DEFAULT_LNG,12);
+    },{enableHighAccuracy:true,maximumAge:5000,timeout:15000});
     map.on('click',function(e){
       var lat=e.latlng.lat,lng=e.latlng.lng;
       clearMarkers('client-new-map');
@@ -1534,9 +1538,9 @@ function renderClientNew(el){
     try{
       var body={
         originAddress:document.getElementById('nd-oa').value,originCity:document.getElementById('nd-oc').value,originState:document.getElementById('nd-os').value,originNeighborhood:document.getElementById('nd-ob').value,
-        originLatitude:selectedOrigin?selectedOrigin.lat:-23.5505,originLongitude:selectedOrigin?selectedOrigin.lng:-46.6333,
+        originLatitude:selectedOrigin?selectedOrigin.lat:DEFAULT_LAT,originLongitude:selectedOrigin?selectedOrigin.lng:DEFAULT_LNG,
         destinationAddress:document.getElementById('nd-da').value,destinationCity:document.getElementById('nd-dc').value,destinationState:document.getElementById('nd-ds').value,destinationNeighborhood:document.getElementById('nd-db').value,
-        destinationLatitude:selectedDest?selectedDest.lat:-23.5614,destinationLongitude:selectedDest?selectedDest.lng:-46.6558,
+        destinationLatitude:selectedDest?selectedDest.lat:DEFAULT_LAT+0.0114,destinationLongitude:selectedDest?selectedDest.lng:DEFAULT_LNG-0.0225,
         description:document.getElementById('nd-desc').value,paymentMethod:document.getElementById('nd-pm').value,observations:document.getElementById('nd-obs').value,
       };
       var r=await api('/deliveries',{method:'POST',body:JSON.stringify(body)});
@@ -1650,24 +1654,8 @@ function initMotoboyMap(motoboyData,available,activeDels){
   var map=createMap('motoboy-map',{zoomControl:true});
   if(!map)return;
 
-  navigator.geolocation.getCurrentPosition(function(pos){
-    var lat=pos.coords.latitude,lng=pos.coords.longitude;
-    addMarker('motoboy-map',lat,lng,{color:'#4285f4',emoji:'&#128100;',tooltip:'Voce esta aqui'});
-    centerMap('motoboy-map',lat,lng,14);
-
-    if(motoboyData.isOnline){
-      sendLocationToServer(lat,lng);
-      watchMyLocation('motoboy-map',function(glat,glng){
-        addMarker('motoboy-map',glat,glng,{color:'#4285f4',emoji:'&#128100;',tooltip:'Voce esta aqui'});
-        sendLocationToServer(glat,glng);
-      });
-    }
-  },function(){
-    centerMap('motoboy-map',-23.5505,-46.6333,12);
-  },{enableHighAccuracy:true});
-
   available.forEach(function(d,i){
-    var lat=-23.5505+((i*0.008)%0.05),lng=-46.6333+((i*0.012)%0.05);
+    var lat=DEFAULT_LAT+((i*0.008)%0.05),lng=DEFAULT_LNG+((i*0.012)%0.05);
     var popup=createPopupContent({
       title:d.trackingCode,subtitle:'Entrega disponivel',
       items:[['Origem',d.originAddress],['Destino',d.destinationAddress],['Valor',fmt(d.totalPrice)],['Ganho',fmt(d.motoboyEarning)]],
@@ -1677,11 +1665,28 @@ function initMotoboyMap(motoboyData,available,activeDels){
   });
 
   activeDels.forEach(function(d,i){
-    var lat=-23.5505+((i*0.005)%0.03),lng=-46.6333+((i*0.007)%0.03);
+    var lat=DEFAULT_LAT+((i*0.005)%0.03),lng=DEFAULT_LNG+((i*0.007)%0.03);
     addMarker('motoboy-map',lat,lng,{color:'#ef4444',emoji:'&#128666;',tooltip:d.trackingCode+' - Em andamento'});
   });
 
-  if(available.length||activeDels.length)setTimeout(function(){fitMapToMarkers('motoboy-map')},300);
+  if(available.length||activeDels.length){
+    setTimeout(function(){fitMapToMarkers('motoboy-map')},300);
+  }
+
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(function(pos){
+      var lat=pos.coords.latitude,lng=pos.coords.longitude;
+      addMarker('motoboy-map',lat,lng,{html:'<div class="user-location"></div>',tooltip:'Voce esta aqui'});
+      if(!available.length&&!activeDels.length)centerMap('motoboy-map',lat,lng,15);
+      if(motoboyData.isOnline)sendLocationToServer(lat,lng);
+    },function(err){
+      console.log('GPS:',err.message);
+    },{enableHighAccuracy:true,maximumAge:5000,timeout:15000});
+
+    watchMyLocation(null,function(glat,glng){
+      sendLocationToServer(glat,glng);
+    });
+  }
 }
 
 function openNavigation(address){
