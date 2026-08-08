@@ -591,12 +591,32 @@ function connectSSE(){
     if(CURRENT_PAGE==='admin-dash')navigate('admin-dash');
   });
   evtSource.addEventListener('location-update',function(e){
-    if(CURRENT_PAGE==='admin-dash'){
-      try{var loc=JSON.parse(e.data);clearMarkers('admin-realtime-map');
-      (loc.motoboys||[]).forEach(function(mb){var lat=Number(mb.currentLatitude),lng=Number(mb.currentLongitude);if(!lat||!lng)return;var name=(mb.user?.firstName||'M')+' '+(mb.user?.lastName||'B');addMarker('admin-realtime-map',lat,lng,{color:'#3b82f6',emoji:'&#128690;',popup:createPopupContent({title:name,subtitle:'Online',actions:[{label:'Rastrear',color:'#3b82f6',onclick:"centerMap('admin-realtime-map',"+lat+","+lng+",18)"}]}),tooltip:name});});
-      (loc.activeDeliveries||[]).forEach(function(d){var lat=Number(d.currentLatitude),lng=Number(d.currentLongitude);if(!lat||!lng)return;addMarker('admin-realtime-map',lat,lng,{color:'#f59e0b',emoji:'&#128230;',popup:createPopupContent({title:d.trackingCode,subtitle:d.status,actions:[{label:'Rastrear',color:'#f59e0b',onclick:"centerMap('admin-realtime-map',"+lat+","+lng+",18)"}]}),tooltip:d.trackingCode});});
+    if(CURRENT_PAGE==='admin-dash'&&_maps['admin-realtime-map']){
+      try{
+        var d=JSON.parse(e.data);
+        var lat=Number(d.lat),lng=Number(d.lng);
+        if(!lat||!lng)return;
+        var markerId='mb-'+d.motoboyId;
+        removeMarker('admin-realtime-map',markerId);
+        addMarker('admin-realtime-map',lat,lng,{id:markerId,color:'#3b82f6',emoji:'&#128690;',tooltip:'Motoboy',popup:createPopupContent({title:'Motoboy',subtitle:'Atualizado agora',actions:[{label:'Centralizar',color:'#3b82f6',onclick:"centerMap('admin-realtime-map',"+lat+","+lng+",18)"}]})});
       }catch(e){}
     }
+  });
+  evtSource.addEventListener('delivery-location',function(e){
+    try{
+      var d=JSON.parse(e.data);
+      if(window._trackingDeliveryId&&d.deliveryId===window._trackingDeliveryId){
+        updateMotoboyPosition(d.lat,d.lng);
+      }
+      if(CURRENT_PAGE==='admin-dash'&&_maps['admin-realtime-map']){
+        var lat=Number(d.lat),lng=Number(d.lng);
+        if(lat&&lng){
+          var markerId='del-'+d.deliveryId;
+          removeMarker('admin-realtime-map',markerId);
+          addMarker('admin-realtime-map',lat,lng,{id:markerId,color:'#f59e0b',emoji:'&#128230;',tooltip:'Entrega',popup:createPopupContent({title:'Entrega Ativa',subtitle:'Atualizada agora',actions:[{label:'Centralizar',color:'#f59e0b',onclick:"centerMap('admin-realtime-map',"+lat+","+lng+",18)"}]})});
+        }
+      }
+    }catch(e){}
   });
   evtSource.onerror=function(){setTimeout(connectSSE,3000);};
 }
@@ -660,10 +680,19 @@ function addMarker(mapId,lat,lng,opts){
     icon=L.divIcon({className:'custom-marker',html:'<div class="marker-pin" style="background:'+color+'"><div class="marker-inner">'+emoji+'</div></div>',iconSize:[36,42],iconAnchor:[18,42],popupAnchor:[0,-42]});
   }
   var marker=L.marker([lat,lng],{icon:icon,interactive:true}).addTo(map);
+  if(opts&&opts.id)marker._customId=opts.id;
   if(opts&&opts.popup)marker.bindPopup(opts.popup,{closeButton:true,maxWidth:260,minWidth:180,className:''});
   if(opts&&opts.tooltip)marker.bindTooltip(opts.tooltip,{direction:'top',offset:[0,-46],opacity:0.9});
   if(_mapMarkers[mapId])_mapMarkers[mapId].push(marker);
   return marker;
+}
+
+function removeMarker(mapId,markerId){
+  var markers=_mapMarkers[mapId];
+  if(!markers)return;
+  for(var i=markers.length-1;i>=0;i--){
+    if(markers[i]._customId===markerId){try{markers[i].remove();}catch(e){}markers.splice(i,1);return;}
+  }
 }
 
 function fitMapToMarkers(mapId){
@@ -707,8 +736,8 @@ function requestGPS(onSuccess,onFail){
 function addUserLocationMarker(mapId,lat,lng,accuracy){
   var map=_maps[mapId];
   if(!map||!lat||!lng)return;
-  clearMarkers(mapId);
-  addMarker(mapId,lat,lng,{html:'<div class="user-location"></div>'});
+  removeMarker(mapId,'user-location');
+  addMarker(mapId,lat,lng,{id:'user-location',html:'<div class="user-location"></div>'});
   if(accuracy&&accuracy>0&&accuracy<500){
     if(_mapCircles[mapId])try{_mapCircles[mapId].remove();}catch(e){}
     _mapCircles[mapId]=L.circle([lat,lng],{radius:accuracy,color:'#4285f4',weight:1,fillColor:'#4285f4',fillOpacity:0.08,interactive:false}).addTo(map);
@@ -1080,9 +1109,14 @@ function initAdminMap(loc){
     if(!lat||!lng)return;
     var popup=createPopupContent({title:d.trackingCode,subtitle:d.status,actions:[{label:'Rastrear',color:'#f59e0b',onclick:"centerMap('admin-realtime-map',"+lat+","+lng+",18)"}]});
     addMarker('admin-realtime-map',lat,lng,{color:'#f59e0b',emoji:'&#128230;',popup:popup,tooltip:d.trackingCode});
+    if(d.originLatitude&&d.originLongitude&&d.destinationLatitude&&d.destinationLongitude){
+      api('/route?origLat='+d.originLatitude+'&origLng='+d.originLongitude+'&destLat='+d.destinationLatitude+'&destLng='+d.destinationLongitude).then(function(r){
+        if(r.success&&r.data&&r.data.geometry){L.geoJSON(r.data.geometry,{style:{color:'#f59e0b',weight:3,opacity:0.6}}).addTo(map);}
+      }).catch(function(){});
+    }
   });
 
-  if(motoboys.length||deliveries.length){setTimeout(function(){fitMapToMarkers('admin-realtime-map');},500);}
+  if(motoboys.length||deliveries.length){setTimeout(function(){fitMapToMarkers('admin-realtime-map');},1000);}
 }
 
 async function renderAdminMotoboys(el){
@@ -1480,7 +1514,12 @@ async function renderClientDash(el){
   el.innerHTML=h;
 
   if(active.length){
-    setTimeout(function(){initClientTrackingMap(active[0])},200);
+    setTimeout(function(){
+      api('/deliveries/'+active[0].id+'/tracking').then(function(r){
+        if(r.success&&r.data){initClientTrackingMap(r.data);}
+        else{initClientTrackingMap(active[0]);}
+      }).catch(function(){initClientTrackingMap(active[0]);});
+    },200);
   }
 }
 
@@ -1490,20 +1529,57 @@ function initClientTrackingMap(delivery){
   var map=createMap('client-tracking-map',{zoomControl:true});
   if(!map)return;
 
-  var origLat=Number(delivery.originLatitude)||DEFAULT_LAT;
-  var origLng=Number(delivery.originLongitude)||DEFAULT_LNG;
-  var destLat=Number(delivery.destinationLatitude)||DEFAULT_LAT+0.0114;
-  var destLng=Number(delivery.destinationLongitude)||DEFAULT_LNG-0.0225;
+  var origLat=Number(delivery.originLat||delivery.originLatitude)||DEFAULT_LAT;
+  var origLng=Number(delivery.originLng||delivery.originLongitude)||DEFAULT_LNG;
+  var destLat=Number(delivery.destLat||delivery.destinationLatitude)||DEFAULT_LAT+0.0114;
+  var destLng=Number(delivery.destLng||delivery.destinationLongitude)||DEFAULT_LNG-0.0225;
+  var origAddr=delivery.originAddress||'Origem';
+  var destAddr=delivery.destinationAddress||'Destino';
+  var deliveryId=delivery.id||delivery.deliveryId||delivery._id;
+  window._trackingDeliveryId=deliveryId;
+  window._trackingRoute=null;
 
-  addMarker('client-tracking-map',origLat,origLng,{color:'#22c55e',emoji:'&#128205;',tooltip:'Origem'});
-  addMarker('client-tracking-map',destLat,destLng,{color:'#ef4444',emoji:'&#127968;',tooltip:'Destino'});
+  addMarker('client-tracking-map',origLat,origLng,{color:'#22c55e',emoji:'&#128205;',tooltip:'Origem',popup:createPopupContent({title:'Origem',subtitle:origAddr,actions:[{label:'Navegar',color:'#22c55e',onclick:"openNavigation('"+origAddr.replace(/'/g,"\\'")+"')"}]})});
+  addMarker('client-tracking-map',destLat,destLng,{color:'#ef4444',emoji:'&#127968;',tooltip:'Destino',popup:createPopupContent({title:'Destino',subtitle:destAddr,actions:[{label:'Navegar',color:'#ef4444',onclick:"openNavigation('"+destAddr.replace(/'/g,"\\'")+"')"}]})});
 
   if(delivery.status!=='PENDING'){
-    addMarker('client-tracking-map',origLat+((destLat-origLat)*0.5),origLng+((destLng-origLng)*0.5),{color:'#3b82f6',emoji:'&#128690;',tooltip:'Motoboy'});
-    L.polyline([[origLat,origLng],[destLat,destLng]],{color:'#3b82f6',weight:4,opacity:0.7,dashArray:'8,8'}).addTo(map);
+    if(delivery.motoboyLocation){
+      addMarker('client-tracking-map',delivery.motoboyLocation.lat,delivery.motoboyLocation.lng,{color:'#3b82f6',emoji:'&#128690;',tooltip:'Motoboy',popup:createPopupContent({title:delivery.motoboyLocation.name||'Motoboy',subtitle:'A caminho',actions:[{label:'Navegar ate aqui',color:'#3b82f6',onclick:"openNavigation('"+(delivery.motoboyLocation.name||'Motoboy').replace(/'/g,"\\'")+"')"}]})});
+    }
   }
 
-  setTimeout(function(){fitMapToMarkers('client-tracking-map');},500);
+  api('/route?origLat='+origLat+'&origLng='+origLng+'&destLat='+destLat+'&destLng='+destLng).then(function(r){
+    if(r.success&&r.data&&r.data.geometry){
+      window._trackingRoute=L.geoJSON(r.data.geometry,{style:{color:'#6366f1',weight:5,opacity:0.8}}).addTo(map);
+      var bounds=window._trackingRoute.getBounds();
+      if(bounds.isValid())map.fitBounds(bounds,{padding:[40,40]});
+    }else{
+      L.polyline([[origLat,origLng],[destLat,destLng]],{color:'#6366f1',weight:4,opacity:0.7,dashArray:'8,8'}).addTo(map);
+      fitMapToMarkers('client-tracking-map');
+    }
+  }).catch(function(){
+    L.polyline([[origLat,origLng],[destLat,destLng]],{color:'#6366f1',weight:4,opacity:0.7,dashArray:'8,8'}).addTo(map);
+    fitMapToMarkers('client-tracking-map');
+  });
+
+  var navHtml='<div style="position:absolute;bottom:12px;right:12px;z-index:1000;display:flex;flex-direction:column;gap:8px">'+
+    '<button onclick="openNavigation(\''+origAddr.replace(/'/g,"\\'")+'\')" style="width:48px;height:48px;border-radius:50%;background:#22c55e;border:none;box-shadow:0 2px 12px rgba(0,0,0,.25);cursor:pointer;font-size:20px" title="Navegar ate origem">&#128205;</button>'+
+    '<button onclick="openNavigation(\''+destAddr.replace(/'/g,"\\'")+'\')" style="width:48px;height:48px;border-radius:50%;background:#ef4444;border:none;box-shadow:0 2px 12px rgba(0,0,0,.25);cursor:pointer;font-size:20px" title="Navegar ate destino">&#127968;</button>'+
+    '</div>';
+  mapEl.insertAdjacentHTML('beforeend',navHtml);
+}
+
+function updateMotoboyPosition(lat,lng){
+  if(!_maps['client-tracking-map'])return;
+  removeMarker('client-tracking-map','motoboy-live');
+  addMarker('client-tracking-map',lat,lng,{id:'motoboy-live',color:'#3b82f6',emoji:'&#128690;',tooltip:'Motoboy ao vivo'});
+  if(window._trackingRoute){
+    var routeBounds=window._trackingRoute.getBounds();
+    if(routeBounds.isValid()){
+      var allPts=[routeBounds.getNorthWest(),routeBounds.getSouthEast(),L.latLng(lat,lng)];
+      _maps['client-tracking-map'].fitBounds(L.latLngBounds(allPts),{padding:[50,50]});
+    }
+  }
 }
 
 function renderClientNew(el){
@@ -1693,6 +1769,18 @@ function initMotoboyMap(motoboyData,available,activeDels){
   var map=createMap('motoboy-map',{zoomControl:true});
   if(!map)return;
   window._motoboyData=motoboyData;
+
+  (activeDels||[]).forEach(function(d){
+    var origLat=Number(d.originLatitude),origLng=Number(d.originLongitude);
+    var destLat=Number(d.destinationLatitude),destLng=Number(d.destinationLongitude);
+    if(!origLat||!origLng||!destLat||!destLng)return;
+    addMarker('motoboy-map',origLat,origLng,{color:'#22c55e',emoji:'&#128205;',tooltip:'Origem: '+d.trackingAddress,popup:createPopupContent({title:'Origem',subtitle:d.originAddress,actions:[{label:'Navegar',color:'#22c55e',onclick:"openNavigation('"+d.originAddress.replace(/'/g,"\\'")+"')"}]})});
+    addMarker('motoboy-map',destLat,destLng,{color:'#ef4444',emoji:'&#127968;',tooltip:'Destino',popup:createPopupContent({title:'Destino',subtitle:d.destinationAddress,actions:[{label:'Navegar',color:'#ef4444',onclick:"openNavigation('"+d.destinationAddress.replace(/'/g,"\\'")+"')"}]})});
+    api('/route?origLat='+origLat+'&origLng='+origLng+'&destLat='+destLat+'&destLng='+destLng).then(function(r){
+      if(r.success&&r.data&&r.data.geometry){L.geoJSON(r.data.geometry,{style:{color:'#6366f1',weight:4,opacity:0.7}}).addTo(map);}
+    }).catch(function(){});
+  });
+
   if(motoboyData.isOnline){
     requestGPS(function(lat,lng){
       addUserLocationMarker('motoboy-map',lat,lng);
@@ -1724,9 +1812,12 @@ function activateGPS(){
   });
 }
 
-function openNavigation(address){
-  var url='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(address);
-  window.open(url,'_blank');
+function openNavigation(address,lat,lng){
+  if(lat&&lng){
+    window.open('https://www.google.com/maps/dir/?api=1&destination='+lat+','+lng,'_blank');
+    return;
+  }
+  window.open('https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(address),'_blank');
 }
 
 async function toggleOnline(){

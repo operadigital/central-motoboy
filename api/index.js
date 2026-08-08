@@ -173,15 +173,18 @@ app.get('/api/admin/deliveries', auth, admin, async (req, res) => {
 app.get('/api/admin/map/locations', auth, admin, async (req, res) => {
   try {
     const { data: onMbs } = await supabase.from('motoboys').select('id,current_latitude,current_longitude,is_online,users:user_id(first_name,last_name)').eq('is_online', true).not('current_latitude', 'is', null);
-    const { data: actDels } = await supabase.from('deliveries').select('id,tracking_code,status,current_latitude,current_longitude').in('status', ['ACCEPTED', 'PICKED_UP', 'IN_TRANSIT']).not('current_latitude', 'is', null);
+    const { data: actDels } = await supabase.from('deliveries').select('id,tracking_code,status,current_latitude,current_longitude,origin_latitude,origin_longitude,destination_latitude,destination_longitude,origin_address,destination_address').in('status', ['ACCEPTED', 'PICKED_UP', 'IN_TRANSIT']);
     res.json({ success: true, data: {
       motoboys: (onMbs || []).filter(m => m.current_latitude && m.current_longitude).map(m => ({
         id: m.id, currentLatitude: m.current_latitude, currentLongitude: m.current_longitude,
         user: m.users ? { firstName: m.users.first_name, lastName: m.users.last_name } : { firstName: 'M', lastName: 'B' }
       })),
-      activeDeliveries: (actDels || []).filter(d => d.current_latitude && d.current_longitude).map(d => ({
+      activeDeliveries: (actDels || []).map(d => ({
         id: d.id, trackingCode: d.tracking_code, status: d.status,
-        currentLatitude: d.current_latitude, currentLongitude: d.current_longitude
+        currentLatitude: d.current_latitude, currentLongitude: d.current_longitude,
+        originLatitude: d.origin_latitude, originLongitude: d.origin_longitude,
+        destinationLatitude: d.destination_latitude, destinationLongitude: d.destination_longitude,
+        originAddress: d.origin_address, destinationAddress: d.destination_address
       }))
     }});
   } catch (e) {
@@ -405,6 +408,11 @@ app.put('/api/motoboys/location', auth, async (req, res) => {
     if (m) {
       const updateData = { current_latitude: parseFloat(lat), current_longitude: parseFloat(lng) };
       await supabase.from('motoboys').update(updateData).eq('id', m.id);
+      const { data: activeDelivery } = await supabase.from('deliveries').select('id,client_id').eq('motoboy_id', m.id).in('status', ['ACCEPTED', 'PICKED_UP', 'IN_TRANSIT']).order('created_at', { ascending: false }).limit(1).maybeSingle();
+      if (activeDelivery) {
+        await supabase.from('deliveries').update({ current_latitude: parseFloat(lat), current_longitude: parseFloat(lng) }).eq('id', activeDelivery.id);
+        sendSSE('delivery-location', { deliveryId: activeDelivery.id, clientId: activeDelivery.client_id, motoboyId: m.id, lat: parseFloat(lat), lng: parseFloat(lng), timestamp: new Date().toISOString() });
+      }
       sendSSE('location-update', { motoboyId: m.id, userId: req.user.id, lat: parseFloat(lat), lng: parseFloat(lng), timestamp: new Date().toISOString() });
     }
     res.json({ success: true });
@@ -431,6 +439,8 @@ app.get('/api/motoboys/deliveries', auth, async (req, res) => {
   const result = (d || []).map(x => ({
     id: x.id, trackingCode: x.tracking_code, status: x.status,
     originAddress: x.origin_address, destinationAddress: x.destination_address,
+    originLatitude: x.origin_latitude, originLongitude: x.origin_longitude,
+    destinationLatitude: x.destination_latitude, destinationLongitude: x.destination_longitude,
     totalPrice: Number(x.total_price), description: x.description,
     distance: x.distance, estimatedTime: x.estimated_time
   }));
@@ -467,6 +477,27 @@ app.get('/api/deliveries/:id/tracking', auth, async (req, res) => {
       destLat: d.destination_latitude, destLng: d.destination_longitude,
       originAddress: d.origin_address, destinationAddress: d.destination_address,
       motoboyLocation
+    }});
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+app.get('/api/route', auth, async (req, res) => {
+  try {
+    const { origLat, origLng, destLat, destLng } = req.query;
+    if (!origLat || !origLng || !destLat || !destLng) return res.status(400).json({ success: false, message: 'Coordenadas obrigatorias' });
+    const url = `https://router.project-osrm.org/route/v1/driving/${parseFloat(origLng)},${parseFloat(origLat)};${parseFloat(destLng)},${parseFloat(destLat)}?overview=full&geometries=geojson`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    if (data.code !== 'Ok' || !data.routes || !data.routes.length) {
+      return res.json({ success: false, message: 'Rota nao encontrada' });
+    }
+    const route = data.routes[0];
+    res.json({ success: true, data: {
+      geometry: route.geometry,
+      distance: route.distance,
+      duration: route.duration
     }});
   } catch (e) {
     res.status(500).json({ success: false, message: e.message });
