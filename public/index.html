@@ -265,6 +265,12 @@ tr:hover td{background:#f8fafc}
   ::-webkit-scrollbar{display:none}
   *{scrollbar-width:none}
   
+  /* ---- MAPS MOBILE ---- */
+  .map-box{border-radius:0 !important;height:280px !important}
+  .leaflet-container{border-radius:0 !important}
+  .map-overlay{bottom:8px;left:8px;right:8px}
+  .map-tag{padding:4px 8px;font-size:10px}
+  
   /* ---- PAGE TRANSITIONS ---- */
   #main-content{animation:pageIn .25s ease}
   @keyframes pageIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
@@ -318,8 +324,8 @@ tr:hover td{background:#f8fafc}
 .marker-delivery{background:linear-gradient(135deg,#f59e0b,#d97706)}
 .marker-client{background:linear-gradient(135deg,#22c55e,#16a34a)}
 .marker-destination{background:linear-gradient(135deg,#ef4444,#dc2626)}
-.user-location{width:18px;height:18px;background:#4285f4;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(66,133,244,.5);animation:locPulse 2s infinite}
-@keyframes locPulse{0%,100%{box-shadow:0 2px 8px rgba(66,133,244,.5)}50%{box-shadow:0 2px 8px rgba(66,133,244,.5),0 0 0 12px rgba(66,133,244,.15)}}
+.user-location{width:18px;height:18px;background:#4285f4;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(66,133,244,.25),0 2px 8px rgba(66,133,244,.5);animation:locPulse 2s infinite}
+@keyframes locPulse{0%,100%{box-shadow:0 0 0 4px rgba(66,133,244,.25),0 2px 8px rgba(66,133,244,.5)}50%{box-shadow:0 0 0 12px rgba(66,133,244,.08),0 2px 8px rgba(66,133,244,.5)}}
 </style>
 </head>
 <body>
@@ -1513,7 +1519,7 @@ function renderClientNew(el){
     var map=createMap('client-new-map',{zoomControl:true});
     if(!map)return;
     requestGPS(function(pLat,pLng){
-      centerMap('client-new-map',pLat,pLng,15);
+      centerMap('client-new-map',pLat,pLng,17);
     },function(){});
     map.on('click',function(e){
       var lat=e.latlng.lat,lng=e.latlng.lng;
@@ -1537,7 +1543,7 @@ function renderClientNew(el){
   },200);
   window.useMyLocation=function(){
     navigator.geolocation.getCurrentPosition(function(p){
-      centerMap('client-new-map',p.coords.latitude,p.coords.longitude,15);
+      centerMap('client-new-map',p.coords.latitude,p.coords.longitude,17);
     },function(){alert('Nao foi possivel obter localizacao')},{enableHighAccuracy:true});
   };
   document.getElementById('new-delivery-form').onsubmit=async function(e){
@@ -1688,7 +1694,7 @@ function initMotoboyMap(motoboyData,available,activeDels){
   requestGPS(function(lat,lng,acc){
     clearMarkers('motoboy-map');
     addMarker('motoboy-map',lat,lng,{html:'<div class="user-location"></div>',tooltip:'Voce esta aqui'});
-    centerMap('motoboy-map',lat,lng,15);
+    centerMap('motoboy-map',lat,lng,17);
     if(motoboyData.isOnline)sendLocationToServer(lat,lng);
     available.forEach(function(d,i){
       var dlat=DEFAULT_LAT+((i*0.008)%0.05),dlng=DEFAULT_LNG+((i*0.012)%0.05);
