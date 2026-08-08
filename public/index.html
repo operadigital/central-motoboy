@@ -14,6 +14,12 @@
 <link rel="apple-touch-icon" href="/icon.svg">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+if(typeof L==='undefined'){
+  document.write('<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">');
+  document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"><\/script>');
+}
+</script>
 <title>Central Motoboy</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -266,7 +272,7 @@ tr:hover td{background:#f8fafc}
   *{scrollbar-width:none}
   
   /* ---- MAPS MOBILE ---- */
-  .map-box{border-radius:0 !important;height:350px !important}
+  .map-box{border-radius:0 !important;height:400px !important}
   .leaflet-container{border-radius:0 !important}
   .map-overlay{bottom:8px;left:8px;right:8px}
   .map-tag{padding:4px 8px;font-size:10px}
@@ -599,6 +605,10 @@ function createMap(containerId,opts){
   if(_maps[containerId]){_maps[containerId].remove();delete _maps[containerId];}
   var el=document.getElementById(containerId);
   if(!el)return null;
+  if(typeof L==='undefined'){
+    el.innerHTML='<div style="height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:20px;text-align:center;background:#fef2f2;border-radius:14px"><div style="font-size:48px;margin-bottom:8px">&#9888;</div><div style="font-weight:700;color:#991b1b">Mapa nao carregou</div><div style="font-size:12px;color:#991b1b;margin-top:4px">Verifique sua conexao com a internet</div></div>';
+    return null;
+  }
   var def={zoomControl:false,attributionControl:true,zoom:13};
   if(opts)Object.keys(opts).forEach(function(k){def[k]=opts[k]});
   var map=L.map(containerId,def).setView([DEFAULT_LAT,DEFAULT_LNG],13);
@@ -1637,7 +1647,7 @@ async function renderMotoboyDash(el){
   h+=buildMiniStat('Avaliacao','&#9733; '+Number(e.averageRating).toFixed(1),'#f59e0b','&#11088;');
   h+='</div></div>';
 
-  h+='<div class="mobile-grid-patch"><div class="card" style="margin-bottom:16px"><div class="card-h">&#128506; Mapa</div><div class="card-b" style="padding:0"><div id="motoboy-map" class="map-box" style="height:320px;width:100%"></div></div></div></div>';
+  h+='<div class="mobile-grid-patch"><div class="card" style="margin-bottom:16px"><div class="card-h" style="display:flex;justify-content:space-between"><span>&#128506; Mapa</span><span id="gps-status" style="font-size:12px;color:var(--g);font-weight:500">Procurando GPS...</span></div><div class="card-b" style="padding:0;position:relative"><div id="motoboy-map" class="map-box" style="height:320px;width:100%"></div><button onclick="forceLocateMotoboy()" id="btn-locate-me" style="position:absolute;bottom:12px;right:12px;z-index:1000;width:44px;height:44px;border-radius:50%;background:#fff;border:none;box-shadow:0 2px 12px rgba(0,0,0,.25);cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center" title="Minha localizacao">&#128205;</button></div></div></div>';
 
   if(activeDels.length){
     h+='<div class="card" style="margin-bottom:16px;border:2px solid var(--b)"><div class="card-h" style="background:linear-gradient(135deg,#dbeafe,#bfdbfe);color:#1e40af">&#128666; Entrega Ativa</div><div class="card-b">';
@@ -1685,22 +1695,42 @@ function requestGPS(onSuccess, onFail){
   },{enableHighAccuracy:true,maximumAge:5000,timeout:20000});
 }
 
+function setGPSStatus(msg,color){
+  var el=document.getElementById('gps-status');
+  if(el){el.textContent=msg;if(color)el.style.color=color;}
+}
+
 function initMotoboyMap(motoboyData,available,activeDels){
   var mapEl=document.getElementById('motoboy-map');
   if(!mapEl||typeof L==='undefined')return;
   var map=createMap('motoboy-map',{zoomControl:true});
   if(!map)return;
-
   map.invalidateSize();
+  setGPSStatus('Procurando GPS...','var(--p)');
 
   requestGPS(function(lat,lng,acc){
+    setGPSStatus('GPS ativo - '+acc.toFixed(0)+'m precisao','var(--gn)');
     addUserLocationMarker('motoboy-map',lat,lng,acc);
     centerMap('motoboy-map',lat,lng,18);
     if(motoboyData.isOnline)sendLocationToServer(lat,lng);
     watchMyLocation(null,function(glat,glng){sendLocationToServer(glat,glng);});
   },function(err){
-    console.log('GPS erro:',err);
+    setGPSStatus('GPS falhou: '+err+' - Toque no botao','var(--r)');
     centerMap('motoboy-map',DEFAULT_LAT,DEFAULT_LNG,13);
+  });
+}
+
+function forceLocateMotoboy(){
+  setGPSStatus('Procurando GPS...','var(--p)');
+  requestGPS(function(lat,lng,acc){
+    setGPSStatus('GPS ativo - '+acc.toFixed(0)+'m precisao','var(--gn)');
+    var map=_maps['motoboy-map'];
+    if(!map)return;
+    clearMarkers('motoboy-map');
+    addUserLocationMarker('motoboy-map',lat,lng,acc);
+    centerMap('motoboy-map',lat,lng,18);
+  },function(err){
+    setGPSStatus('Erro: '+err+' - Tente novamente','var(--r)');
   });
 }
 
