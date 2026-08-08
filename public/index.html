@@ -1893,7 +1893,7 @@ async function renderClientDash(el){
     active.forEach(function(d){
       h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:14px;background:var(--gl);border-radius:12px;margin-bottom:10px;gap:12px">';
       h+='<div style="min-width:0"><div style="font-weight:700;font-family:monospace;font-size:14px">'+d.trackingCode+'</div><div style="font-size:12px;color:var(--g);margin-top:2px">'+d.originAddress+' &#8594; '+d.destinationAddress+'</div></div>';
-      h+='<div style="text-align:right;flex-shrink:0;display:flex;gap:6px;align-items:center"><span class="'+(ST[d.status]||['',''])[0]+'">'+(ST[d.status]||['',''])[1]+'</span><button onclick="openChat(\''+d.id+'\')" style="background:var(--b);color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:11px;cursor:pointer;font-weight:600">&#128172;</button></div></div>';
+      h+='<div style="text-align:right;flex-shrink:0;display:flex;gap:6px;align-items:center"><span class="'+(ST[d.status]||['',''])[0]+'">'+(ST[d.status]||['',''])[1]+'</span><button onclick="openChat(\''+d.id+'\')" style="background:var(--b);color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:12px;cursor:pointer;font-weight:600;white-space:nowrap">&#128172; Chat</button></div></div>';
     });
     h+='</div></div>';
   }
@@ -2178,7 +2178,7 @@ async function renderMotoboyDash(el){
         h+='<button class="btn btn-b" onclick="drawRouteToTarget(\''+d.id+'\',\'destination\')" style="flex:1">&#128663; Ir a Entrega</button>';
         h+='<button class="btn btn-g" onclick="completeDel(\''+d.id+'\')" style="flex:1">&#10004; Concluir</button>';
       }
-      h+='<button class="btn btn-s" onclick="openChat(\''+d.id+'\')" style="flex:0">&#128172;</button>';
+      h+='<button class="btn btn-s" onclick="openChat(\''+d.id+'\')" style="flex:0;white-space:nowrap;padding:10px 14px">&#128172; Chat</button>';
       h+='</div></div>';
     });
     h+='</div></div>';
