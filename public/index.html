@@ -386,7 +386,7 @@ body.dark .skeleton{background:linear-gradient(90deg,#334155 25%,#475569 50%,#33
   </div>
   <div class="hdr-right">
     <div style="width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.04);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px" onclick="toggleDarkMode()">&#127769;</div>
-    <div style="width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.04);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px" onclick="openModal('<div style=text-align:center;padding:16px><h3 style=margin-bottom:8px>Notificacoes</h3><p style=color:var(--g)>Nenhuma notificacao nova</p></div>')">&#128276;</div>
+    <div style="width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.04);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px" onclick="openPushModal()">&#128276;</div>
     <div class="avatar" id="m-avatar">A</div>
   </div>
 </div>
@@ -683,24 +683,45 @@ async function testPush(){
 }
 async function initPushNotifications(){
   if(!('serviceWorker' in navigator)||!('PushManager' in window)||!TOKEN)return;
+  console.log('Push: starting...');
   try{
     if(!_swReg){
       _swReg=await navigator.serviceWorker.register('/service-worker.js');
+      console.log('Push: SW registered');
     }
     var reg=_swReg;
     var sub=await reg.pushManager.getSubscription();
     if(!sub){
+      console.log('Push: no subscription, requesting permission...');
       var keyRes=await api('/push/vapid-key');
-      if(!keyRes.success)return;
+      if(!keyRes.success){console.log('Push: no vapid key');return;}
       var vapidKey=keyRes.data.publicKey;
       var keyBytes=Uint8Array.from(atob(vapidKey.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
       sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:keyBytes});
+      console.log('Push: subscribed!');
     }
     if(sub){
       var subJson=sub.toJSON();
       await api('/push/subscribe',{method:'POST',body:JSON.stringify({endpoint:subJson.endpoint,keys:subJson.keys})});
+      console.log('Push: saved to server');
     }
-  }catch(e){console.log('Push error:',e.message);}
+  }catch(e){console.log('Push error:',e.message,e);}
+}
+function showPushStatus(){
+  if(!('serviceWorker' in navigator)||!('PushManager' in window)){
+    return '<span style="color:var(--r);font-size:12px">&#10008; Push nao suportado neste browser</span>';
+  }
+  return '<span style="color:var(--gn);font-size:12px">&#10004; Push disponivel</span>';
+}
+function openPushModal(){
+  var status=showPushStatus();
+  openModal('<div style="text-align:center;padding:8px 0">'+
+    '<h3 style="font-size:18px;font-weight:700;margin-bottom:12px">&#128276; Notificacoes</h3>'+
+    '<div style="margin-bottom:16px">'+status+'</div>'+
+    '<button class="btn btn-b" onclick="testPush()" style="width:100%;margin-bottom:8px">&#128276; Enviar Notificacao de Teste</button>'+
+    '<button class="btn btn-s" onclick="initPushNotifications().then(()=>showNotifToast(\'&#10004; Push ativado!\',\'new\'))" style="width:100%;margin-bottom:8px">&#128232; Ativar Push</button>'+
+    '<p style="font-size:12px;color:var(--g);margin-top:12px">Se voce esta no iPhone, instale o app na tela inicial para receber notificacoes com o app fechado.</p>'+
+    '</div>');
 }
 
 // ============ SKELETON HELPERS ============
