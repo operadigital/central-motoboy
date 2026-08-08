@@ -988,6 +988,7 @@ var _mapMarkers={};
 var _mapCircles={};
 var _geoWatchId=null;
 var DEFAULT_LAT=-30.8511,DEFAULT_LNG=-50.8075;
+var _lastGPSLat=null,_lastGPSLng=null;
 
 function createMap(containerId,opts){
   if(_maps[containerId]){try{_maps[containerId].remove();}catch(e){}delete _maps[containerId];}
@@ -2216,6 +2217,7 @@ function initMotoboyMap(motoboyData,available,activeDels){
   (activeDels||[]).forEach(function(d){_activeDeliveryCache[d.id]=d;});
 
   requestGPS(function(gpsLat,gpsLng){
+    _lastGPSLat=gpsLat;_lastGPSLng=gpsLng;
     addUserLocationMarker('motoboy-map',gpsLat,gpsLng);
     centerMap('motoboy-map',gpsLat,gpsLng,16);
     sendLocationToServer(gpsLat,gpsLng);
@@ -2272,38 +2274,49 @@ function openNavigation(address,lat,lng){
 }
 
 var _activeDeliveryCache={};
+function isInCamaqua(lat,lng){
+  return lat>=-30.95&&lat<=-30.75&&lng>=-50.95&&lng<=-50.65;
+}
 function drawRouteToTarget(deliveryId,target){
   var d=_activeDeliveryCache[deliveryId];
   if(!d){showNotifToast('&#10008; Entrega nao encontrada no mapa','');return;}
   var map=_maps['motoboy-map'];
   if(!map||typeof L==='undefined'){showNotifToast('&#10008; Mapa nao carregado','');return;}
-  requestGPS(function(gpsLat,gpsLng){
-    var tLat,tLng,tAddr,tColor;
-    if(target==='origin'){
-      tLat=Number(d.originLatitude);tLng=Number(d.originLongitude);tAddr=d.originAddress;tColor='#22c55e';
+  var gpsLat=_lastGPSLat,gpsLng=_lastGPSLng;
+  if(!gpsLat||!gpsLng){
+    requestGPS(function(lat,lng){
+      _lastGPSLat=lat;_lastGPSLng=lng;
+      drawRouteToTarget(deliveryId,target);
+    },function(){showNotifToast('&#10008; Ative o GPS para tracar a rota','');});
+    return;
+  }
+  if(!isInCamaqua(gpsLat,gpsLng)){showNotifToast('&#10008; Voce esta fora de Camaqua! Area de cobertura: Camaqua/RS','');return;}
+  var tLat,tLng,tAddr,tColor;
+  if(target==='origin'){
+    tLat=Number(d.originLatitude);tLng=Number(d.originLongitude);tAddr=d.originAddress;tColor='#22c55e';
+  }else{
+    tLat=Number(d.destinationLatitude);tLng=Number(d.destinationLongitude);tAddr=d.destinationAddress;tColor='#ef4444';
+  }
+  if(!tLat||!tLng){showNotifToast('&#10008; Coordenadas nao encontradas','');return;}
+  if(!isInCamaqua(tLat,tLng)){showNotifToast('&#10008; Endereco fora de Camaqua!','');return;}
+  Object.keys(_maps).forEach(function(k){if(_maps[k]&&_maps[k]._routeLine){map.removeLayer(_maps[k]._routeLine);_maps[k]._routeLine=null;}});
+  api('/route?origLat='+gpsLat+'&origLng='+gpsLng+'&destLat='+tLat+'&destLng='+tLng).then(function(r){
+    if(r.success&&r.data&&r.data.geometry){
+      var line=L.geoJSON(r.data.geometry,{style:{color:tColor,weight:6,opacity:0.9}}).addTo(map);
+      map._routeLine=line;
+      var bounds=line.getBounds();
+      if(bounds.isValid())map.fitBounds(bounds,{padding:[50,50]});
     }else{
-      tLat=Number(d.destinationLatitude);tLng=Number(d.destinationLongitude);tAddr=d.destinationAddress;tColor='#ef4444';
+      var line2=L.polyline([[gpsLat,gpsLng],[tLat,tLng]],{color:tColor,weight:5,opacity:0.8,dashArray:'10,6'}).addTo(map);
+      map._routeLine=line2;
+      map.fitBounds(line2.getBounds(),{padding:[50,50]});
     }
-    if(!tLat||!tLng){showNotifToast('&#10008; Coordenadas nao encontradas','');return;}
-    Object.keys(_maps).forEach(function(k){if(_maps[k]&&_maps[k]._routeLine){map.removeLayer(_maps[k]._routeLine);_maps[k]._routeLine=null;}});
-    api('/route?origLat='+gpsLat+'&origLng='+gpsLng+'&destLat='+tLat+'&destLng='+tLng).then(function(r){
-      if(r.success&&r.data&&r.data.geometry){
-        var line=L.geoJSON(r.data.geometry,{style:{color:tColor,weight:6,opacity:0.9}}).addTo(map);
-        map._routeLine=line;
-        var bounds=line.getBounds();
-        if(bounds.isValid())map.fitBounds(bounds,{padding:[50,50]});
-      }else{
-        var line2=L.polyline([[gpsLat,gpsLng],[tLat,tLng]],{color:tColor,weight:5,opacity:0.8,dashArray:'10,6'}).addTo(map);
-        map._routeLine=line2;
-        map.fitBounds(line2.getBounds(),{padding:[50,50]});
-      }
-      showNotifToast('&#128205; Rota para '+(target==='origin'?'coleta':'entrega')+' calculada','new');
-    }).catch(function(){
-      var line3=L.polyline([[gpsLat,gpsLng],[tLat,tLng]],{color:tColor,weight:5,opacity:0.8,dashArray:'10,6'}).addTo(map);
-      map._routeLine=line3;
-      map.fitBounds(line3.getBounds(),{padding:[50,50]});
-    });
-  },function(){showNotifToast('&#10008; Ative o GPS para tracar a rota','');});
+    showNotifToast('&#128205; Rota para '+(target==='origin'?'coleta':'entrega')+' calculada','new');
+  }).catch(function(){
+    var line3=L.polyline([[gpsLat,gpsLng],[tLat,tLng]],{color:tColor,weight:5,opacity:0.8,dashArray:'10,6'}).addTo(map);
+    map._routeLine=line3;
+    map.fitBounds(line3.getBounds(),{padding:[50,50]});
+  });
 }
 
 async function toggleOnline(){

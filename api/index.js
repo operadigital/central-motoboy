@@ -424,6 +424,16 @@ app.post('/api/deliveries', auth, async (req, res) => {
     if (!allowedCities.includes(originCity) || !allowedCities.includes(destCity)) {
       return res.status(400).json({ success: false, message: 'Entregas somente dentro de Camaquã (CEP 96180-000)' });
     }
+    // Validar coordenadas dentro de Camaqua
+    const inCamaqua = (lat, lng) => lat >= -30.95 && lat <= -30.75 && lng >= -50.95 && lng <= -50.65;
+    const oLat = parseFloat(b.originLatitude), oLng = parseFloat(b.originLongitude);
+    const dLat = parseFloat(b.destinationLatitude), dLng = parseFloat(b.destinationLongitude);
+    if (oLat && oLng && !inCamaqua(oLat, oLng)) {
+      return res.status(400).json({ success: false, message: 'Coordenadas de origem fora de Camaquã' });
+    }
+    if (dLat && dLng && !inCamaqua(dLat, dLng)) {
+      return res.status(400).json({ success: false, message: 'Coordenadas de destino fora de Camaquã' });
+    }
 
     // Dynamic pricing via OSRM
     let basePrice = 10, distancePrice = 0, totalPrice = 10, distanceKm = b.distance || 0;
@@ -850,6 +860,11 @@ app.get('/api/route', auth, async (req, res) => {
   try {
     const { origLat, origLng, destLat, destLng } = req.query;
     if (!origLat || !origLng || !destLat || !destLng) return res.status(400).json({ success: false, message: 'Coordenadas obrigatorias' });
+    // Validar Camaquã (-30.95 a -30.75 lat, -50.95 a -50.65 lng)
+    const inCamaqua = (lat, lng) => lat >= -30.95 && lat <= -30.75 && lng >= -50.95 && lng <= -50.65;
+    if (!inCamaqua(parseFloat(origLat), parseFloat(origLng)) || !inCamaqua(parseFloat(destLat), parseFloat(destLng))) {
+      return res.status(400).json({ success: false, message: 'Rota fora de Camaquã. Entregas somente na regiao de Camaquã/RS' });
+    }
     const url = `https://router.project-osrm.org/route/v1/driving/${parseFloat(origLng)},${parseFloat(origLat)};${parseFloat(destLng)},${parseFloat(destLat)}?overview=full&geometries=geojson`;
     const resp = await fetch(url);
     const data = await resp.json();
