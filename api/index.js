@@ -417,6 +417,14 @@ app.post('/api/deliveries', auth, async (req, res) => {
     const b = req.body;
     const code = 'CM' + Math.random().toString(36).substring(2, 10).toUpperCase();
 
+    // Validar Camaqua (CEP 96180-000)
+    const allowedCities = ['camaquã', 'camaqua'];
+    const originCity = (b.originCity || '').trim().toLowerCase();
+    const destCity = (b.destinationCity || '').trim().toLowerCase();
+    if (!allowedCities.includes(originCity) || !allowedCities.includes(destCity)) {
+      return res.status(400).json({ success: false, message: 'Entregas somente dentro de Camaquã (CEP 96180-000)' });
+    }
+
     // Dynamic pricing via OSRM
     let basePrice = 10, distancePrice = 0, totalPrice = 10, distanceKm = b.distance || 0;
     if (b.originLatitude && b.originLongitude && b.destinationLatitude && b.destinationLongitude) {

@@ -2049,6 +2049,14 @@ function renderClientNew(el){
   document.getElementById('new-delivery-form').onsubmit=async function(e){
     e.preventDefault();
     try{
+      var originCity=(document.getElementById('nd-oc').value||'').trim().toLowerCase();
+      var destCity=(document.getElementById('nd-dc').value||'').trim().toLowerCase();
+      var originState=(document.getElementById('nd-os').value||'').trim().toUpperCase();
+      var destState=(document.getElementById('nd-ds').value||'').trim().toUpperCase();
+      if(originCity!=='camaquã'&&originCity!=='camaqua'){document.getElementById('nd-error').textContent='Endereco de origem deve ser em Camaqua (CEP 96180-000)';document.getElementById('nd-error').style.display='block';return;}
+      if(destCity!=='camaquã'&&destCity!=='camaqua'){document.getElementById('nd-error').textContent='Endereco de destino deve ser em Camaqua (CEP 96180-000)';document.getElementById('nd-error').style.display='block';return;}
+      if(originState!=='RS'){document.getElementById('nd-error').textContent='Estado da origem deve ser RS';document.getElementById('nd-error').style.display='block';return;}
+      if(destState!=='RS'){document.getElementById('nd-error').textContent='Estado do destino deve ser RS';document.getElementById('nd-error').style.display='block';return;}
       var body={
         originAddress:document.getElementById('nd-oa').value,originCity:document.getElementById('nd-oc').value,originState:document.getElementById('nd-os').value,originNeighborhood:document.getElementById('nd-ob').value,
         originLatitude:selectedOrigin?selectedOrigin.lat:DEFAULT_LAT,originLongitude:selectedOrigin?selectedOrigin.lng:DEFAULT_LNG,
