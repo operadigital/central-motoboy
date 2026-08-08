@@ -1115,11 +1115,11 @@ var _locationInterval=null;
 function startLocationTracking(){
   stopLocationTracking();
   _geoWatchId=navigator.geolocation.watchPosition(function(p){
-    sendLocationToServer(p.coords.latitude,p.coords.longitude);
+    if(isInCamaqua(p.coords.latitude,p.coords.longitude))sendLocationToServer(p.coords.latitude,p.coords.longitude);
   },function(){},{enableHighAccuracy:true,maximumAge:5000});
   _locationInterval=setInterval(function(){
     navigator.geolocation.getCurrentPosition(function(p){
-      sendLocationToServer(p.coords.latitude,p.coords.longitude);
+      if(isInCamaqua(p.coords.latitude,p.coords.longitude))sendLocationToServer(p.coords.latitude,p.coords.longitude);
     },function(){},{enableHighAccuracy:true,maximumAge:5000,timeout:10000});
   },15000);
 }
@@ -2218,9 +2218,13 @@ function initMotoboyMap(motoboyData,available,activeDels){
 
   requestGPS(function(gpsLat,gpsLng){
     _lastGPSLat=gpsLat;_lastGPSLng=gpsLng;
-    addUserLocationMarker('motoboy-map',gpsLat,gpsLng);
-    centerMap('motoboy-map',gpsLat,gpsLng,16);
-    sendLocationToServer(gpsLat,gpsLng);
+    if(isInCamaqua(gpsLat,gpsLng)){
+      addUserLocationMarker('motoboy-map',gpsLat,gpsLng);
+      centerMap('motoboy-map',gpsLat,gpsLng,16);
+      sendLocationToServer(gpsLat,gpsLng);
+    }else{
+      centerMap('motoboy-map',DEFAULT_LAT,DEFAULT_LNG,14);
+    }
 
     (activeDels||[]).forEach(function(d){
       var origLat=Number(d.originLatitude),origLng=Number(d.originLongitude);
@@ -2231,7 +2235,9 @@ function initMotoboyMap(motoboyData,available,activeDels){
       addMarker('motoboy-map',destLat,destLng,{color:'#ef4444',emoji:'&#127968;',tooltip:'Entrega: '+d.destinationAddress,popup:createPopupContent({title:'Entrega',subtitle:d.destinationAddress,actions:[{label:'Navegar',color:'#ef4444',onclick:"openNavigation('"+d.destinationAddress.replace(/'/g,"\\'")+"')"}]})});
 
       if(d.status==='ACCEPTED'){
-        api('/route?origLat='+gpsLat+'&origLng='+gpsLng+'&destLat='+origLat+'&destLng='+origLng).then(function(r){
+        var rLat=isInCamaqua(gpsLat,gpsLng)?gpsLat:origLat;
+        var rLng=isInCamaqua(gpsLat,gpsLng)?gpsLng:origLng;
+        api('/route?origLat='+rLat+'&origLng='+rLng+'&destLat='+origLat+'&destLng='+origLng).then(function(r){
           if(r.success&&r.data&&r.data.geometry){L.geoJSON(r.data.geometry,{style:{color:'#22c55e',weight:5,opacity:0.8}}).addTo(map);}
         }).catch(function(){});
       }else if(d.status==='PICKED_UP'||d.status==='IN_TRANSIT'){
@@ -2239,25 +2245,46 @@ function initMotoboyMap(motoboyData,available,activeDels){
           if(r.success&&r.data&&r.data.geometry){L.geoJSON(r.data.geometry,{style:{color:'#ef4444',weight:5,opacity:0.8}}).addTo(map);}
         }).catch(function(){});
       }
-
-      setTimeout(function(){fitMapToMarkers('motoboy-map');},1500);
     });
+    setTimeout(function(){fitMapToMarkers('motoboy-map');},1500);
   },function(){
     centerMap('motoboy-map',DEFAULT_LAT,DEFAULT_LNG,14);
+    (activeDels||[]).forEach(function(d){
+      var origLat=Number(d.originLatitude),origLng=Number(d.originLongitude);
+      var destLat=Number(d.destinationLatitude),destLng=Number(d.destinationLongitude);
+      if(!origLat||!origLng||!destLat||!destLng)return;
+      addMarker('motoboy-map',origLat,origLng,{color:'#22c55e',emoji:'&#128205;',tooltip:'Coleta: '+d.originAddress});
+      addMarker('motoboy-map',destLat,destLng,{color:'#ef4444',emoji:'&#127968;',tooltip:'Entrega: '+d.destinationAddress});
+      if(d.status==='ACCEPTED'){
+        api('/route?origLat='+origLat+'&origLng='+origLng+'&destLat='+origLat+'&destLng='+origLng).then(function(r){
+          if(r.success&&r.data&&r.data.geometry){L.geoJSON(r.data.geometry,{style:{color:'#22c55e',weight:5,opacity:0.8}}).addTo(map);}
+        }).catch(function(){});
+      }else if(d.status==='PICKED_UP'||d.status==='IN_TRANSIT'){
+        api('/route?origLat='+origLat+'&origLng='+origLng+'&destLat='+destLat+'&destLng='+destLng).then(function(r){
+          if(r.success&&r.data&&r.data.geometry){L.geoJSON(r.data.geometry,{style:{color:'#ef4444',weight:5,opacity:0.8}}).addTo(map);}
+        }).catch(function(){});
+      }
+      setTimeout(function(){fitMapToMarkers('motoboy-map');},1500);
+    });
   });
 }
 
 function activateGPS(){
   setGPSStatus('Procurando GPS...','var(--p)');
   requestGPS(function(lat,lng,acc){
+    if(!isInCamaqua(lat,lng)){setGPSStatus('GPS fora de Camaqua! Area: Camaquã/RS','var(--r)');return;}
+    _lastGPSLat=lat;_lastGPSLng=lng;
     setGPSStatus('GPS ativo!','var(--gn)');
     setTimeout(function(){setGPSStatus('');},3000);
     addUserLocationMarker('motoboy-map',lat,lng,acc);
-    centerMap('motoboy-map',lat,lng,18);
+    centerMap('motoboy-map',lat,lng,16);
     var md=window._motoboyData;
     if(md&&md.isOnline)sendLocationToServer(lat,lng);
     navigator.geolocation.watchPosition(function(p){
-      sendLocationToServer(p.coords.latitude,p.coords.longitude);
+      if(isInCamaqua(p.coords.latitude,p.coords.longitude)){
+        _lastGPSLat=p.coords.latitude;_lastGPSLng=p.coords.longitude;
+        sendLocationToServer(p.coords.latitude,p.coords.longitude);
+      }
     },function(){},{enableHighAccuracy:true,maximumAge:5000});
   },function(errMsg,errCode){
     var retryHtml='<span style="cursor:pointer;text-decoration:underline" onclick="activateGPS()">Tentar novamente</span>';
