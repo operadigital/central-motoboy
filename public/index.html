@@ -692,7 +692,12 @@ function requestGPS(onSuccess,onFail){
     if(onSuccess)onSuccess(pos.coords.latitude,pos.coords.longitude,pos.coords.accuracy);
   },function(err){
     var msg='Erro ao obter localizacao';
-    if(err.code===1)msg='Permissao negada. Abra as configuracoes do navegador e permita acesso a localizacao.';
+    if(err.code===1){
+      msg='<b>Permissao negada!</b><br><br>'+
+        '<b>iPhone:</b> Configuracoes > Privacidade > Servicos de Localizacao > Safari > Permitir<br><br>'+
+        '<b>Android:</b> Configuracoes > Apps > Chrome > Permissoes > Localizacao > Permitir<br><br>'+
+        'Depois de liberar, <b>recarregue a pagina</b> e tente novamente.';
+    }
     else if(err.code===2)msg='GPS indisponivel. Verifique se o GPS do celular esta ligado e voce esta ao ar livre.';
     else if(err.code===3)msg='Tempo esgotado. Tente ao ar livre e aguarde alguns segundos.';
     if(onFail)onFail(msg,err.code);
