@@ -1045,11 +1045,13 @@ function initAdminMap(loc){
     addMarker('admin-realtime-map',lat,lng,{color:'#f59e0b',emoji:'&#128230;',popup:popup,tooltip:d.trackingCode});
   });
 
-  if(motoboys.length||deliveries.length){
-    setTimeout(function(){fitMapToMarkers('admin-realtime-map')},300);
-  } else {
-    centerMap('admin-realtime-map',DEFAULT_LAT,DEFAULT_LNG,12);
-  }
+  requestGPS(function(lat,lng){
+    addMarker('admin-realtime-map',lat,lng,{html:'<div class="user-location"></div>',tooltip:'Central'});
+    if(!motoboys.length&&!deliveries.length)centerMap('admin-realtime-map',lat,lng,13);
+    else fitMapToMarkers('admin-realtime-map');
+  },function(){
+    if(motoboys.length||deliveries.length)fitMapToMarkers('admin-realtime-map');
+  });
 }
 
 async function renderAdminMotoboys(el){
@@ -1466,11 +1468,15 @@ function initClientTrackingMap(delivery){
 
   if(delivery.status!=='PENDING'){
     addMarker('client-tracking-map',motLat,motLng,{color:'#3b82f6',emoji:'&#128690;',tooltip:'Motoboy a caminho'});
-    var line=L.polyline([[origLat,origLng],[motLat,motLng],[destLat,destLng]],{color:'#3b82f6',weight:4,opacity:0.7,dashArray:'8,8'}).addTo(map);
-    fitMapToMarkers('client-tracking-map');
-  } else {
-    fitMapToMarkers('client-tracking-map');
+    L.polyline([[origLat,origLng],[motLat,motLng],[destLat,destLng]],{color:'#3b82f6',weight:4,opacity:0.7,dashArray:'8,8'}).addTo(map);
   }
+
+  requestGPS(function(lat,lng){
+    addMarker('client-tracking-map',lat,lng,{html:'<div class="user-location"></div>',tooltip:'Voce'});
+    fitMapToMarkers('client-tracking-map');
+  },function(){
+    fitMapToMarkers('client-tracking-map');
+  });
 }
 
 function renderClientNew(el){
@@ -1506,11 +1512,9 @@ function renderClientNew(el){
     if(!mapEl||typeof L==='undefined')return;
     var map=createMap('client-new-map',{zoomControl:true});
     if(!map)return;
-    navigator.geolocation.getCurrentPosition(function(p){
-      centerMap('client-new-map',p.coords.latitude,p.coords.longitude,15);
-    },function(){
-      centerMap('client-new-map',DEFAULT_LAT,DEFAULT_LNG,12);
-    },{enableHighAccuracy:true,maximumAge:5000,timeout:15000});
+    requestGPS(function(pLat,pLng){
+      centerMap('client-new-map',pLat,pLng,15);
+    },function(){});
     map.on('click',function(e){
       var lat=e.latlng.lat,lng=e.latlng.lng;
       clearMarkers('client-new-map');
@@ -1651,6 +1655,15 @@ async function renderMotoboyDash(el){
   },150);
 }
 
+function requestGPS(onSuccess, onFail){
+  if(!navigator.geolocation){if(onFail)onFail('Navegador nao suporta GPS');return;}
+  navigator.geolocation.getCurrentPosition(function(pos){
+    onSuccess(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+  },function(err){
+    if(onFail)onFail(err.message);
+  },{enableHighAccuracy:true,maximumAge:0,timeout:30000});
+}
+
 function initMotoboyMap(motoboyData,available,activeDels){
   var mapEl=document.getElementById('motoboy-map');
   if(!mapEl||typeof L==='undefined')return;
@@ -1672,24 +1685,32 @@ function initMotoboyMap(motoboyData,available,activeDels){
     addMarker('motoboy-map',lat,lng,{color:'#ef4444',emoji:'&#128666;',tooltip:d.trackingCode+' - Em andamento'});
   });
 
-  if(available.length||activeDels.length){
-    setTimeout(function(){fitMapToMarkers('motoboy-map')},300);
-  }
-
-  if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(function(pos){
-      var lat=pos.coords.latitude,lng=pos.coords.longitude;
-      addMarker('motoboy-map',lat,lng,{html:'<div class="user-location"></div>',tooltip:'Voce esta aqui'});
-      if(!available.length&&!activeDels.length)centerMap('motoboy-map',lat,lng,15);
-      if(motoboyData.isOnline)sendLocationToServer(lat,lng);
-    },function(err){
-      console.log('GPS:',err.message);
-    },{enableHighAccuracy:true,maximumAge:5000,timeout:15000});
-
+  requestGPS(function(lat,lng,acc){
+    clearMarkers('motoboy-map');
+    addMarker('motoboy-map',lat,lng,{html:'<div class="user-location"></div>',tooltip:'Voce esta aqui'});
+    centerMap('motoboy-map',lat,lng,15);
+    if(motoboyData.isOnline)sendLocationToServer(lat,lng);
+    available.forEach(function(d,i){
+      var dlat=DEFAULT_LAT+((i*0.008)%0.05),dlng=DEFAULT_LNG+((i*0.012)%0.05);
+      var popup=createPopupContent({
+        title:d.trackingCode,subtitle:'Entrega disponivel',
+        items:[['Origem',d.originAddress],['Destino',d.destinationAddress],['Valor',fmt(d.totalPrice)],['Ganho',fmt(d.motoboyEarning)]],
+        actions:[{label:'&#10004; Aceitar',color:'#22c55e',onclick:"acceptDel('"+d.id+"')"}]
+      });
+      addMarker('motoboy-map',dlat,dlng,{color:'#f59e0b',emoji:'&#128230;',popup:popup,tooltip:d.trackingCode+' - '+fmt(d.totalPrice)});
+    });
+    activeDels.forEach(function(d,i){
+      var dlat=DEFAULT_LAT+((i*0.005)%0.03),dlng=DEFAULT_LNG+((i*0.007)%0.03);
+      addMarker('motoboy-map',dlat,dlng,{color:'#ef4444',emoji:'&#128666;',tooltip:d.trackingCode+' - Em andamento'});
+    });
     watchMyLocation(null,function(glat,glng){
       sendLocationToServer(glat,glng);
     });
-  }
+  },function(err){
+    console.log('GPS erro:',err);
+    available.forEach(function(d,i){});
+    activeDels.forEach(function(d,i){});
+  });
 }
 
 function openNavigation(address){
