@@ -378,13 +378,22 @@ app.get('/api/deliveries', auth, async (req, res) => {
     query = supabase.from('deliveries').select('*').order('created_at', { ascending: false });
   }
   const { data: d } = await query.limit(50);
-  const result = (d || []).map(x => ({
+  const inCamaqua = (lat, lng) => lat >= -30.95 && lat <= -30.75 && lng >= -50.95 && lng <= -50.65;
+  const result = (d || []).filter(x => {
+    const oLat = parseFloat(x.origin_latitude), oLng = parseFloat(x.origin_longitude);
+    const dLat = parseFloat(x.destination_latitude), dLng = parseFloat(x.destination_longitude);
+    if (oLat && oLng && !inCamaqua(oLat, oLng)) return false;
+    if (dLat && dLng && !inCamaqua(dLat, dLng)) return false;
+    return true;
+  }).map(x => ({
     id: x.id, trackingCode: x.tracking_code, clientId: x.client_id, motoboyId: x.motoboy_id,
     status: x.status, type: x.type,
     originAddress: x.origin_address, originNumber: x.origin_number, originNeighborhood: x.origin_neighborhood,
     originCity: x.origin_city, originState: x.origin_state,
+    originLatitude: x.origin_latitude, originLongitude: x.origin_longitude,
     destinationAddress: x.destination_address, destinationNumber: x.destination_number, destinationNeighborhood: x.destination_neighborhood,
     destinationCity: x.destination_city, destinationState: x.destination_state,
+    destinationLatitude: x.destination_latitude, destinationLongitude: x.destination_longitude,
     description: x.description, distance: x.distance, estimatedTime: x.estimated_time,
     totalPrice: Number(x.total_price), commissionAmount: Number(x.commission_amount),
     motoboyEarning: Number(x.motoboy_earning), paymentMethod: x.payment_method,
@@ -396,13 +405,22 @@ app.get('/api/deliveries', auth, async (req, res) => {
 
 app.get('/api/deliveries/available', auth, async (req, res) => {
   const { data: d } = await supabase.from('deliveries').select('*').eq('status', 'PENDING').order('created_at', { ascending: false });
-  const result = (d || []).map(x => ({
+  const inCamaqua = (lat, lng) => lat >= -30.95 && lat <= -30.75 && lng >= -50.95 && lng <= -50.65;
+  const result = (d || []).filter(x => {
+    const oLat = parseFloat(x.origin_latitude), oLng = parseFloat(x.origin_longitude);
+    const dLat = parseFloat(x.destination_latitude), dLng = parseFloat(x.destination_longitude);
+    if (oLat && oLng && !inCamaqua(oLat, oLng)) return false;
+    if (dLat && dLng && !inCamaqua(dLat, dLng)) return false;
+    return true;
+  }).map(x => ({
     id: x.id, trackingCode: x.tracking_code, clientId: x.client_id, motoboyId: x.motoboy_id,
     status: x.status, type: x.type,
     originAddress: x.origin_address, originNumber: x.origin_number, originNeighborhood: x.origin_neighborhood,
     originCity: x.origin_city, originState: x.origin_state,
+    originLatitude: x.origin_latitude, originLongitude: x.origin_longitude,
     destinationAddress: x.destination_address, destinationNumber: x.destination_number, destinationNeighborhood: x.destination_neighborhood,
     destinationCity: x.destination_city, destinationState: x.destination_state,
+    destinationLatitude: x.destination_latitude, destinationLongitude: x.destination_longitude,
     description: x.description, distance: x.distance, estimatedTime: x.estimated_time,
     totalPrice: Number(x.total_price), commissionAmount: Number(x.commission_amount), commissionPercent: 20,
     motoboyEarning: Number(x.motoboy_earning), paymentMethod: x.payment_method,

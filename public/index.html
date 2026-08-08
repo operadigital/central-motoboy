@@ -2066,6 +2066,11 @@ function renderClientNew(el){
       if(destCity!=='camaquã'&&destCity!=='camaqua'){document.getElementById('nd-error').textContent='Endereco de destino deve ser em Camaqua (CEP 96180-000)';document.getElementById('nd-error').style.display='block';return;}
       if(originState!=='RS'){document.getElementById('nd-error').textContent='Estado da origem deve ser RS';document.getElementById('nd-error').style.display='block';return;}
       if(destState!=='RS'){document.getElementById('nd-error').textContent='Estado do destino deve ser RS';document.getElementById('nd-error').style.display='block';return;}
+      if(!selectedOrigin||!selectedOrigin.lat){document.getElementById('nd-error').textContent='Toque no mapa para definir a ORIGEM dentro de Camaqua';document.getElementById('nd-error').style.display='block';return;}
+      if(!selectedDest||!selectedDest.lat){document.getElementById('nd-error').textContent='Toque no mapa para definir o DESTINO dentro de Camaqua';document.getElementById('nd-error').style.display='block';return;}
+      var inCamaqua=function(lat,lng){return lat>=-30.95&&lat<=-30.75&&lng>=-50.95&&lng<=-50.65;};
+      if(!inCamaqua(selectedOrigin.lat,selectedOrigin.lng)){document.getElementById('nd-error').textContent='Origem fora de Camaqua! Selecione dentro da regiao';document.getElementById('nd-error').style.display='block';return;}
+      if(!inCamaqua(selectedDest.lat,selectedDest.lng)){document.getElementById('nd-error').textContent='Destino fora de Camaqua! Selecione dentro da regiao';document.getElementById('nd-error').style.display='block';return;}
       var body={
         originAddress:document.getElementById('nd-oa').value,originCity:document.getElementById('nd-oc').value,originState:document.getElementById('nd-os').value,originNeighborhood:document.getElementById('nd-ob').value,
         originLatitude:selectedOrigin?selectedOrigin.lat:DEFAULT_LAT,originLongitude:selectedOrigin?selectedOrigin.lng:DEFAULT_LNG,
