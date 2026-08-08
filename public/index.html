@@ -1728,8 +1728,20 @@ function activateGPS(){
       sendLocationToServer(p.coords.latitude,p.coords.longitude);
     },function(){},{enableHighAccuracy:true,maximumAge:5000});
   },function(err){
-    setGPSStatus('Erro: '+err.message,'var(--r)');
-    if(overlay)overlay.innerHTML='<div style="text-align:center;color:#fff;padding:20px"><div style="font-size:48px;margin-bottom:8px">&#9888;</div><div style="font-weight:700;font-size:16px">GPS nao encontrado</div><div style="font-size:13px;opacity:.8;margin-top:4px">'+err.message+'</div><button onclick="activateGPS()" style="margin-top:16px;padding:12px 24px;border-radius:12px;background:#fff;color:var(--r);font-weight:700;border:none;cursor:pointer;font-size:14px">Tentar Novamente</button><div style="font-size:11px;opacity:.6;margin-top:12px">Verifique se a localizacao esta ativada nas configuracoes do celular</div></div>';
+    var msg='';
+    var title='';
+    if(err.code===1){
+      title='Localizacao Bloqueada';
+      msg='<div style="font-size:13px;opacity:.8;margin-top:8px;text-align:left;line-height:1.6">Para liberar:<br>1. Toque no icone &#128274; na barra de endereco<br>2. Localizacao > Permitir<br><br><b>Ou va em:</b><br>Config > Privacidade > Localizacao > Permitir este site</div>';
+    }else if(err.code===2){
+      title='GPS Indisponivel';
+      msg='<div style="font-size:13px;opacity:.8;margin-top:8px">Ative o GPS do celular e tente novamente</div>';
+    }else{
+      title='Timeout GPS';
+      msg='<div style="font-size:13px;opacity:.8;margin-top:8px">Tente novamente ao ar livre</div>';
+    }
+    setGPSStatus('GPS bloqueado','var(--r)');
+    if(overlay)overlay.innerHTML='<div style="text-align:center;color:#fff;padding:24px"><div style="font-size:48px;margin-bottom:8px">&#128274;</div><div style="font-weight:700;font-size:18px">'+title+'</div>'+msg+'<button onclick="activateGPS()" style="margin-top:16px;padding:12px 28px;border-radius:12px;background:#fff;color:var(--r);font-weight:700;border:none;cursor:pointer;font-size:14px">Tentar Novamente</button></div>';
   },{enableHighAccuracy:true,maximumAge:0,timeout:20000});
 }
 
