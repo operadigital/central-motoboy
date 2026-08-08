@@ -19,6 +19,24 @@ const SUPABASE_SERVICE = process.env.SUPABASE_SERVICE || 'eyJhbGciOiJIUzI1NiIsIn
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE);
 
+// ============ CREATE TABLES IF NOT EXISTS ============
+(async () => {
+  try {
+    await supabase.rpc('exec_sql', { sql: `
+      CREATE TABLE IF NOT EXISTS clock_records (
+        id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+        motoboy_id UUID,
+        clock_in TIMESTAMP,
+        clock_out TIMESTAMP,
+        hours_worked DECIMAL(5,2),
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    ` });
+  } catch (e) {
+    // Tables may already exist or RPC not available
+  }
+})();
+
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
@@ -178,6 +196,35 @@ app.get('/api/auth/me', auth, async (req, res) => {
   res.json({ success: true, data: mapUser(u) });
 });
 
+// ============ PASSWORD RECOVERY ============
+app.post('/api/auth/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ success: false, message: 'Email obrigatorio' });
+    console.log(`[PASSWORD RESET] Solicitacao de reset para: ${email}`);
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: '/' });
+    if (error) {
+      console.log(`[PASSWORD RESET] Erro: ${error.message}`);
+    }
+    res.json({ success: true, message: 'Se o email existir, voce recebera um link de recuperacao' });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+app.post('/api/auth/reset-password', async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) return res.status(400).json({ success: false, message: 'Token e nova senha obrigatorios' });
+    console.log(`[PASSWORD RESET] Tentativa de reset com token`);
+    const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) return res.status(400).json({ success: false, message: error.message });
+    res.json({ success: true, message: 'Senha atualizada com sucesso' });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
 // ============ ADMIN ============
 app.get('/api/admin/stats', auth, admin, async (req, res) => {
   const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -267,6 +314,42 @@ app.get('/api/admin/financial', auth, admin, async (req, res) => {
     profit: (delivered || []).reduce((s, d) => s + Number(d.commission_amount || 0), 0),
     pendingWithdrawalsAmount: 0, pendingWithdrawalsCount: 0
   }});
+});
+
+// ============ EXPORT CSV ============
+app.get('/api/admin/export/deliveries', auth, admin, async (req, res) => {
+  try {
+    const { data: d } = await supabase.from('deliveries').select('*').order('created_at', { ascending: false });
+    const headers = ['ID','Tracking Code','Client ID','Motoboy ID','Status','Type','Origin Address','Destination Address','Distance','Total Price','Commission','Motoboy Earning','Payment Method','Created At'];
+    const rows = (d || []).map(x => [
+      x.id, x.tracking_code, x.client_id, x.motoboy_id || '', x.status, x.type,
+      `${x.origin_address || ''} ${x.origin_number || ''} ${x.origin_neighborhood || ''} ${x.origin_city || ''} ${x.origin_state || ''}`.trim(),
+      `${x.destination_address || ''} ${x.destination_number || ''} ${x.destination_neighborhood || ''} ${x.destination_city || ''} ${x.destination_state || ''}`.trim(),
+      x.distance || '', x.total_price || '', x.commission_amount || '', x.motoboy_earning || '', x.payment_method || '', x.created_at || ''
+    ]);
+    const csv = [headers.join(','), ...rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','))].join('\n');
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="entregas.csv"');
+    res.send(csv);
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+app.get('/api/admin/export/financial', auth, admin, async (req, res) => {
+  try {
+    const { data: d } = await supabase.from('deliveries').select('*').eq('status', 'DELIVERED').order('created_at', { ascending: false });
+    const headers = ['ID','Tracking Code','Total Price','Commission Amount','Motoboy Earning','Payment Method','Created At'];
+    const rows = (d || []).map(x => [
+      x.id, x.tracking_code, x.total_price || 0, x.commission_amount || 0, x.motoboy_earning || 0, x.payment_method || '', x.created_at || ''
+    ]);
+    const csv = [headers.join(','), ...rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','))].join('\n');
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="financeiro.csv"');
+    res.send(csv);
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
 });
 
 app.put('/api/admin/motoboys/:id/approve', auth, admin, async (req, res) => {
@@ -466,6 +549,58 @@ app.put('/api/deliveries/:id/cancel', auth, async (req, res) => {
   res.json({ success: true });
 });
 
+// ============ STAR RATINGS ============
+app.post('/api/deliveries/:id/rate', auth, async (req, res) => {
+  try {
+    const { score, comment } = req.body;
+    if (!score || score < 1 || score > 5) return res.status(400).json({ success: false, message: 'Score deve ser entre 1 e 5' });
+    const { data: d } = await supabase.from('deliveries').select('id,motoboy_id,client_id').eq('id', req.params.id).single();
+    if (!d) return res.status(404).json({ success: false, message: 'Entrega nao encontrada' });
+    if (d.status !== 'DELIVERED') return res.status(400).json({ success: false, message: 'So e possivel avaliar entregas concluidas' });
+    if (d.client_id !== req.user.id) return res.status(403).json({ success: false, message: 'Somente o cliente pode avaliar' });
+    if (!d.motoboy_id) return res.status(400).json({ success: false, message: 'Entrega sem motoboy atribuido' });
+
+    const { data: existing } = await supabase.from('ratings').select('id').eq('delivery_id', d.id).eq('from_user_id', req.user.id).single();
+    if (existing) return res.status(400).json({ success: false, message: 'Voce ja avaliou esta entrega' });
+
+    const { data: rating, error } = await supabase.from('ratings').insert({
+      delivery_id: d.id, from_user_id: req.user.id, to_user_id: d.motoboy_id,
+      score: parseInt(score), comment: comment || null
+    }).select().single();
+    if (error) return res.status(500).json({ success: false, message: error.message });
+
+    // Update motoboy average_rating and total_ratings
+    const { data: mb } = await supabase.from('motoboys').select('id,average_rating,total_ratings').eq('user_id', d.motoboy_id).single();
+    if (mb) {
+      const prevTotal = mb.total_ratings || 0;
+      const prevAvg = Number(mb.average_rating || 0);
+      const newTotal = prevTotal + 1;
+      const newAvg = Math.round(((prevAvg * prevTotal) + parseInt(score)) / newTotal * 10) / 10;
+      await supabase.from('motoboys').update({ average_rating: newAvg, total_ratings: newTotal }).eq('id', mb.id);
+    }
+
+    res.status(201).json({ success: true, data: { id: rating.id, score: rating.score, comment: rating.comment } });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+app.get('/api/motoboys/:id/ratings', auth, async (req, res) => {
+  try {
+    const { data: mb } = await supabase.from('motoboys').select('id').eq('id', req.params.id).single();
+    if (!mb) return res.status(404).json({ success: false, message: 'Motoboy nao encontrado' });
+    const { data: ratings, error } = await supabase.from('ratings').select('*, from_user:from_user_id(first_name,last_name)').eq('to_user_id', mb.id).order('created_at', { ascending: false });
+    if (error) return res.status(500).json({ success: false, message: error.message });
+    const result = (ratings || []).map(r => ({
+      id: r.id, deliveryId: r.delivery_id, score: r.score, comment: r.comment, createdAt: r.created_at,
+      fromUser: r.from_user ? { firstName: r.from_user.first_name, lastName: r.from_user.last_name } : null
+    }));
+    res.json({ success: true, data: result });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
 // ============ PROOF PHOTO ============
 app.put('/api/deliveries/:id/proof', auth, async (req, res) => {
   try {
@@ -549,6 +684,53 @@ app.get('/api/motoboys/deliveries', auth, async (req, res) => {
     distance: x.distance, estimatedTime: x.estimated_time
   }));
   res.json({ success: true, data: result });
+});
+
+// ============ CLOCK IN/OUT (PONTO) ============
+app.post('/api/motoboys/clock-in', auth, async (req, res) => {
+  try {
+    const { data: mb } = await supabase.from('motoboys').select('id,clocked_in').eq('user_id', req.user.id).single();
+    if (!mb) return res.status(404).json({ success: false, message: 'Motoboy nao encontrado' });
+    if (mb.clocked_in) return res.status(400).json({ success: false, message: 'Voce ja esta registrado como trabalhando' });
+    const now = new Date().toISOString();
+    await supabase.from('motoboys').update({ clock_in_at: now, clocked_in: true }).eq('id', mb.id);
+    res.json({ success: true, data: { clockInAt: now } });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+app.post('/api/motoboys/clock-out', auth, async (req, res) => {
+  try {
+    const { data: mb } = await supabase.from('motoboys').select('id,clocked_in,clock_in_at').eq('user_id', req.user.id).single();
+    if (!mb) return res.status(404).json({ success: false, message: 'Motoboy nao encontrado' });
+    if (!mb.clocked_in) return res.status(400).json({ success: false, message: 'Voce nao esta registrado como trabalhando' });
+    const now = new Date();
+    const clockIn = new Date(mb.clock_in_at);
+    const hoursWorked = Math.round((now - clockIn) / (1000 * 60 * 60) * 100) / 100;
+    await supabase.from('motoboys').update({ clock_in_at: null, clocked_in: false }).eq('id', mb.id);
+    const { data: record } = await supabase.from('clock_records').insert({
+      motoboy_id: mb.id, clock_in: mb.clock_in_at, clock_out: now.toISOString(), hours_worked: hoursWorked
+    }).select().single();
+    res.json({ success: true, data: { hoursWorked, recordId: record?.id } });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+app.get('/api/motoboys/clock-history', auth, async (req, res) => {
+  try {
+    const { data: mb } = await supabase.from('motoboys').select('id').eq('user_id', req.user.id).single();
+    if (!mb) return res.status(404).json({ success: false, message: 'Motoboy nao encontrado' });
+    const { data: records, error } = await supabase.from('clock_records').select('*').eq('motoboy_id', mb.id).order('created_at', { ascending: false });
+    if (error) return res.status(500).json({ success: false, message: error.message });
+    const result = (records || []).map(r => ({
+      id: r.id, clockIn: r.clock_in, clockOut: r.clock_out, hoursWorked: Number(r.hours_worked), createdAt: r.created_at
+    }));
+    res.json({ success: true, data: result });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
 });
 
 // ============ WALLETS ============
@@ -716,6 +898,34 @@ app.get('/api/chat/:deliveryId/messages', auth, async (req, res) => {
   }
 });
 app.get('/api/notifications', auth, (req, res) => res.json({ success: true, data: [], unreadCount: 0, meta: { total: 0, page: 1, limit: 20, totalPages: 0 } }));
+
+// ============ SHARE LOCATION ============
+app.post('/api/share-location', auth, async (req, res) => {
+  try {
+    const { lat, lng, expiresInMinutes } = req.body;
+    if (!lat || !lng) return res.status(400).json({ success: false, message: 'Coordenadas obrigatorias' });
+    const id = 'loc_' + Math.random().toString(36).substring(2, 12);
+    const expiresAt = new Date(Date.now() + (expiresInMinutes || 60) * 60 * 1000).toISOString();
+    const { data, error } = await supabase.from('shared_locations').insert({
+      id, user_id: req.user.id, lat: parseFloat(lat), lng: parseFloat(lng), expires_at: expiresAt
+    }).select().single();
+    if (error) return res.status(500).json({ success: false, message: error.message });
+    res.status(201).json({ success: true, data: { id, expiresAt, shareUrl: `/share-location/${id}` } });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+app.get('/api/share-location/:id', async (req, res) => {
+  try {
+    const { data: loc } = await supabase.from('shared_locations').select('*').eq('id', req.params.id).single();
+    if (!loc) return res.status(404).json({ success: false, message: 'Link nao encontrado' });
+    if (new Date(loc.expires_at) < new Date()) return res.status(410).json({ success: false, message: 'Link expirado' });
+    res.json({ success: true, data: { lat: Number(loc.lat), lng: Number(loc.lng), expiresAt: loc.expires_at } });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
 
 app.get('/api/reports/dashboard', auth, admin, async (req, res) => {
   const { data: delivered } = await supabase.from('deliveries').select('total_price,created_at').eq('status', 'DELIVERED');

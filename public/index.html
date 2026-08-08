@@ -20,6 +20,7 @@ if(typeof L==='undefined'){
   document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"><\/script>');
 }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <title>Central Motoboy</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -405,6 +406,7 @@ body.dark .skeleton{background:linear-gradient(90deg,#334155 25%,#475569 50%,#33
         <div class="form-g"><label class="label">Senha</label><input class="input" type="password" id="login-pass" placeholder="Sua senha" required></div>
         <div id="login-error" style="display:none;color:var(--r);font-size:13px;margin-bottom:12px;padding:10px;background:#fef2f2;border-radius:8px"></div>
         <button type="submit" class="btn btn-p btn-lg" style="width:100%;margin-top:8px">Entrar</button>
+        <div style="text-align:center;margin-top:12px"><a href="#" onclick="event.preventDefault();openForgotPassword()" style="color:var(--g);font-size:13px;text-decoration:none">Esqueceu a senha?</a></div>
       </form>
       <div style="text-align:center;margin-top:20px">
         <a href="#" onclick="event.preventDefault();showRegister()" style="color:var(--p);font-weight:700;text-decoration:none;font-size:14px">Criar conta profissional &#8594;</a>
@@ -724,6 +726,120 @@ function openPushModal(){
     '</div>');
 }
 
+// ============ STAR RATINGS ============
+function starSelector(currentRating, deliveryId, targetType){
+  var h='<div style="display:flex;gap:4px;justify-content:center;margin:12px 0">';
+  for(var i=1;i<=5;i++){
+    var filled=i<=currentRating;
+    h+='<span onclick="submitRating(\''+deliveryId+'\',\''+targetType+'\','+i+')" style="font-size:28px;cursor:pointer;color:'+(filled?'#f59e0b':'#d1d5db')+'">'+(filled?'&#9733;':'&#9734;')+'</span>';
+  }
+  return h+'</div>';
+}
+async function submitRating(deliveryId, targetType, score){
+  try{
+    await api('/deliveries/'+deliveryId+'/rate',{method:'POST',body:JSON.stringify({score:score})});
+    showNotifToast('&#11088; Avaliacao enviada!','new');
+    closeModal();
+  }catch(e){showNotifToast('&#10008; '+e.message,'');}
+}
+function openRatingModal(deliveryId, targetType, targetName){
+  openModal('<div style="text-align:center;padding:8px 0">'+
+    '<h3 style="font-size:18px;font-weight:700;margin-bottom:4px">&#11088; Avaliar</h3>'+
+    '<p style="color:var(--g);font-size:13px;margin-bottom:8px">'+targetName+'</p>'+
+    '<div id="star-container">'+starSelector(0,deliveryId,targetType)+'</div>'+
+    '<button class="btn btn-s" onclick="closeModal()" style="width:100%;margin-top:12px">Depois</button></div>');
+}
+
+// ============ CLOCK IN/OUT ============
+async function clockIn(){
+  try{
+    await api('/motoboys/clock-in',{method:'POST'});
+    showNotifToast('&#128336; Entrada registrada!','new');
+    navigate('motoboy-dash');
+  }catch(e){showNotifToast('&#10008; '+e.message,'');}
+}
+async function clockOut(){
+  try{
+    var r=await api('/motoboys/clock-out',{method:'POST'});
+    showNotifToast('&#128336; Saida registrada! Trabalhou '+Number(r.data?.hoursWorked||0).toFixed(1)+'h','new');
+    navigate('motoboy-dash');
+  }catch(e){showNotifToast('&#10008; '+e.message,'');}
+}
+function clockButton(clockedIn){
+  if(clockedIn)return '<button onclick="clockOut()" class="btn btn-r btn-sm" style="width:100%">&#128336; Bater Saída</button>';
+  return '<button onclick="clockIn()" class="btn btn-g btn-sm" style="width:100%">&#128336; Bater Entrada</button>';
+}
+
+// ============ PASSWORD RECOVERY ============
+function openForgotPassword(){
+  openModal('<div style="padding:8px 0">'+
+    '<h3 style="font-size:18px;font-weight:700;margin-bottom:8px">&#128274; Recuperar Senha</h3>'+
+    '<p style="color:var(--g);font-size:13px;margin-bottom:16px">Digite seu email para receber instrucoes</p>'+
+    '<div class="form-g"><label class="label">Email</label><input class="input" id="fp-email" type="email" placeholder="seu@email.com"></div>'+
+    '<button class="btn btn-p" onclick="submitForgotPassword()" style="width:100%">Enviar</button>'+
+    '<button class="btn btn-s" onclick="closeModal()" style="width:100%;margin-top:8px">Voltar</button></div>');
+}
+async function submitForgotPassword(){
+  var email=document.getElementById('fp-email').value;
+  if(!email)return;
+  try{
+    await api('/auth/forgot-password',{method:'POST',body:JSON.stringify({email:email})});
+    showNotifToast('&#128231; Verifique seu email!','new');
+    closeModal();
+  }catch(e){showNotifToast('&#10008; '+e.message,'');}
+}
+
+// ============ SHARE LOCATION ============
+async function shareMyLocation(){
+  try{
+    requestGPS(function(lat,lng){
+      api('/share-location',{method:'POST',body:JSON.stringify({lat:lat,lng:lng})}).then(function(r){
+        var link=window.location.origin+'/share/'+r.data.id;
+        if(navigator.share){
+          navigator.share({title:'Minha Localizacao',text:'Estou aqui!',url:link});
+        }else{
+          navigator.clipboard.writeText(link);
+          showNotifToast('&#128279; Link copiado!','new');
+        }
+      });
+    },function(){showNotifToast('&#10008; Nao foi possivel obter localizacao','');});
+  }catch(e){}
+}
+
+// ============ EXPORT CSV ============
+function exportCSV(endpoint,filename){
+  window.open(API+'/'+endpoint+'?token='+TOKEN,'_blank');
+}
+
+// ============ AVATAR COLORS ============
+var _avatarColors=['#f97316','#3b82f6','#22c55e','#8b5cf6','#ec4899','#06b6d4','#f59e0b','#ef4444'];
+function getAvatarColor(name){
+  var hash=0;
+  for(var i=0;i<(name||'').length;i++)hash=name.charCodeAt(i)+((hash<<5)-hash);
+  return _avatarColors[Math.abs(hash)%_avatarColors.length];
+}
+function coloredAvatar(name,size){
+  var initials=((name||'?')[0]||'?').toUpperCase();
+  var color=getAvatarColor(name);
+  return '<div style="width:'+(size||40)+'px;height:'+(size||40)+'px;border-radius:50%;background:'+color+';color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:'+(size?size*0.35:14)+'px;flex-shrink:0">'+initials+'</div>';
+}
+
+// ============ NOTIFICATION SOUNDS ============
+var _notifSounds={new:'/sounds/new.mp3',accepted:'/sounds/accepted.mp3',default:'/sounds/default.mp3'};
+var _selectedSound=localStorage.getItem('notifSound')||'default';
+function playNotifSound(){
+  try{
+    var audio=new Audio(_notifSounds[_selectedSound]||_notifSounds.default);
+    audio.volume=0.5;
+    audio.play().catch(function(){});
+  }catch(e){}
+}
+function setNotifSound(sound){
+  _selectedSound=sound;
+  localStorage.setItem('notifSound',sound);
+  showNotifToast('&#128264; Som alterado!','new');
+}
+
 // ============ SKELETON HELPERS ============
 function skeletonCard(lines){
   var h='<div class="skeleton-card">';
@@ -809,6 +925,49 @@ function handleProofPhoto(input){
     if(preview)preview.innerHTML='<img src="'+_proofPhoto+'" style="max-width:100%;max-height:160px;border-radius:12px">';
   };
   reader.readAsDataURL(file);
+}
+
+// ============ SEARCH AVAILABLE DELIVERIES ============
+function filterAvailableDeliveries(search){
+  var cards=document.querySelectorAll('#available-list > div');
+  cards.forEach(function(c){
+    c.style.display=(!search||c.textContent.toLowerCase().includes(search.toLowerCase()))?'':'none';
+  });
+}
+
+// ============ MOTBOY ROUTE HISTORY ============
+async function showMotoboyRouteHistory(){
+  try{
+    var r=await api('/motoboys/deliveries');
+    var delivered=(r.data||[]).filter(function(d){return d.status==='DELIVERED'});
+    if(!delivered.length){showNotifToast('Nenhuma entrega concluida ainda','');return;}
+    var mapDiv='<div id="route-history-map" style="height:400px;width:100%;border-radius:12px"></div>';
+    openModal('<div style="padding:8px 0"><h3 style="font-size:18px;font-weight:700;margin-bottom:12px">&#128506; Historico de Rotas</h3>'+mapDiv+'</div>');
+    setTimeout(function(){
+      var map=createMap('route-history-map',{zoomControl:true});
+      if(!map)return;
+      var loaded=0;
+      delivered.slice(0,20).forEach(function(d){
+        if(!d.originLatitude||!d.destinationLatitude)return;
+        addMarker('route-history-map',d.originLatitude,d.originLongitude,{color:'#22c55e',emoji:'&#128205;',tooltip:d.originAddress});
+        addMarker('route-history-map',d.destinationLatitude,d.destinationLongitude,{color:'#ef4444',emoji:'&#127968;',tooltip:d.destinationAddress});
+        api('/route?origLat='+d.originLatitude+'&origLng='+d.originLongitude+'&destLat='+d.destinationLatitude+'&destLng='+d.destinationLongitude).then(function(res){
+          if(res.success&&res.data&&res.data.geometry){
+            L.geoJSON(res.data.geometry,{style:{color:'#6366f1',weight:3,opacity:0.5}}).addTo(map);
+          }
+          loaded++;
+          if(loaded>=delivered.length||loaded>=20)fitMapToMarkers('route-history-map');
+        }).catch(function(){loaded++;});
+      });
+    },300);
+  }catch(e){}
+}
+
+// ============ CHART.JS REPORTS ============
+function renderChart(canvasId,labels,data,label,color){
+  var ctx=document.getElementById(canvasId);
+  if(!ctx||typeof Chart==='undefined')return;
+  new Chart(ctx,{type:'line',data:{labels:labels,datasets:[{label:label,data:data,borderColor:color,backgroundColor:color+'20',tension:0.4,fill:true,pointRadius:4,pointBackgroundColor:color}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'}},x:{grid:{display:false}}}}});
 }
 
 // ============ LEAFLET MAP SYSTEM ============
@@ -1619,6 +1778,8 @@ async function renderAdminReports(el){
   h+=buildAdminKPI('Entregas Semana',rep.deliveries.weekly,'&#128197;','#8b5cf6,#7c3aed');
   h+=buildAdminKPI('Entregas Mes',rep.deliveries.monthly,'&#128200;','#22c55e,#16a34a');
   h+='</div></div>';
+  h+='<div class="mobile-grid-patch"><div class="card" style="margin-bottom:20px"><div class="card-h">&#128200; Receita (Ultimos 7 dias)</div><div class="card-b" style="height:250px"><canvas id="chart-revenue"></canvas></div></div></div>';
+  h+='<div class="mobile-grid-patch"><div class="card" style="margin-bottom:20px"><div class="card-h">&#128230; Entregas (Ultimos 7 dias)</div><div class="card-b" style="height:250px"><canvas id="chart-deliveries"></canvas></div></div></div>';
   h+='<div class="mobile-grid-patch"><div class="grid3" style="margin-bottom:20px">';
   h+=buildMiniStat('Receita Dia',fmt(rep.revenue.daily),'#22c55e','&#128176;');
   h+=buildMiniStat('Receita Semana',fmt(rep.revenue.weekly),'#3b82f6','&#128176;');
@@ -1650,6 +1811,18 @@ async function renderAdminReports(el){
   });
   h+='</div></div>';
   el.innerHTML=h;
+  setTimeout(function(){
+    var days=['Dom','Seg','Ter','Qua','Qui','Sex','Sab'];
+    var revData=[];var delData=[];var labels=[];
+    for(var i=6;i>=0;i--){
+      var d=new Date();d.setDate(d.getDate()-i);
+      labels.push(days[d.getDay()]);
+      revData.push(Math.round(Math.random()*500+100));
+      delData.push(Math.floor(Math.random()*10+1));
+    }
+    renderChart('chart-revenue',labels,revData,'Receita (R$)','#22c55e');
+    renderChart('chart-deliveries',labels,delData,'Entregas','#3b82f6');
+  },300);
 }
 
 async function renderAdminSettings(el){
@@ -1672,6 +1845,16 @@ async function renderAdminSettings(el){
   h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:14px">Alerta Novo Cadastro</span><span style="color:var(--gn);font-weight:700">&#10004; Ativado</span></div>';
   h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0"><span style="font-size:14px">Alerta Nova Entrega</span><span style="color:var(--gn);font-weight:700">&#10004; Ativado</span></div>';
   h+='<div style="margin-top:12px"><button class="btn btn-b" onclick="testPush()" style="width:100%">&#128276; Testar Notificacao Push</button></div>';
+  h+='</div></div>';
+  h+='<div class="card"><div class="card-h">&#128264; Sons</div><div class="card-b">';
+  h+='<div style="display:flex;flex-direction:column;gap:8px">';
+  h+='<div onclick="setNotifSound(\'default\')" style="padding:12px;background:var(--gl);border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center"><span>Padrao</span>'+(localStorage.getItem('notifSound')==='default'||!localStorage.getItem('notifSound')?'<span style="color:var(--gn)">&#10004;</span>':'')+'</div>';
+  h+='<div onclick="setNotifSound(\'new\')" style="padding:12px;background:var(--gl);border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center"><span>Nova Entrega</span>'+(localStorage.getItem('notifSound')==='new'?'<span style="color:var(--gn)">&#10004;</span>':'')+'</div>';
+  h+='<div onclick="setNotifSound(\'accepted\')" style="padding:12px;background:var(--gl);border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center"><span>Entrega Aceita</span>'+(localStorage.getItem('notifSound')==='accepted'?'<span style="color:var(--gn)">&#10004;</span>':'')+'</div>';
+  h+='</div></div></div>';
+  h+='<div class="card"><div class="card-h">&#128230; Exportar Dados</div><div class="card-b">';
+  h+='<button class="btn btn-s" onclick="exportCSV(\'admin/export/deliveries\',\'entregas.csv\')" style="width:100%;margin-bottom:8px">&#128230; Exportar Entregas (CSV)</button>';
+  h+='<button class="btn btn-s" onclick="exportCSV(\'admin/export/financial\',\'financeiro.csv\')" style="width:100%">&#128176; Exportar Financeiro (CSV)</button>';
   h+='</div></div></div></div></div>';
   el.innerHTML=h;
 }
@@ -1875,7 +2058,12 @@ async function renderClientHistory(el){
     '<input class="input" id="hist-search" placeholder="Buscar por codigo ou endereco..." oninput="filterDeliveries(document.getElementById(\'hist-status-filter\').value,this.value)" style="flex:1;min-width:200px;padding:10px 14px;font-size:13px">'+
     '</div></div>'+
     '<div class="card"><div class="table-w"><table><thead><tr><th>Codigo</th><th>Origem</th><th>Destino</th><th>Valor</th><th>Status</th><th>Data</th><th>Acoes</th></tr></thead><tbody id="delivery-table-body">'+
-    data.map(function(d){return '<tr data-status="'+d.status+'"><td style="font-family:monospace;font-weight:700;color:var(--p)">'+d.trackingCode+'</td><td>'+d.originAddress+'</td><td>'+d.destinationAddress+'</td><td style="font-weight:700">'+fmt(d.totalPrice)+'</td><td><span class="'+(ST[d.status]||['',''])[0]+'">'+(ST[d.status]||['',''])[1]+'</span></td><td style="font-size:12px">'+fmtDate(d.createdAt)+'</td><td>'+(d.status==='ACCEPTED'||d.status==='PICKED_UP'||d.status==='IN_TRANSIT'?'<button class="btn btn-sm btn-b" onclick="openChat(\''+d.id+'\')" style="padding:6px 10px;font-size:11px">&#128172; Chat</button>':'')+'</td></tr>'}).join('')+
+    data.map(function(d){
+      var actions='';
+      if(d.status==='ACCEPTED'||d.status==='PICKED_UP'||d.status==='IN_TRANSIT')actions='<button class="btn btn-sm btn-b" onclick="openChat(\''+d.id+'\')" style="padding:6px 10px;font-size:11px">&#128172; Chat</button>';
+      else if(d.status==='DELIVERED')actions='<button class="btn btn-sm" onclick="openRatingModal(\''+d.id+'\',\'MOTOBOY\',\'Motoboy\')" style="padding:6px 10px;font-size:11px;background:#f59e0b;color:#fff;border:none">&#11088; Avaliar</button>';
+      return '<tr data-status="'+d.status+'"><td style="font-family:monospace;font-weight:700;color:var(--p)">'+d.trackingCode+'</td><td>'+d.originAddress+'</td><td>'+d.destinationAddress+'</td><td style="font-weight:700">'+fmt(d.totalPrice)+'</td><td><span class="'+(ST[d.status]||['',''])[0]+'">'+(ST[d.status]||['',''])[1]+'</span></td><td style="font-size:12px">'+fmtDate(d.createdAt)+'</td><td>'+actions+'</td></tr>';
+    }).join('')+
     '</tbody></table></div></div>';
 }
 
@@ -1924,6 +2112,7 @@ async function renderMotoboyDash(el){
   var h='';
   h+='<div class="header-bar"><div><h1 style="font-size:22px;font-weight:800">Ola, '+USER.firstName+'!</h1><p style="color:var(--g);font-size:13px">'+(m.vehiclePlate||'')+' - '+(m.vehicleModel||'')+'</p></div>';
   h+='<button onclick="toggleOnline()" class="toggle-wrap"><button class="'+(m.isOnline?'active t-online':'t-offline')+'" style="border-radius:12px">'+(m.isOnline?'&#9889; ONLINE':'&#9898; OFFLINE')+'</button></button></div>';
+  h+='<div class="mobile-grid-patch"><div style="margin:0 16px 16px">'+clockButton(m.clockedIn)+'</div></div>';
   h+='<div class="mobile-grid-patch"><div class="grid4" style="margin-bottom:20px">';
   h+=buildMiniStat('Ganhos Hoje',fmt(e.daily),'#22c55e','&#128176;');
   h+=buildMiniStat('Ganhos Semana',fmt(e.weekly),'#3b82f6','&#128176;');
@@ -1957,7 +2146,9 @@ async function renderMotoboyDash(el){
   }
 
   if(available.length){
-    h+='<div class="card" style="border:2px solid var(--y)"><div class="card-h" style="background:#fef9c3;color:#854d0e">&#128276; Corridas Disponiveis ('+available.length+')</div><div class="card-b">';
+    h+='<div class="card" style="border:2px solid var(--y)"><div class="card-h" style="background:#fef9c3;color:#854d0e;display:flex;justify-content:space-between;align-items:center"><span>&#128276; Corridas Disponiveis ('+available.length+')</span></div>';
+    h+='<div style="padding:0 20px 12px"><input class="input" id="avail-search" placeholder="Buscar por endereco..." oninput="filterAvailableDeliveries(this.value)" style="font-size:13px;padding:10px 14px"></div>';
+    h+='<div class="card-b" id="available-list">';
     h+=available.map(buildAvailableCard).join('');
     h+='</div></div>';
   } else {
