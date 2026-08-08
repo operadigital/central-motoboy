@@ -1990,7 +1990,7 @@ function updateMotoboyPosition(lat,lng){
 
 function renderClientNew(el){
   el.innerHTML='<div class="header-bar"><h1 style="font-size:22px;font-weight:800">Nova Entrega</h1></div>'+
-    '<div class="card" style="margin-bottom:16px"><div class="card-h">&#128506; Selecionar no Mapa</div><div class="card-b" style="padding:0"><div id="client-new-map" class="map-box" style="height:280px;width:100%"></div><div style="padding:12px 16px;display:flex;gap:8px;flex-wrap:wrap"><span class="map-tag"><span class="dot" style="background:#22c55e"></span> Toque para origem</span><span class="map-tag"><span class="dot" style="background:#ef4444"></span> Toque para destino</span><button onclick="useMyLocation()" class="btn btn-sm btn-s">&#128205; Minha Localizacao</button></div></div></div>'+
+    '<div class="card" style="margin-bottom:16px"><div class="card-h">&#128506; Selecionar no Mapa <span style="font-weight:400;font-size:12px;opacity:0.7">(opcional - precise com o clique)</span></div><div class="card-b" style="padding:0"><div id="client-new-map" class="map-box" style="height:280px;width:100%"></div><div style="padding:12px 16px;display:flex;gap:8px;flex-wrap:wrap"><span class="map-tag"><span class="dot" style="background:#22c55e"></span> Toque para origem</span><span class="map-tag"><span class="dot" style="background:#ef4444"></span> Toque para destino</span><button onclick="useMyLocation()" class="btn btn-sm btn-s">&#128205; Minha Localizacao</button></div></div></div>'+
     '<div class="card"><div class="card-b">'+
     '<form id="new-delivery-form">'+
     '<h3 style="font-size:16px;margin-bottom:14px;font-weight:700">&#128205; Endereco de Origem</h3>'+
@@ -2066,11 +2066,6 @@ function renderClientNew(el){
       if(destCity!=='camaquã'&&destCity!=='camaqua'){document.getElementById('nd-error').textContent='Endereco de destino deve ser em Camaqua (CEP 96180-000)';document.getElementById('nd-error').style.display='block';return;}
       if(originState!=='RS'){document.getElementById('nd-error').textContent='Estado da origem deve ser RS';document.getElementById('nd-error').style.display='block';return;}
       if(destState!=='RS'){document.getElementById('nd-error').textContent='Estado do destino deve ser RS';document.getElementById('nd-error').style.display='block';return;}
-      if(!selectedOrigin||!selectedOrigin.lat){document.getElementById('nd-error').textContent='Toque no mapa para definir a ORIGEM dentro de Camaqua';document.getElementById('nd-error').style.display='block';return;}
-      if(!selectedDest||!selectedDest.lat){document.getElementById('nd-error').textContent='Toque no mapa para definir o DESTINO dentro de Camaqua';document.getElementById('nd-error').style.display='block';return;}
-      var inCamaqua=function(lat,lng){return lat>=-30.95&&lat<=-30.75&&lng>=-50.95&&lng<=-50.65;};
-      if(!inCamaqua(selectedOrigin.lat,selectedOrigin.lng)){document.getElementById('nd-error').textContent='Origem fora de Camaqua! Selecione dentro da regiao';document.getElementById('nd-error').style.display='block';return;}
-      if(!inCamaqua(selectedDest.lat,selectedDest.lng)){document.getElementById('nd-error').textContent='Destino fora de Camaqua! Selecione dentro da regiao';document.getElementById('nd-error').style.display='block';return;}
       var body={
         originAddress:document.getElementById('nd-oa').value,originCity:document.getElementById('nd-oc').value,originState:document.getElementById('nd-os').value,originNeighborhood:document.getElementById('nd-ob').value,
         originLatitude:selectedOrigin?selectedOrigin.lat:DEFAULT_LAT,originLongitude:selectedOrigin?selectedOrigin.lng:DEFAULT_LNG,
