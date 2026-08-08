@@ -902,7 +902,11 @@ async function loadChatMessages(deliveryId,silent){
     msgs.forEach(function(m){
       var isMe=m.senderId===USER.id||m.sender_id===USER.id;
       var time=m.createdAt||m.created_at||'';
-      if(time)try{time=new Date(time).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}catch(e){}
+      if(time)try{
+        var d=new Date(time);
+        if(!isNaN(d.getTime()))time=d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'});
+        else time='';
+      }catch(e){time='';}
       h+='<div class="chat-msg '+(isMe?'me':'other')+'">'+m.message+(time?'<div class="chat-time">'+time+'</div>':'')+'</div>';
     });
     el.innerHTML=h;
@@ -1356,7 +1360,7 @@ function openModal(html){document.getElementById('modal-content').innerHTML=html
 function closeModal(){document.getElementById('modal').classList.remove('show');}
 
 function fmt(v){return 'R$ '+Number(v||0).toFixed(2);}
-function fmtDate(d){return d?new Date(d).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'-';}
+function fmtDate(d){return d?new Date(d).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'}):'-';}
 const ST={PENDING:['badge by','Pendente'],ACCEPTED:['badge bb','Aceita'],PICKED_UP:['badge bb','Coletada'],IN_TRANSIT:['badge bb','Em Transito'],DELIVERED:['badge bg','Entregue'],CANCELLED:['badge br','Cancelada'],FAILED:['badge br','Falhou']};
 
 // ============ ADMIN ============
@@ -2018,8 +2022,10 @@ function renderClientNew(el){
     if(!mapEl||typeof L==='undefined')return;
     var map=createMap('client-new-map',{zoomControl:true});
     if(!map)return;
+    centerMap('client-new-map',DEFAULT_LAT,DEFAULT_LNG,14);
     requestGPS(function(pLat,pLng){
-      centerMap('client-new-map',pLat,pLng,18);
+      var dist=Math.sqrt(Math.pow(pLat-DEFAULT_LAT,2)+Math.pow(pLng-DEFAULT_LNG,2));
+      if(dist<0.2)centerMap('client-new-map',pLat,pLng,15);
     },function(){});
     map.on('click',function(e){
       var lat=e.latlng.lat,lng=e.latlng.lng;
@@ -2041,11 +2047,13 @@ function renderClientNew(el){
       }
     });
   },200);
-  window.useMyLocation=function(){
-    requestGPS(function(lat,lng){
-      centerMap('client-new-map',lat,lng,18);
-    },function(err){alert('Nao foi possivel obter localizacao: '+err);});
-  };
+    window.useMyLocation=function(){
+      requestGPS(function(lat,lng){
+        var dist=Math.sqrt(Math.pow(lat-DEFAULT_LAT,2)+Math.pow(lng-DEFAULT_LNG,2));
+        if(dist<0.2)centerMap('client-new-map',lat,lng,15);
+        else showNotifToast('&#128205; Localizacao fora de Camaqua','');
+      },function(err){alert('Nao foi possivel obter localizacao: '+err);});
+    };
   document.getElementById('new-delivery-form').onsubmit=async function(e){
     e.preventDefault();
     try{
