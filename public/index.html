@@ -674,10 +674,14 @@ function toggleDarkMode(){
 function initDarkMode(){if(_darkMode)document.body.classList.add('dark');}
 
 // ============ PUSH NOTIFICATIONS ============
+var _swReg=null;
 async function initPushNotifications(){
   if(!('serviceWorker' in navigator)||!('PushManager' in window)||!TOKEN)return;
   try{
-    var reg=await navigator.serviceWorker.ready;
+    if(!_swReg){
+      _swReg=await navigator.serviceWorker.register('/service-worker.js');
+    }
+    var reg=_swReg;
     var sub=await reg.pushManager.getSubscription();
     if(!sub){
       var keyRes=await api('/push/vapid-key');
@@ -690,7 +694,7 @@ async function initPushNotifications(){
       var subJson=sub.toJSON();
       await api('/push/subscribe',{method:'POST',body:JSON.stringify({endpoint:subJson.endpoint,keys:subJson.keys})});
     }
-  }catch(e){}
+  }catch(e){console.log('Push error:',e.message);}
 }
 
 // ============ SKELETON HELPERS ============
