@@ -171,12 +171,22 @@ app.get('/api/admin/deliveries', auth, admin, async (req, res) => {
 });
 
 app.get('/api/admin/map/locations', auth, admin, async (req, res) => {
-  const { data: onMbs } = await supabase.from('motoboys').select('id,current_latitude,current_longitude,users:user_id(first_name,last_name)').eq('is_online', true).not('current_latitude', 'is', null);
-  const { data: actDels } = await supabase.from('deliveries').select('id,tracking_code,status,current_latitude,current_longitude').in('status', ['ACCEPTED', 'PICKED_UP', 'IN_TRANSIT']).not('current_latitude', 'is', null);
-  res.json({ success: true, data: {
-    motoboys: (onMbs || []).map(m => ({ id: m.id, currentLatitude: m.current_latitude, currentLongitude: m.current_longitude, currentSpeed: 0, heading: 0, user: m.users ? { firstName: m.users.first_name, lastName: m.users.last_name } : { firstName: 'M', lastName: 'B' } })),
-    activeDeliveries: (actDels || []).map(d => ({ id: d.id, trackingCode: d.tracking_code, status: d.status, currentLatitude: d.current_latitude, currentLongitude: d.current_longitude }))
-  }});
+  try {
+    const { data: onMbs } = await supabase.from('motoboys').select('id,current_latitude,current_longitude,is_online,users:user_id(first_name,last_name)').eq('is_online', true).not('current_latitude', 'is', null);
+    const { data: actDels } = await supabase.from('deliveries').select('id,tracking_code,status,current_latitude,current_longitude').in('status', ['ACCEPTED', 'PICKED_UP', 'IN_TRANSIT']).not('current_latitude', 'is', null);
+    res.json({ success: true, data: {
+      motoboys: (onMbs || []).filter(m => m.current_latitude && m.current_longitude).map(m => ({
+        id: m.id, currentLatitude: m.current_latitude, currentLongitude: m.current_longitude,
+        user: m.users ? { firstName: m.users.first_name, lastName: m.users.last_name } : { firstName: 'M', lastName: 'B' }
+      })),
+      activeDeliveries: (actDels || []).filter(d => d.current_latitude && d.current_longitude).map(d => ({
+        id: d.id, trackingCode: d.tracking_code, status: d.status,
+        currentLatitude: d.current_latitude, currentLongitude: d.current_longitude
+      }))
+    }});
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
 });
 
 app.get('/api/admin/financial', auth, admin, async (req, res) => {
@@ -388,9 +398,19 @@ app.put('/api/motoboys/offline', auth, async (req, res) => {
 });
 
 app.put('/api/motoboys/location', auth, async (req, res) => {
-  const { data: m } = await supabase.from('motoboys').select('id').eq('user_id', req.user.id).single();
-  if (m) await supabase.from('motoboys').update({ current_latitude: req.body.lat, current_longitude: req.body.lng }).eq('id', m.id);
-  res.json({ success: true });
+  try {
+    const { lat, lng } = req.body;
+    if (!lat || !lng) return res.status(400).json({ success: false, message: 'Coordenadas obrigatorias' });
+    const { data: m } = await supabase.from('motoboys').select('id').eq('user_id', req.user.id).single();
+    if (m) {
+      const updateData = { current_latitude: parseFloat(lat), current_longitude: parseFloat(lng) };
+      await supabase.from('motoboys').update(updateData).eq('id', m.id);
+      sendSSE('location-update', { motoboyId: m.id, userId: req.user.id, lat: parseFloat(lat), lng: parseFloat(lng), timestamp: new Date().toISOString() });
+    }
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
 });
 
 app.get('/api/motoboys/earnings', auth, async (req, res) => {
@@ -430,6 +450,49 @@ app.post('/api/wallets/withdraw', auth, async (req, res) => {
 });
 
 // ============ OUTROS ============
+app.get('/api/deliveries/:id/tracking', auth, async (req, res) => {
+  try {
+    const { data: d } = await supabase.from('deliveries').select('*').eq('id', req.params.id).single();
+    if (!d) return res.status(404).json({ success: false, message: 'Entrega nao encontrada' });
+    let motoboyLocation = null;
+    if (d.motoboy_id) {
+      const { data: mb } = await supabase.from('motoboys').select('current_latitude,current_longitude,last_location_update,users:user_id(first_name,last_name)').eq('id', d.motoboy_id).single();
+      if (mb && mb.current_latitude) {
+        motoboyLocation = { lat: mb.current_latitude, lng: mb.current_longitude, lastUpdate: mb.last_location_update, name: mb.users ? mb.users.first_name + ' ' + mb.users.last_name : null };
+      }
+    }
+    res.json({ success: true, data: {
+      id: d.id, trackingCode: d.tracking_code, status: d.status,
+      originLat: d.origin_latitude, originLng: d.origin_longitude,
+      destLat: d.destination_latitude, destLng: d.destination_longitude,
+      originAddress: d.origin_address, destinationAddress: d.destination_address,
+      motoboyLocation
+    }});
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+app.get('/api/realtime/locations', auth, async (req, res) => {
+  try {
+    const { data: onMbs } = await supabase.from('motoboys').select('id,current_latitude,current_longitude,is_online,users:user_id(first_name,last_name)').eq('is_online', true).not('current_latitude', 'is', null);
+    const { data: actDels } = await supabase.from('deliveries').select('id,tracking_code,status,motoboy_id,origin_latitude,origin_longitude,destination_latitude,destination_longitude,origin_address,destination_address').in('status', ['ACCEPTED', 'PICKED_UP', 'IN_TRANSIT']);
+    const motoboys = (onMbs || []).filter(m => m.current_latitude && m.current_longitude).map(m => ({
+      id: m.id, lat: m.current_latitude, lng: m.current_longitude,
+      user: m.users ? { firstName: m.users.first_name, lastName: m.users.last_name } : null
+    }));
+    const deliveries = (actDels || []).map(d => ({
+      id: d.id, trackingCode: d.tracking_code, status: d.status,
+      originLat: d.origin_latitude, originLng: d.origin_longitude,
+      destLat: d.destination_latitude, destLng: d.destination_longitude,
+      originAddress: d.origin_address, destinationAddress: d.destination_address
+    }));
+    res.json({ success: true, data: { motoboys, deliveries } });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
 app.get('/api/chat/rooms', auth, (req, res) => res.json({ success: true, data: [] }));
 app.get('/api/notifications', auth, (req, res) => res.json({ success: true, data: [], unreadCount: 0, meta: { total: 0, page: 1, limit: 20, totalPages: 0 } }));
 
