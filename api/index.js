@@ -476,6 +476,22 @@ app.put('/api/deliveries/:id/accept', auth, async (req, res) => {
   }
 });
 
+app.put('/api/deliveries/:id/pickup', auth, async (req, res) => {
+  try {
+    const { data: d } = await supabase.from('deliveries').select('*').eq('id', req.params.id).single();
+    if (!d) return res.status(404).json({ success: false, message: 'Entrega nao encontrada' });
+    if (d.status !== 'ACCEPTED') return res.status(400).json({ success: false, message: 'Status invalido para coleta' });
+    const { data: mb } = await supabase.from('motoboys').select('id').eq('user_id', req.user.id).single();
+    if (!mb || d.motoboy_id !== mb.id) return res.status(403).json({ success: false, message: 'Sem permissao' });
+    await supabase.from('deliveries').update({ status: 'PICKED_UP' }).eq('id', req.params.id);
+    res.json({ success: true, data: { id: d.id, trackingCode: d.tracking_code, status: 'PICKED_UP' } });
+    sendSSE('delivery-pickup', { id: d.id, trackingCode: d.tracking_code });
+    sendPushToUser(d.client_id, 'Coleta Realizada!', 'Sua entrega ' + d.tracking_code + ' foi coletada', '/');
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
 app.put('/api/deliveries/:id/reject', auth, async (req, res) => {
   await supabase.from('deliveries').update({ status: 'PENDING', motoboy_id: null }).eq('id', req.params.id);
   res.json({ success: true });

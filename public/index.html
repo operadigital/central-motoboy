@@ -627,6 +627,14 @@ function connectSSE(){
     showNotifToast('&#10004; Entrega <b>'+d.trackingCode+'</b> aceita por '+d.motoboyName,'accepted');
     if(CURRENT_PAGE==='admin-dash')navigate('admin-dash');
     if(CURRENT_PAGE==='admin-deliveries')navigate('admin-deliveries');
+    if(CURRENT_PAGE==='client-dash')navigate('client-dash');
+  });
+  evtSource.addEventListener('delivery-pickup',function(e){
+    var d=JSON.parse(e.data);
+    playNotifSound();
+    showNotifToast('&#128230; Entrega <b>'+d.trackingCode+'</b> coletada!','new');
+    if(CURRENT_PAGE==='client-dash')navigate('client-dash');
+    if(CURRENT_PAGE==='admin-dash')navigate('admin-dash');
   });
   evtSource.addEventListener('new-motoboy',function(e){
     var d=JSON.parse(e.data);
@@ -1919,34 +1927,44 @@ function initClientTrackingMap(delivery){
   var origAddr=delivery.originAddress||'Origem';
   var destAddr=delivery.destinationAddress||'Destino';
   var deliveryId=delivery.id||delivery.deliveryId||delivery._id;
+  var status=delivery.status||'PENDING';
   window._trackingDeliveryId=deliveryId;
   window._trackingRoute=null;
 
-  addMarker('client-tracking-map',origLat,origLng,{color:'#22c55e',emoji:'&#128205;',tooltip:'Origem',popup:createPopupContent({title:'Origem',subtitle:origAddr,actions:[{label:'Navegar',color:'#22c55e',onclick:"openNavigation('"+origAddr.replace(/'/g,"\\'")+"')"}]})});
-  addMarker('client-tracking-map',destLat,destLng,{color:'#ef4444',emoji:'&#127968;',tooltip:'Destino',popup:createPopupContent({title:'Destino',subtitle:destAddr,actions:[{label:'Navegar',color:'#ef4444',onclick:"openNavigation('"+destAddr.replace(/'/g,"\\'")+"')"}]})});
+  addMarker('client-tracking-map',origLat,origLng,{color:'#22c55e',emoji:'&#128205;',tooltip:'Coleta',popup:createPopupContent({title:'Coleta',subtitle:origAddr,actions:[{label:'Navegar',color:'#22c55e',onclick:"openNavigation('"+origAddr.replace(/'/g,"\\'")+"')"}]})});
+  addMarker('client-tracking-map',destLat,destLng,{color:'#ef4444',emoji:'&#127968;',tooltip:'Entrega',popup:createPopupContent({title:'Entrega',subtitle:destAddr,actions:[{label:'Navegar',color:'#ef4444',onclick:"openNavigation('"+destAddr.replace(/'/g,"\\'")+"')"}]})});
 
-  if(delivery.status!=='PENDING'){
-    if(delivery.motoboyLocation){
-      addMarker('client-tracking-map',delivery.motoboyLocation.lat,delivery.motoboyLocation.lng,{color:'#3b82f6',emoji:'&#128690;',tooltip:'Motoboy',popup:createPopupContent({title:delivery.motoboyLocation.name||'Motoboy',subtitle:'A caminho',actions:[{label:'Navegar ate aqui',color:'#3b82f6',onclick:"openNavigation('"+(delivery.motoboyLocation.name||'Motoboy').replace(/'/g,"\\'")+"')"}]})});
-    }
+  if(delivery.motoboyLocation&&(status==='ACCEPTED'||status==='PICKED_UP'||status==='IN_TRANSIT')){
+    addMarker('client-tracking-map',delivery.motoboyLocation.lat,delivery.motoboyLocation.lng,{id:'motoboy-live',color:'#3b82f6',emoji:'&#128690;',tooltip:'Motoboy',popup:createPopupContent({title:delivery.motoboyLocation.name||'Motoboy',subtitle:status==='ACCEPTED'?'Indo a coleta':'A caminho da entrega',actions:[{label:'Navegar',color:'#3b82f6',onclick:"openNavigation('"+(delivery.motoboyLocation.name||'Motoboy').replace(/'/g,"\\'")+"')"}]})});
   }
 
-  api('/route?origLat='+origLat+'&origLng='+origLng+'&destLat='+destLat+'&destLng='+destLng).then(function(r){
+  var routeColor,routeFrom,routeTo;
+  if(status==='ACCEPTED'&&delivery.motoboyLocation){
+    routeFrom=[delivery.motoboyLocation.lat,delivery.motoboyLocation.lng];
+    routeTo=[origLat,origLng];
+    routeColor='#22c55e';
+  }else{
+    routeFrom=[origLat,origLng];
+    routeTo=[destLat,destLng];
+    routeColor=status==='PICKED_UP'||status==='IN_TRANSIT'?'#ef4444':'#6366f1';
+  }
+
+  api('/route?origLat='+routeFrom[0]+'&origLng='+routeFrom[1]+'&destLat='+routeTo[0]+'&destLng='+routeTo[1]).then(function(r){
     if(r.success&&r.data&&r.data.geometry){
-      window._trackingRoute=L.geoJSON(r.data.geometry,{style:{color:'#6366f1',weight:5,opacity:0.8}}).addTo(map);
+      window._trackingRoute=L.geoJSON(r.data.geometry,{style:{color:routeColor,weight:5,opacity:0.8}}).addTo(map);
       var bounds=window._trackingRoute.getBounds();
       if(bounds.isValid())map.fitBounds(bounds,{padding:[40,40]});
     }else{
-      L.polyline([[origLat,origLng],[destLat,destLng]],{color:'#6366f1',weight:4,opacity:0.7,dashArray:'8,8'}).addTo(map);
+      L.polyline([routeFrom,routeTo],{color:routeColor,weight:4,opacity:0.7,dashArray:'8,8'}).addTo(map);
       fitMapToMarkers('client-tracking-map');
     }
   }).catch(function(){
-    L.polyline([[origLat,origLng],[destLat,destLng]],{color:'#6366f1',weight:4,opacity:0.7,dashArray:'8,8'}).addTo(map);
+    L.polyline([routeFrom,routeTo],{color:routeColor,weight:4,opacity:0.7,dashArray:'8,8'}).addTo(map);
     fitMapToMarkers('client-tracking-map');
   });
 
   var navHtml='<div style="position:absolute;bottom:12px;right:12px;z-index:1000;display:flex;flex-direction:column;gap:8px">'+
-    '<button onclick="openNavigation(\''+origAddr.replace(/'/g,"\\'")+'\')" style="width:48px;height:48px;border-radius:50%;background:#22c55e;border:none;box-shadow:0 2px 12px rgba(0,0,0,.25);cursor:pointer;font-size:20px" title="Navegar ate origem">&#128205;</button>'+
+    '<button onclick="openNavigation(\''+origAddr.replace(/'/g,"\\'")+'\')" style="width:48px;height:48px;border-radius:50%;background:#22c55e;border:none;box-shadow:0 2px 12px rgba(0,0,0,.25);cursor:pointer;font-size:20px" title="Navegar ate coleta">&#128205;</button>'+
     '<button onclick="openNavigation(\''+destAddr.replace(/'/g,"\\'")+'\')" style="width:48px;height:48px;border-radius:50%;background:#ef4444;border:none;box-shadow:0 2px 12px rgba(0,0,0,.25);cursor:pointer;font-size:20px" title="Navegar ate destino">&#127968;</button>'+
     '</div>';
   mapEl.insertAdjacentHTML('beforeend',navHtml);
@@ -2137,9 +2155,14 @@ async function renderMotoboyDash(el){
       h+='<div style="font-size:20px;font-weight:800;color:var(--gn);margin-top:6px">'+fmt(d.totalPrice)+'</div>';
       h+='</div></div>';
       h+='<div style="display:flex;gap:8px;margin-top:12px">';
-      h+='<button class="btn btn-b" onclick="openNavigation(\''+d.destinationAddress+'\')" style="flex:1">&#128663; Navegar</button>';
-      h+='<button class="btn btn-s" onclick="openChat(\''+d.id+'\')" style="flex:1">&#128172; Chat</button>';
-      h+='<button class="btn btn-g" onclick="completeDel(\''+d.id+'\')" style="flex:1">&#10004; Concluir</button>';
+      if(d.status==='ACCEPTED'){
+        h+='<button class="btn btn-g" onclick="openNavigation(\''+d.originAddress.replace(/'/g,"\\'")+'\')" style="flex:1">&#128205; Ir a Coleta</button>';
+        h+='<button class="btn btn-p" onclick="pickupDel(\''+d.id+'\')" style="flex:1">&#128230; Coletado</button>';
+      }else{
+        h+='<button class="btn btn-b" onclick="openNavigation(\''+d.destinationAddress.replace(/'/g,"\\'")+'\')" style="flex:1">&#128663; Ir a Entrega</button>';
+        h+='<button class="btn btn-g" onclick="completeDel(\''+d.id+'\')" style="flex:1">&#10004; Concluir</button>';
+      }
+      h+='<button class="btn btn-s" onclick="openChat(\''+d.id+'\')" style="flex:0">&#128172;</button>';
       h+='</div></div>';
     });
     h+='</div></div>';
@@ -2174,28 +2197,34 @@ function initMotoboyMap(motoboyData,available,activeDels){
   if(!map)return;
   window._motoboyData=motoboyData;
 
-  (activeDels||[]).forEach(function(d){
-    var origLat=Number(d.originLatitude),origLng=Number(d.originLongitude);
-    var destLat=Number(d.destinationLatitude),destLng=Number(d.destinationLongitude);
-    if(!origLat||!origLng||!destLat||!destLng)return;
-    addMarker('motoboy-map',origLat,origLng,{color:'#22c55e',emoji:'&#128205;',tooltip:'Origem: '+d.trackingAddress,popup:createPopupContent({title:'Origem',subtitle:d.originAddress,actions:[{label:'Navegar',color:'#22c55e',onclick:"openNavigation('"+d.originAddress.replace(/'/g,"\\'")+"')"}]})});
-    addMarker('motoboy-map',destLat,destLng,{color:'#ef4444',emoji:'&#127968;',tooltip:'Destino',popup:createPopupContent({title:'Destino',subtitle:d.destinationAddress,actions:[{label:'Navegar',color:'#ef4444',onclick:"openNavigation('"+d.destinationAddress.replace(/'/g,"\\'")+"')"}]})});
-    api('/route?origLat='+origLat+'&origLng='+origLng+'&destLat='+destLat+'&destLng='+destLng).then(function(r){
-      if(r.success&&r.data&&r.data.geometry){L.geoJSON(r.data.geometry,{style:{color:'#6366f1',weight:4,opacity:0.7}}).addTo(map);}
-    }).catch(function(){});
-  });
+  requestGPS(function(gpsLat,gpsLng){
+    addUserLocationMarker('motoboy-map',gpsLat,gpsLng);
+    centerMap('motoboy-map',gpsLat,gpsLng,16);
+    sendLocationToServer(gpsLat,gpsLng);
 
-  if(motoboyData.isOnline){
-    requestGPS(function(lat,lng){
-      addUserLocationMarker('motoboy-map',lat,lng);
-      centerMap('motoboy-map',lat,lng,18);
-      sendLocationToServer(lat,lng);
-    },function(){
-      centerMap('motoboy-map',DEFAULT_LAT,DEFAULT_LNG,14);
+    (activeDels||[]).forEach(function(d){
+      var origLat=Number(d.originLatitude),origLng=Number(d.originLongitude);
+      var destLat=Number(d.destinationLatitude),destLng=Number(d.destinationLongitude);
+      if(!origLat||!origLng||!destLat||!destLng)return;
+
+      addMarker('motoboy-map',origLat,origLng,{color:'#22c55e',emoji:'&#128205;',tooltip:'Coleta: '+d.originAddress,popup:createPopupContent({title:'Coleta',subtitle:d.originAddress,actions:[{label:'Navegar',color:'#22c55e',onclick:"openNavigation('"+d.originAddress.replace(/'/g,"\\'")+"')"}]})});
+      addMarker('motoboy-map',destLat,destLng,{color:'#ef4444',emoji:'&#127968;',tooltip:'Entrega: '+d.destinationAddress,popup:createPopupContent({title:'Entrega',subtitle:d.destinationAddress,actions:[{label:'Navegar',color:'#ef4444',onclick:"openNavigation('"+d.destinationAddress.replace(/'/g,"\\'")+"')"}]})});
+
+      if(d.status==='ACCEPTED'){
+        api('/route?origLat='+gpsLat+'&origLng='+gpsLng+'&destLat='+origLat+'&destLng='+origLng).then(function(r){
+          if(r.success&&r.data&&r.data.geometry){L.geoJSON(r.data.geometry,{style:{color:'#22c55e',weight:5,opacity:0.8}}).addTo(map);}
+        }).catch(function(){});
+      }else if(d.status==='PICKED_UP'||d.status==='IN_TRANSIT'){
+        api('/route?origLat='+origLat+'&origLng='+origLng+'&destLat='+destLat+'&destLng='+destLng).then(function(r){
+          if(r.success&&r.data&&r.data.geometry){L.geoJSON(r.data.geometry,{style:{color:'#ef4444',weight:5,opacity:0.8}}).addTo(map);}
+        }).catch(function(){});
+      }
+
+      setTimeout(function(){fitMapToMarkers('motoboy-map');},1500);
     });
-  }else{
+  },function(){
     centerMap('motoboy-map',DEFAULT_LAT,DEFAULT_LNG,14);
-  }
+  });
 }
 
 function activateGPS(){
@@ -2232,6 +2261,13 @@ async function toggleOnline(){
 }
 
 async function acceptDel(id){await api('/deliveries/'+id+'/accept',{method:'PUT'});navigate('motoboy-dash');}
+async function pickupDel(id){
+  try{
+    await api('/deliveries/'+id+'/pickup',{method:'PUT'});
+    showNotifToast('&#128230; Coleta confirmada! Rota de entrega carregada','new');
+    navigate('motoboy-dash');
+  }catch(e){showNotifToast('&#10008; '+e.message,'');}
+}
 async function completeDel(id){
   openModal('<div style="padding:8px 0"><h3 style="font-size:18px;font-weight:700;margin-bottom:12px">&#128247; Comprovante de Entrega</h3><p style="font-size:13px;color:var(--g);margin-bottom:16px">Tire uma foto do comprovante (opcional)</p>'+
     '<div class="photo-upload" onclick="document.getElementById(\'proof-file\').click()"><div id="proof-preview"><div style="font-size:36px;margin-bottom:8px">&#128247;</div><div style="color:var(--g);font-size:13px">Toque para tirar foto</div></div></div>'+
