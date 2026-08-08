@@ -2050,9 +2050,13 @@ function renderClientNew(el){
   },200);
     window.useMyLocation=function(){
       requestGPS(function(lat,lng){
-        var dist=Math.sqrt(Math.pow(lat-DEFAULT_LAT,2)+Math.pow(lng-DEFAULT_LNG,2));
-        if(dist<0.2)centerMap('client-new-map',lat,lng,15);
-        else showNotifToast('&#128205; Localizacao fora de Camaqua','');
+        centerMap('client-new-map',lat,lng,16);
+        clearMarkers('client-new-map');
+        selectedOrigin={lat:lat,lng:lng};
+        addMarker('client-new-map',lat,lng,{color:'#22c55e',emoji:'&#128205;',tooltip:'Origem'});
+        document.getElementById('nd-oa').value=lat.toFixed(5)+', '+lng.toFixed(5);
+        mapClickState.step='dest';
+        showNotifToast('&#128205; Origem definida! Agora toque no destino','new');
       },function(err){alert('Nao foi possivel obter localizacao: '+err);});
     };
   document.getElementById('new-delivery-form').onsubmit=async function(e){
