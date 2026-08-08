@@ -2172,10 +2172,10 @@ async function renderMotoboyDash(el){
       h+='</div></div>';
       h+='<div style="display:flex;gap:8px;margin-top:12px">';
       if(d.status==='ACCEPTED'){
-        h+='<button class="btn btn-g" onclick="openNavigation(\''+d.originAddress.replace(/'/g,"\\'")+'\')" style="flex:1">&#128205; Ir a Coleta</button>';
+        h+='<button class="btn btn-g" onclick="drawRouteToTarget(\''+d.id+'\',\'origin\')" style="flex:1">&#128205; Ir a Coleta</button>';
         h+='<button class="btn btn-p" onclick="pickupDel(\''+d.id+'\')" style="flex:1">&#128230; Coletado</button>';
       }else{
-        h+='<button class="btn btn-b" onclick="openNavigation(\''+d.destinationAddress.replace(/'/g,"\\'")+'\')" style="flex:1">&#128663; Ir a Entrega</button>';
+        h+='<button class="btn btn-b" onclick="drawRouteToTarget(\''+d.id+'\',\'destination\')" style="flex:1">&#128663; Ir a Entrega</button>';
         h+='<button class="btn btn-g" onclick="completeDel(\''+d.id+'\')" style="flex:1">&#10004; Concluir</button>';
       }
       h+='<button class="btn btn-s" onclick="openChat(\''+d.id+'\')" style="flex:0">&#128172;</button>';
@@ -2212,6 +2212,8 @@ function initMotoboyMap(motoboyData,available,activeDels){
   var map=createMap('motoboy-map',{zoomControl:true});
   if(!map)return;
   window._motoboyData=motoboyData;
+  _activeDeliveryCache={};
+  (activeDels||[]).forEach(function(d){_activeDeliveryCache[d.id]=d;});
 
   requestGPS(function(gpsLat,gpsLng){
     addUserLocationMarker('motoboy-map',gpsLat,gpsLng);
@@ -2267,6 +2269,41 @@ function openNavigation(address,lat,lng){
     return;
   }
   window.open('https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(address),'_blank');
+}
+
+var _activeDeliveryCache={};
+function drawRouteToTarget(deliveryId,target){
+  var d=_activeDeliveryCache[deliveryId];
+  if(!d){showNotifToast('&#10008; Entrega nao encontrada no mapa','');return;}
+  var map=_maps['motoboy-map'];
+  if(!map||typeof L==='undefined'){showNotifToast('&#10008; Mapa nao carregado','');return;}
+  requestGPS(function(gpsLat,gpsLng){
+    var tLat,tLng,tAddr,tColor;
+    if(target==='origin'){
+      tLat=Number(d.originLatitude);tLng=Number(d.originLongitude);tAddr=d.originAddress;tColor='#22c55e';
+    }else{
+      tLat=Number(d.destinationLatitude);tLng=Number(d.destinationLongitude);tAddr=d.destinationAddress;tColor='#ef4444';
+    }
+    if(!tLat||!tLng){showNotifToast('&#10008; Coordenadas nao encontradas','');return;}
+    Object.keys(_maps).forEach(function(k){if(_maps[k]&&_maps[k]._routeLine){map.removeLayer(_maps[k]._routeLine);_maps[k]._routeLine=null;}});
+    api('/route?origLat='+gpsLat+'&origLng='+gpsLng+'&destLat='+tLat+'&destLng='+tLng).then(function(r){
+      if(r.success&&r.data&&r.data.geometry){
+        var line=L.geoJSON(r.data.geometry,{style:{color:tColor,weight:6,opacity:0.9}}).addTo(map);
+        map._routeLine=line;
+        var bounds=line.getBounds();
+        if(bounds.isValid())map.fitBounds(bounds,{padding:[50,50]});
+      }else{
+        var line2=L.polyline([[gpsLat,gpsLng],[tLat,tLng]],{color:tColor,weight:5,opacity:0.8,dashArray:'10,6'}).addTo(map);
+        map._routeLine=line2;
+        map.fitBounds(line2.getBounds(),{padding:[50,50]});
+      }
+      showNotifToast('&#128205; Rota para '+(target==='origin'?'coleta':'entrega')+' calculada','new');
+    }).catch(function(){
+      var line3=L.polyline([[gpsLat,gpsLng],[tLat,tLng]],{color:tColor,weight:5,opacity:0.8,dashArray:'10,6'}).addTo(map);
+      map._routeLine=line3;
+      map.fitBounds(line3.getBounds(),{padding:[50,50]});
+    });
+  },function(){showNotifToast('&#10008; Ative o GPS para tracar a rota','');});
 }
 
 async function toggleOnline(){
