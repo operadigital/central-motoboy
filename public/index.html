@@ -23,7 +23,25 @@ if(typeof L==='undefined'){
 <title>Central Motoboy</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-:root{--p:#f97316;--pd:#ea580c;--pl:#fff7ed;--d:#0f172a;--d2:#1e293b;--g:#64748b;--gl:#f8fafc;--w:#fff;--gn:#22c55e;--r:#ef4444;--b:#3b82f6;--y:#eab308;--radius:16px;--safe-b:env(safe-area-inset-bottom,0px);--safe-t:env(safe-area-inset-top,0px)}
+:root{--p:#f97316;--pd:#ea580c;--pl:#fff7ed;--d:#0f172a;--d2:#1e293b;--g:#64748b;--gl:#f8fafc;--w:#fff;--gn:#22c55e;--r:#ef4444;--b:#3b82f6;--y:#eab308;--radius:16px;--safe-b:env(safe-area-inset-bottom,0px);--safe-t:env(safe-area-inset-top,0px);--card-border:rgba(0,0,0,.04);--card-shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.03);--input-bg:#fff;--input-border:#e2e8f0;--th-bg:#f8fafc;--td-border:#f1f5f9;--sidebar-bg:#fff;--sidebar-border:#f1f5f9;--sidebar-user-bg:#fafbfc;--mobile-bg:#f2f2f7;--mobile-header-bg:rgba(255,255,255,.92);--mobile-header-border:rgba(0,0,0,.08);--mobile-nav-bg:rgba(255,255,255,.95);--mobile-nav-border:rgba(0,0,0,.06)}
+body.dark{--d:#e2e8f0;--d2:#cbd5e1;--g:#94a3b8;--gl:#0f172a;--w:#1e293b;--card-border:rgba(255,255,255,.06);--card-shadow:0 1px 3px rgba(0,0,0,.3),0 4px 12px rgba(0,0,0,.2);--input-bg:#334155;--input-border:#475569;--th-bg:#1e293b;--td-border:#334155;--sidebar-bg:#1e293b;--sidebar-border:#334155;--sidebar-user-bg:#0f172a;--mobile-bg:#0f172a;--mobile-header-bg:rgba(15,23,42,.95);--mobile-header-border:rgba(255,255,255,.08);--mobile-nav-bg:rgba(15,23,42,.95);--mobile-nav-border:rgba(255,255,255,.06)}
+body.dark .card{background:var(--w);border-color:var(--card-border);box-shadow:var(--card-shadow)}
+body.dark .card-h{border-color:var(--td-border)}
+body.dark .stat-c{background:var(--w);border-color:var(--card-border);box-shadow:var(--card-shadow)}
+body.dark .input{background:var(--input-bg);border-color:var(--input-border);color:var(--d)}
+body.dark select.input{background-color:var(--input-bg);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")}
+body.dark .btn-s{background:var(--w);color:var(--d);border-color:var(--input-border)}
+body.dark th{background:var(--th-bg);color:var(--g)}
+body.dark td{border-color:var(--td-border);color:var(--d)}
+body.dark tr:hover td{background:var(--th-bg)}
+body.dark .badge.bgr{background:#334155;color:#94a3b8}
+body.dark .sidebar{background:var(--sidebar-bg);border-color:var(--sidebar-border)}
+body.dark .sidebar nav a:hover{background:var(--gl)}
+body.dark .sidebar .user-box{background:var(--sidebar-user-bg);border-color:var(--sidebar-border)}
+body.dark .photo-upload{background:var(--w);border-color:var(--input-border)}
+body.dark .photo-upload:hover{background:var(--input-bg)}
+body.dark .chat-msg{background:#334155;color:var(--d)}
+body.dark .chat-msg.me{background:var(--pd)}
 html{height:100%;overflow:hidden}
 body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;color:var(--d);background:var(--gl);line-height:1.5;height:100%;overflow:hidden;-webkit-font-smoothing:antialiased}
 input,button,textarea,select{font-family:inherit}
@@ -114,10 +132,33 @@ tr:hover td{background:#f8fafc}
 
 .mobile-grid-patch{padding:0 !important}
 
+.skeleton{background:linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:12px;min-height:16px}
+body.dark .skeleton{background:linear-gradient(90deg,#334155 25%,#475569 50%,#334155 75%);background-size:200% 100%}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skeleton-card{background:var(--w);border-radius:var(--radius);padding:20px;border:1px solid var(--card-border)}
+.skeleton-text{height:14px;margin-bottom:8px;border-radius:6px}
+.skeleton-text.w60{width:60%}.skeleton-text.w40{width:40%}.skeleton-text.w80{width:80%}
+.skeleton-circle{width:48px;height:48px;border-radius:50%}
+.skeleton-block{height:200px;border-radius:var(--radius)}
+
+.chat-container{display:flex;flex-direction:column;height:400px}
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.chat-msg{max-width:80%;padding:12px 16px;border-radius:16px;font-size:14px;line-height:1.4;word-break:break-word}
+.chat-msg.me{background:var(--p);color:#fff;border-bottom-right-radius:4px;align-self:flex-end}
+.chat-msg.other{background:var(--gl);color:var(--d);border-bottom-left-radius:4px;align-self:flex-start}
+.chat-msg .chat-time{font-size:10px;opacity:.6;margin-top:4px}
+.chat-input-wrap{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--td-border);background:var(--w)}
+.chat-input-wrap input{flex:1;padding:10px 14px;border:1.5px solid var(--input-border);border-radius:20px;font-size:14px;background:var(--input-bg);color:var(--d);outline:none}
+.chat-input-wrap button{width:40px;height:40px;border-radius:50%;border:none;background:var(--p);color:#fff;font-size:18px;cursor:pointer;flex-shrink:0}
+
 @media(max-width:768px){
   .sidebar{display:none !important}
   html{overflow:auto;height:auto}
   body{overflow:auto;height:auto;background:#f2f2f7}
+  body.dark{background:var(--mobile-bg)}
+  body.dark .mobile-header{background:var(--mobile-header-bg);border-color:var(--mobile-header-border)}
+  body.dark .bottom-nav{background:var(--mobile-nav-bg);border-color:var(--mobile-nav-border)}
+  body.dark .mobile-header .logo{color:var(--d)}
   
   .mobile-grid-patch{padding:0 16px !important}
   
@@ -344,6 +385,7 @@ tr:hover td{background:#f8fafc}
     <div class="logo">Central <span>Motoboy</span></div>
   </div>
   <div class="hdr-right">
+    <div style="width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.04);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px" onclick="toggleDarkMode()">&#127769;</div>
     <div style="width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.04);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px" onclick="openModal('<div style=text-align:center;padding:16px><h3 style=margin-bottom:8px>Notificacoes</h3><p style=color:var(--g)>Nenhuma notificacao nova</p></div>')">&#128276;</div>
     <div class="avatar" id="m-avatar">A</div>
   </div>
@@ -510,6 +552,7 @@ tr:hover td{background:#f8fafc}
         <div style="font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="user-name"></div>
         <div style="font-size:11px;color:var(--g);font-weight:500" id="user-role"></div>
       </div>
+      <button onclick="toggleDarkMode()" style="background:none;border:none;cursor:pointer;color:var(--g);font-size:18px;padding:4px" title="Modo Escuro">&#127769;</button>
       <button onclick="logout()" style="background:none;border:none;cursor:pointer;color:var(--r);font-size:20px;padding:4px" title="Sair">&#x2190;</button>
     </div>
   </div>
@@ -619,6 +662,118 @@ function connectSSE(){
     }catch(e){}
   });
   evtSource.onerror=function(){setTimeout(connectSSE,3000);};
+}
+
+// ============ DARK MODE ============
+var _darkMode=localStorage.getItem('darkMode')==='true';
+function toggleDarkMode(){
+  _darkMode=!_darkMode;
+  localStorage.setItem('darkMode',_darkMode);
+  document.body.classList.toggle('dark',_darkMode);
+}
+function initDarkMode(){if(_darkMode)document.body.classList.add('dark');}
+
+// ============ PUSH NOTIFICATIONS ============
+async function initPushNotifications(){
+  if(!('serviceWorker' in navigator)||!('PushManager' in window))return;
+  try{
+    var reg=await navigator.serviceWorker.ready;
+    var sub=await reg.pushManager.getSubscription();
+    if(!sub){
+      var permission=await Notification.requestPermission();
+      if(permission==='granted'){
+        var vapidKey='BNeLz8J0WnQ0h0C8L5XH2z3K4a9T7v6X3h5N8p2Q5w1E4r7T9y0U2i4O6p8A0s2D4f6G8h0J2k4L6z8';
+        sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:vapidKey});
+      }
+    }
+  }catch(e){}
+}
+
+// ============ SKELETON HELPERS ============
+function skeletonCard(lines){
+  var h='<div class="skeleton-card">';
+  lines=lines||3;
+  for(var i=0;i<lines;i++){
+    var w=['w60','w80','w40'][i%3];
+    h+='<div class="skeleton skeleton-text '+w+'" style="animation-delay:'+(i*0.1)+'s"></div>';
+  }
+  return h+'</div>';
+}
+function skeletonDashboard(){
+  return '<div style="padding:16px"><div class="skeleton skeleton-text w60" style="height:24px;margin-bottom:16px"></div>'+
+    '<div class="grid4" style="margin-bottom:20px">'+skeletonCard(1)+skeletonCard(1)+skeletonCard(1)+skeletonCard(1)+'</div>'+
+    skeletonCard(4)+skeletonCard(4)+'</div>';
+}
+
+// ============ COUPONS ============
+async function applyCoupon(){
+  var code=document.getElementById('coupon-input');
+  if(!code||!code.value.trim())return;
+  try{
+    var r=await api('/coupons/validate',{method:'POST',body:JSON.stringify({code:code.value.trim().toUpperCase()})});
+    if(r.success&&r.data){
+      window._couponDiscount=r.data.discount;
+      window._couponCode=r.data.code;
+      var disc=document.getElementById('coupon-result');
+      if(disc){disc.innerHTML='<span style="color:var(--gn);font-weight:700">&#10004; Cupom '+r.data.code+' - '+r.data.discount+'% de desconto!</span>';}
+      showNotifToast('&#127942; Cupom aplicado: '+r.data.discount+'% off!','new');
+    }
+  }catch(e){var disc2=document.getElementById('coupon-result');if(disc2){disc2.innerHTML='<span style="color:var(--r);font-weight:600">'+e.message+'</span>';}}
+}
+
+// ============ CHAT ============
+var _chatInterval=null;
+function openChat(deliveryId){
+  openModal('<div style="padding:0"><div style="padding:16px 20px;border-bottom:1px solid var(--td-border);display:flex;justify-content:space-between;align-items:center"><h3 style="font-size:16px;font-weight:700">&#128172; Chat da Entrega</h3><button onclick="closeModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--g)">&times;</button></div>'+
+    '<div class="chat-container"><div id="chat-messages" class="chat-messages"><div style="text-align:center;color:var(--g);font-size:13px;padding:20px">Carregando...</div></div>'+
+    '<div class="chat-input-wrap"><input id="chat-input" placeholder="Digite sua mensagem..." onkeydown="if(event.key===\'Enter\')sendChatMessage(\''+deliveryId+'\')"><button onclick="sendChatMessage(\''+deliveryId+'\')">&#10148;</button></div></div></div>');
+  loadChatMessages(deliveryId);
+  if(_chatInterval)clearInterval(_chatInterval);
+  _chatInterval=setInterval(function(){loadChatMessages(deliveryId,true);},5000);
+}
+async function loadChatMessages(deliveryId,silent){
+  try{
+    var r=await api('/chat/'+deliveryId+'/messages');
+    if(!r.success)return;
+    var el=document.getElementById('chat-messages');
+    if(!el)return;
+    var msgs=r.data||[];
+    if(!msgs.length){el.innerHTML='<div style="text-align:center;color:var(--g);font-size:13px;padding:20px">Nenhuma mensagem ainda</div>';return;}
+    var h='';
+    msgs.forEach(function(m){
+      var isMe=m.senderId===USER.id||m.sender_id===USER.id;
+      var time=m.createdAt||m.created_at||'';
+      if(time)try{time=new Date(time).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}catch(e){}
+      h+='<div class="chat-msg '+(isMe?'me':'other')+'">'+m.message+(time?'<div class="chat-time">'+time+'</div>':'')+'</div>';
+    });
+    el.innerHTML=h;
+    el.scrollTop=el.scrollHeight;
+  }catch(e){}
+}
+async function sendChatMessage(deliveryId){
+  var input=document.getElementById('chat-input');
+  if(!input||!input.value.trim())return;
+  var msg=input.value.trim();
+  input.value='';
+  try{
+    await api('/chat/'+deliveryId+'/messages',{method:'POST',body:JSON.stringify({message:msg})});
+    loadChatMessages(deliveryId,true);
+  }catch(e){}
+}
+
+// ============ PHOTO PROOF ============
+var _proofPhoto=null;
+function handleProofPhoto(input){
+  var file=input.files[0];
+  if(!file)return;
+  if(file.size>5*1024*1024){alert('Foto muito grande (max 5MB)');return;}
+  var reader=new FileReader();
+  reader.onload=function(e){
+    _proofPhoto=e.target.result;
+    var preview=document.getElementById('proof-preview');
+    if(preview)preview.innerHTML='<img src="'+_proofPhoto+'" style="max-width:100%;max-height:160px;border-radius:12px">';
+  };
+  reader.readAsDataURL(file);
 }
 
 // ============ LEAFLET MAP SYSTEM ============
@@ -869,6 +1024,7 @@ function cpfMask(v){
   return v;
 }
 document.addEventListener('DOMContentLoaded',function(){
+  initDarkMode();
   var cpf=document.getElementById('reg-cpf');
   if(cpf)cpf.oninput=function(){this.value=cpfMask(this.value);};
 });
@@ -983,7 +1139,7 @@ function navigate(page){
   document.querySelectorAll('.bottom-nav a').forEach(function(a){a.classList.toggle('active',a.dataset.page===page)});
   destroyMap('admin-realtime-map');destroyMap('motoboy-map');destroyMap('client-tracking-map');destroyMap('client-new-map');
   const main=document.getElementById('main-content');
-  main.innerHTML='<div class="spinner"></div>';
+  main.innerHTML=skeletonDashboard();
   main.scrollTop=0;
   const renderers={
     'admin-dash':renderAdminDash,'admin-motoboys':renderAdminMotoboys,'admin-clients':renderAdminClients,'admin-deliveries':renderAdminDeliveries,'admin-financial':renderAdminFinancial,'admin-reports':renderAdminReports,'admin-settings':renderAdminSettings,
@@ -1337,7 +1493,8 @@ async function renderAdminDeliveries(el){
   h+=buildMiniStat('Canceladas',cancelled.length,'#ef4444','&#10008;');
   h+='</div></div>';
   h+='<div class="card"><div class="card-h" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px"><span>Todas as Entregas</span>';
-  h+='<select id="del-filter" onchange="filterDeliveries()" style="padding:6px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:12px;background:#fff"><option value="">Todos Status</option><option value="PENDING">Pendente</option><option value="ACCEPTED">Aceita</option><option value="IN_TRANSIT">Em Transito</option><option value="DELIVERED">Entregue</option><option value="CANCELLED">Cancelada</option></select>';
+  h+='<select id="del-filter" onchange="filterDeliveries(this.value,document.getElementById(\'del-search\').value)" style="padding:6px 12px;border:1px solid var(--input-border);border-radius:8px;font-size:12px;background:var(--input-bg);color:var(--d)"><option value="">Todos Status</option><option value="PENDING">Pendente</option><option value="ACCEPTED">Aceita</option><option value="IN_TRANSIT">Em Transito</option><option value="DELIVERED">Entregue</option><option value="CANCELLED">Cancelada</option></select>'+
+    '<input id="del-search" placeholder="Buscar..." oninput="filterDeliveries(document.getElementById(\'del-filter\').value,this.value)" style="padding:6px 12px;border:1px solid var(--input-border);border-radius:8px;font-size:12px;background:var(--input-bg);color:var(--d);width:160px">';
   h+='</div><div class="table-w"><table><thead><tr><th>Codigo</th><th>Cliente</th><th>Motoboy</th><th>Origem</th><th>Destino</th><th>Valor</th><th>Pagamento</th><th>Status</th><th>Data</th></tr></thead><tbody id="del-table-body">';
   data.forEach(function(d){
     var clientName=d.client?(d.client.user?d.client.user.firstName+' '+d.client.user.lastName:'-'):'-';
@@ -1357,10 +1514,16 @@ async function renderAdminDeliveries(el){
   h+='</tbody></table></div></div>';
   el.innerHTML=h;
 }
-function filterDeliveries(){
-  var f=document.getElementById('del-filter').value;
-  var rows=document.querySelectorAll('#del-table-body tr');
-  rows.forEach(function(r){r.style.display=(!f||r.dataset.status===f)?'':'none'});
+function filterDeliveries(status,search){
+  var tables=['del-table-body','delivery-table-body'];
+  tables.forEach(function(tableId){
+    var rows=document.querySelectorAll('#'+tableId+' tr');
+    rows.forEach(function(row){
+      var matchStatus=!status||row.dataset.status===status;
+      var matchSearch=!search||row.textContent.toLowerCase().includes(search.toLowerCase());
+      row.style.display=(matchStatus&&matchSearch)?'':'none';
+    });
+  });
 }
 
 async function renderAdminFinancial(el){
@@ -1498,7 +1661,7 @@ async function renderClientDash(el){
     active.forEach(function(d){
       h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:14px;background:var(--gl);border-radius:12px;margin-bottom:10px;gap:12px">';
       h+='<div style="min-width:0"><div style="font-weight:700;font-family:monospace;font-size:14px">'+d.trackingCode+'</div><div style="font-size:12px;color:var(--g);margin-top:2px">'+d.originAddress+' &#8594; '+d.destinationAddress+'</div></div>';
-      h+='<div style="text-align:right;flex-shrink:0"><span class="'+(ST[d.status]||['',''])[0]+'">'+(ST[d.status]||['',''])[1]+'</span><div style="font-size:12px;color:var(--g);margin-top:4px;font-weight:600">'+fmt(d.totalPrice)+'</div></div></div>';
+      h+='<div style="text-align:right;flex-shrink:0;display:flex;gap:6px;align-items:center"><span class="'+(ST[d.status]||['',''])[0]+'">'+(ST[d.status]||['',''])[1]+'</span><button onclick="openChat(\''+d.id+'\')" style="background:var(--b);color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:11px;cursor:pointer;font-weight:600">&#128172;</button></div></div>';
     });
     h+='</div></div>';
   }
@@ -1604,6 +1767,8 @@ function renderClientNew(el){
     '<div class="form-g"><label class="label">Descricao</label><input class="input" id="nd-desc" placeholder="O que esta enviando?"></div>'+
     '<div class="form-g"><label class="label">Forma de Pagamento</label>'+
     '<select class="input" id="nd-pm"><option value="PIX">PIX</option><option value="CREDIT_CARD">Cartao de Credito</option><option value="CASH">Dinheiro</option><option value="WALLET">Carteira</option></select></div>'+
+    '<div class="form-g"><label class="label">Agendar Entrega?</label><input class="input" type="datetime-local" id="nd-scheduled"></div>'+
+    '<div class="form-g"><label class="label">Cupom de Desconto</label><div style="display:flex;gap:8px"><input class="input" id="coupon-input" placeholder="Codigo do cupom"><button type="button" class="btn btn-s btn-sm" onclick="applyCoupon()">Aplicar</button></div><div id="coupon-result" style="margin-top:6px;font-size:13px"></div></div>'+
     '<div class="form-g"><label class="label">Observacoes</label><textarea class="input" id="nd-obs" rows="2"></textarea></div>'+
     '<div id="nd-error" style="display:none;color:var(--r);font-size:13px;margin-bottom:12px;padding:10px;background:#fef2f2;border-radius:8px"></div>'+
     '<button type="submit" class="btn btn-p btn-lg" style="width:100%">Criar Entrega</button>'+
@@ -1653,17 +1818,27 @@ function renderClientNew(el){
         destinationLatitude:selectedDest?selectedDest.lat:DEFAULT_LAT+0.0114,destinationLongitude:selectedDest?selectedDest.lng:DEFAULT_LNG-0.0225,
         description:document.getElementById('nd-desc').value,paymentMethod:document.getElementById('nd-pm').value,observations:document.getElementById('nd-obs').value,
       };
+      var scheduled=document.getElementById('nd-scheduled').value;
+      if(scheduled)body.scheduledFor=scheduled;
+      if(window._couponCode)body.couponCode=window._couponCode;
       var r=await api('/deliveries',{method:'POST',body:JSON.stringify(body)});
-      openModal('<div style="text-align:center;padding:8px 0"><h2 style="color:var(--gn);margin-bottom:8px;font-size:20px">&#10004; Entrega Criada!</h2><p style="font-size:14px;color:var(--g);margin-bottom:16px">Codigo de rastreio:</p><p style="font-size:32px;font-family:monospace;font-weight:800;color:var(--p)">'+r.data.trackingCode+'</p><p style="font-size:14px;color:var(--g);margin:16px 0">Valor: <b>'+fmt(r.data.totalPrice)+'</b></p><button class="btn btn-p btn-lg" onclick="closeModal();navigate(\'client-dash\')" style="margin-top:12px;width:100%">Voltar ao Dashboard</button></div>');
+      var scheduledMsg=scheduled?'<br><span style="font-size:13px;color:var(--b)">Agendada para: '+new Date(scheduled).toLocaleString('pt-BR')+'</span>':'';
+      openModal('<div style="text-align:center;padding:8px 0"><h2 style="color:var(--gn);margin-bottom:8px;font-size:20px">&#10004; Entrega Criada!</h2><p style="font-size:14px;color:var(--g);margin-bottom:16px">Codigo de rastreio:</p><p style="font-size:32px;font-family:monospace;font-weight:800;color:var(--p)">'+r.data.trackingCode+'</p><p style="font-size:14px;color:var(--g);margin:16px 0">Valor: <b>'+fmt(r.data.totalPrice)+'</b></p>'+scheduledMsg+'<button class="btn btn-p btn-lg" onclick="closeModal();navigate(\'client-dash\')" style="margin-top:12px;width:100%">Voltar ao Dashboard</button></div>');
+      window._couponCode=null;window._couponDiscount=null;
     }catch(err){document.getElementById('nd-error').textContent=err.message;document.getElementById('nd-error').style.display='block';}
   };
 }
 
 async function renderClientHistory(el){
+  el.innerHTML=skeletonDashboard();
   var data=(await api('/deliveries')).data;
   el.innerHTML='<div class="header-bar"><h1 style="font-size:22px;font-weight:800">Historico</h1></div>'+
-    '<div class="card"><div class="table-w"><table><thead><tr><th>Codigo</th><th>Origem</th><th>Destino</th><th>Valor</th><th>Status</th><th>Data</th></tr></thead><tbody>'+
-    data.map(function(d){return '<tr><td style="font-family:monospace;font-weight:700;color:var(--p)">'+d.trackingCode+'</td><td>'+d.originAddress+'</td><td>'+d.destinationAddress+'</td><td style="font-weight:700">'+fmt(d.totalPrice)+'</td><td><span class="'+(ST[d.status]||['',''])[0]+'">'+(ST[d.status]||['',''])[1]+'</span></td><td style="font-size:12px">'+fmtDate(d.createdAt)+'</td></tr>'}).join('')+
+    '<div class="card" style="margin-bottom:16px"><div class="card-b" style="padding:14px 22px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">'+
+    '<select class="input" id="hist-status-filter" onchange="filterDeliveries(this.value,document.getElementById(\'hist-search\').value)" style="width:auto;min-width:140px;padding:10px 14px;font-size:13px"><option value="">Todos Status</option><option value="DELIVERED">Entregue</option><option value="CANCELLED">Cancelada</option><option value="PENDING">Pendente</option><option value="ACCEPTED">Aceita</option><option value="IN_TRANSIT">Em Transito</option></select>'+
+    '<input class="input" id="hist-search" placeholder="Buscar por codigo ou endereco..." oninput="filterDeliveries(document.getElementById(\'hist-status-filter\').value,this.value)" style="flex:1;min-width:200px;padding:10px 14px;font-size:13px">'+
+    '</div></div>'+
+    '<div class="card"><div class="table-w"><table><thead><tr><th>Codigo</th><th>Origem</th><th>Destino</th><th>Valor</th><th>Status</th><th>Data</th><th>Acoes</th></tr></thead><tbody id="delivery-table-body">'+
+    data.map(function(d){return '<tr data-status="'+d.status+'"><td style="font-family:monospace;font-weight:700;color:var(--p)">'+d.trackingCode+'</td><td>'+d.originAddress+'</td><td>'+d.destinationAddress+'</td><td style="font-weight:700">'+fmt(d.totalPrice)+'</td><td><span class="'+(ST[d.status]||['',''])[0]+'">'+(ST[d.status]||['',''])[1]+'</span></td><td style="font-size:12px">'+fmtDate(d.createdAt)+'</td><td>'+(d.status==='ACCEPTED'||d.status==='PICKED_UP'||d.status==='IN_TRANSIT'?'<button class="btn btn-sm btn-b" onclick="openChat(\''+d.id+'\')" style="padding:6px 10px;font-size:11px">&#128172; Chat</button>':'')+'</td></tr>'}).join('')+
     '</tbody></table></div></div>';
 }
 
@@ -1737,6 +1912,7 @@ async function renderMotoboyDash(el){
       h+='</div></div>';
       h+='<div style="display:flex;gap:8px;margin-top:12px">';
       h+='<button class="btn btn-b" onclick="openNavigation(\''+d.destinationAddress+'\')" style="flex:1">&#128663; Navegar</button>';
+      h+='<button class="btn btn-s" onclick="openChat(\''+d.id+'\')" style="flex:1">&#128172; Chat</button>';
       h+='<button class="btn btn-g" onclick="completeDel(\''+d.id+'\')" style="flex:1">&#10004; Concluir</button>';
       h+='</div></div>';
     });
@@ -1828,7 +2004,36 @@ async function toggleOnline(){
 }
 
 async function acceptDel(id){await api('/deliveries/'+id+'/accept',{method:'PUT'});navigate('motoboy-dash');}
-async function completeDel(id){await api('/deliveries/'+id+'/complete',{method:'PUT'});navigate('motoboy-dash');}
+async function completeDel(id){
+  openModal('<div style="padding:8px 0"><h3 style="font-size:18px;font-weight:700;margin-bottom:12px">&#128247; Comprovante de Entrega</h3><p style="font-size:13px;color:var(--g);margin-bottom:16px">Tire uma foto do comprovante (opcional)</p>'+
+    '<div class="photo-upload" onclick="document.getElementById(\'proof-file\').click()"><div id="proof-preview"><div style="font-size:36px;margin-bottom:8px">&#128247;</div><div style="color:var(--g);font-size:13px">Toque para tirar foto</div></div></div>'+
+    '<input type="file" id="proof-file" accept="image/*" capture="environment" style="display:none" onchange="handleProofPhoto(this)">'+
+    '<div style="display:flex;gap:8px;margin-top:16px"><button class="btn btn-s" onclick="closeModal()" style="flex:1">Cancelar</button><button class="btn btn-g" onclick="confirmCompleteDel(\''+id+'\')" style="flex:1">Concluir Entrega</button></div></div>');
+}
+async function confirmCompleteDel(id){
+  var body={};
+  if(_proofPhoto)body.proofPhoto=_proofPhoto;
+  await api('/deliveries/'+id+'/complete',{method:'PUT',body:JSON.stringify(body)});
+  _proofPhoto=null;
+  closeModal();
+  navigate('motoboy-dash');
+}
+
+async function viewMotoboyProfile(motoboyId){
+  try{
+    var r=await api('/motoboys/'+motoboyId+'/public');
+    var m=r.data;
+    openModal('<div style="padding:8px 0;text-align:center">'+
+      '<div class="avatar" style="width:64px;height:64px;font-size:24px;margin:0 auto 12px">'+(m.name?m.name[0]:'M')+'</div>'+
+      '<h3 style="font-size:18px;font-weight:700">'+m.name+'</h3>'+
+      '<div style="color:var(--g);font-size:13px;margin:4px 0">'+(m.vehicle||'')+'</div>'+
+      '<div style="display:flex;justify-content:center;gap:20px;margin:16px 0">'+
+      '<div><div style="font-size:24px;font-weight:800;color:var(--y)">&#9733; '+Number(m.rating||0).toFixed(1)+'</div><div style="font-size:11px;color:var(--g)">Avaliacao</div></div>'+
+      '<div><div style="font-size:24px;font-weight:800;color:var(--gn)">'+(m.completedDeliveries||0)+'</div><div style="font-size:11px;color:var(--g)">Entregas</div></div>'+
+      '</div>'+
+      '<button class="btn btn-s" onclick="closeModal()" style="width:100%;margin-top:8px">Fechar</button></div>');
+  }catch(e){}
+}
 
 async function renderMotoboyEarnings(el){
   var e=(await api('/motoboys/earnings')).data;

@@ -165,6 +165,7 @@ app.get('/api/admin/deliveries', auth, admin, async (req, res) => {
     totalPrice: Number(x.total_price), commissionAmount: Number(x.commission_amount),
     motoboyEarning: Number(x.motoboy_earning), paymentMethod: x.payment_method,
     createdAt: x.created_at, updatedAt: x.updated_at,
+    scheduledFor: x.scheduled_for, proofPhoto: x.proof_photo,
     client: null, motoboy: null
   }));
   res.json({ success: true, data: result, meta: { total: result.length, page: 1, limit: 50, totalPages: 1 } });
@@ -240,7 +241,8 @@ app.get('/api/deliveries', auth, async (req, res) => {
     description: x.description, distance: x.distance, estimatedTime: x.estimated_time,
     totalPrice: Number(x.total_price), commissionAmount: Number(x.commission_amount),
     motoboyEarning: Number(x.motoboy_earning), paymentMethod: x.payment_method,
-    createdAt: x.created_at
+    createdAt: x.created_at,
+    scheduledFor: x.scheduled_for, proofPhoto: x.proof_photo
   }));
   res.json({ success: true, data: result, meta: { total: result.length, page: 1, limit: 20, totalPages: 1 } });
 });
@@ -257,7 +259,8 @@ app.get('/api/deliveries/available', auth, async (req, res) => {
     description: x.description, distance: x.distance, estimatedTime: x.estimated_time,
     totalPrice: Number(x.total_price), commissionAmount: Number(x.commission_amount), commissionPercent: 20,
     motoboyEarning: Number(x.motoboy_earning), paymentMethod: x.payment_method,
-    createdAt: x.created_at
+    createdAt: x.created_at,
+    scheduledFor: x.scheduled_for, proofPhoto: x.proof_photo
   }));
   res.json({ success: true, data: result });
 });
@@ -266,7 +269,24 @@ app.post('/api/deliveries', auth, async (req, res) => {
   try {
     const b = req.body;
     const code = 'CM' + Math.random().toString(36).substring(2, 10).toUpperCase();
-    const price = 25 + Math.floor(Math.random() * 20);
+
+    // Dynamic pricing via OSRM
+    let basePrice = 10, distancePrice = 0, totalPrice = 10, distanceKm = b.distance || 0;
+    if (b.originLatitude && b.originLongitude && b.destinationLatitude && b.destinationLongitude) {
+      try {
+        const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${parseFloat(b.originLongitude)},${parseFloat(b.originLatitude)};${parseFloat(b.destinationLongitude)},${parseFloat(b.destinationLatitude)}`;
+        const resp = await fetch(osrmUrl);
+        const data = await resp.json();
+        if (data.code === 'Ok' && data.routes && data.routes.length) {
+          distanceKm = Math.round((data.routes[0].distance / 1000) * 10) / 10;
+        }
+      } catch (osrmErr) { /* fallback to provided distance */ }
+    }
+    if (!distanceKm || distanceKm <= 0) distanceKm = b.distance || 5;
+    distancePrice = Math.round(distanceKm * 5 * 100) / 100;
+    basePrice = 10;
+    totalPrice = Math.max(10, Math.round((basePrice + distancePrice) * 100) / 100);
+
     const { data: d, error } = await supabase.from('deliveries').insert({
       tracking_code: code, client_id: req.user.id, status: 'PENDING', type: b.type || 'IMMEDIATE',
       origin_address: b.originAddress, origin_number: b.originNumber, origin_neighborhood: b.originNeighborhood,
@@ -275,11 +295,12 @@ app.post('/api/deliveries', auth, async (req, res) => {
       destination_address: b.destinationAddress, destination_number: b.destinationNumber, destination_neighborhood: b.destinationNeighborhood,
       destination_city: b.destinationCity, destination_state: b.destinationState,
       destination_latitude: b.destinationLatitude, destination_longitude: b.destinationLongitude,
-      description: b.description, distance: b.distance || 5, estimated_time: b.estimatedTime || 20,
-      base_price: 10, distance_price: 15, total_price: price,
-      commission_amount: Math.round(price * 0.2 * 100) / 100, commission_percent: 20,
-      motoboy_earning: Math.round(price * 0.8 * 100) / 100,
-      payment_method: b.paymentMethod || 'PIX', payment_status: 'PENDING'
+      description: b.description, distance: distanceKm, estimated_time: b.estimatedTime || Math.round(distanceKm * 3),
+      base_price: basePrice, distance_price: distancePrice, total_price: totalPrice,
+      commission_amount: Math.round(totalPrice * 0.2 * 100) / 100, commission_percent: 20,
+      motoboy_earning: Math.round(totalPrice * 0.8 * 100) / 100,
+      payment_method: b.paymentMethod || 'PIX', payment_status: 'PENDING',
+      scheduled_for: b.scheduledFor || null
     }).select().single();
     if (error) return res.status(500).json({ success: false, message: error.message });
     res.status(201).json({ success: true, data: { id: d.id, trackingCode: d.tracking_code, totalPrice: Number(d.total_price), description: d.description } });
@@ -296,6 +317,8 @@ app.put('/api/deliveries/:id/accept', auth, async (req, res) => {
     if (d.status !== 'PENDING') return res.status(400).json({ success: false, message: 'Entrega ja foi aceita' });
     const { data: mb } = await supabase.from('motoboys').select('id').eq('user_id', req.user.id).single();
     if (!mb) return res.status(400).json({ success: false, message: 'Motoboy nao encontrado' });
+    const { data: active } = await supabase.from('deliveries').select('id').eq('motoboy_id', mb.id).in('status', ['ACCEPTED', 'PICKED_UP', 'IN_TRANSIT']);
+    if (active && active.length >= 3) return res.status(400).json({ success: false, message: 'Limite maximo de 3 entregas simultaneas atingido' });
     await supabase.from('deliveries').update({ status: 'ACCEPTED', motoboy_id: mb.id, accepted_at: new Date().toISOString() }).eq('id', req.params.id);
     res.json({ success: true, data: { id: d.id, trackingCode: d.tracking_code, status: 'ACCEPTED' } });
     sendSSE('delivery-accepted', { id: d.id, trackingCode: d.tracking_code, motoboyName: req.user.firstName + ' ' + req.user.lastName });
@@ -374,6 +397,20 @@ app.put('/api/deliveries/:id/complete', auth, async (req, res) => {
 app.put('/api/deliveries/:id/cancel', auth, async (req, res) => {
   await supabase.from('deliveries').update({ status: 'CANCELLED', cancelled_at: new Date().toISOString() }).eq('id', req.params.id);
   res.json({ success: true });
+});
+
+// ============ PROOF PHOTO ============
+app.put('/api/deliveries/:id/proof', auth, async (req, res) => {
+  try {
+    const { photo } = req.body;
+    if (!photo) return res.status(400).json({ success: false, message: 'Foto obrigatoria' });
+    const { data: d, error } = await supabase.from('deliveries').update({ proof_photo: photo }).eq('id', req.params.id).select().single();
+    if (error || !d) return res.status(404).json({ success: false, message: 'Entrega nao encontrada' });
+    res.json({ success: true, data: { id: d.id, proofPhoto: d.proof_photo } });
+    sendSSE('proof-uploaded', { deliveryId: d.id, trackingCode: d.tracking_code });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
 });
 
 // ============ MOTOBOY ============
@@ -459,6 +496,59 @@ app.post('/api/wallets/withdraw', auth, async (req, res) => {
   res.json({ success: true, data: { id: 'w' + Date.now(), status: 'PENDING', ...req.body } });
 });
 
+// ============ DELIVERY ZONES ============
+app.get('/api/zones', auth, (req, res) => {
+  res.json({ success: true, data: [
+    { id: 'z1', name: 'Centro', latMin: -30.9, latMax: -30.85, lngMin: -50.85, lngMax: -50.75 },
+    { id: 'z2', name: 'Camaquã', latMin: -30.9, latMax: -30.8, lngMin: -50.9, lngMax: -50.7 }
+  ]});
+});
+
+app.post('/api/deliveries/check-zone', auth, async (req, res) => {
+  try {
+    const { latitude, longitude } = req.body;
+    if (!latitude || !longitude) return res.status(400).json({ success: false, message: 'Coordenadas obrigatorias' });
+    const lat = parseFloat(latitude), lng = parseFloat(longitude);
+    const inZone = lat >= -30.9 && lat <= -30.8 && lng >= -50.9 && lng <= -50.7;
+    res.json({ success: true, data: { inZone, zone: inZone ? 'Camaquã' : null, message: inZone ? 'Dentro da area de entrega' : 'Fora da area de entrega' } });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+// ============ COUPONS ============
+app.post('/api/coupons/validate', auth, async (req, res) => {
+  try {
+    const { code } = req.body;
+    if (!code) return res.status(400).json({ success: false, message: 'Codigo obrigatorio' });
+    const coupons = { 'DESCONTO10': 10, 'DESCONTO20': 20, 'PRIMEIRA': 15 };
+    const discount = coupons[code.toUpperCase()];
+    if (!discount) return res.status(404).json({ success: false, message: 'Cupom invalido' });
+    res.json({ success: true, data: { code: code.toUpperCase(), discountPercent: discount, message: `${discount}% de desconto aplicado` } });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+// ============ MOTOBOY PUBLIC PROFILE ============
+app.get('/api/motoboys/:id/public', auth, async (req, res) => {
+  try {
+    const { data: mb } = await supabase.from('motoboys').select('id,average_rating,total_ratings,completed_deliveries,vehicle_plate,vehicle_model,vehicle_brand,vehicle_color,vehicle_type,users:user_id(first_name,last_name)').eq('id', req.params.id).single();
+    if (!mb) return res.status(404).json({ success: false, message: 'Motoboy nao encontrado' });
+    res.json({ success: true, data: {
+      id: mb.id,
+      firstName: mb.users?.first_name,
+      lastName: mb.users?.last_name,
+      averageRating: Number(mb.average_rating || 0),
+      totalRatings: mb.total_ratings || 0,
+      completedDeliveries: mb.completed_deliveries || 0,
+      vehicle: { plate: mb.vehicle_plate, model: mb.vehicle_model, brand: mb.vehicle_brand, color: mb.vehicle_color, type: mb.vehicle_type }
+    }});
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
 // ============ OUTROS ============
 app.get('/api/deliveries/:id/tracking', auth, async (req, res) => {
   try {
@@ -525,6 +615,39 @@ app.get('/api/realtime/locations', auth, async (req, res) => {
 });
 
 app.get('/api/chat/rooms', auth, (req, res) => res.json({ success: true, data: [] }));
+
+// ============ CHAT ============
+app.post('/api/chat/:deliveryId/messages', auth, async (req, res) => {
+  try {
+    const { message } = req.body;
+    if (!message) return res.status(400).json({ success: false, message: 'Mensagem obrigatoria' });
+    const { data: d } = await supabase.from('deliveries').select('id').eq('id', req.params.deliveryId).single();
+    if (!d) return res.status(404).json({ success: false, message: 'Entrega nao encontrada' });
+    const { data: msg, error } = await supabase.from('chat_messages').insert({
+      delivery_id: req.params.deliveryId, sender_id: req.user.id, message
+    }).select().single();
+    if (error) return res.status(500).json({ success: false, message: error.message });
+    res.status(201).json({ success: true, data: { id: msg.id, deliveryId: msg.delivery_id, senderId: msg.sender_id, message: msg.message, createdAt: msg.created_at } });
+    sendSSE('chat-message', { deliveryId: req.params.deliveryId, senderId: req.user.id, message: msg.message });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+app.get('/api/chat/:deliveryId/messages', auth, async (req, res) => {
+  try {
+    const { data: messages, error } = await supabase.from('chat_messages')
+      .select('*').eq('delivery_id', req.params.deliveryId)
+      .order('created_at', { ascending: false }).limit(50);
+    if (error) return res.status(500).json({ success: false, message: error.message });
+    const result = (messages || []).reverse().map(m => ({
+      id: m.id, deliveryId: m.delivery_id, senderId: m.sender_id, message: m.message, createdAt: m.created_at
+    }));
+    res.json({ success: true, data: result });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
 app.get('/api/notifications', auth, (req, res) => res.json({ success: true, data: [], unreadCount: 0, meta: { total: 0, page: 1, limit: 20, totalPages: 0 } }));
 
 app.get('/api/reports/dashboard', auth, admin, async (req, res) => {

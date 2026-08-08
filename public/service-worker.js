@@ -1,4 +1,4 @@
-const CACHE_NAME = 'central-motoboy-v2';
+const CACHE_NAME = 'central-motoboy-v3';
 const ASSETS = [
   '/',
   '/index.html',
@@ -30,4 +30,22 @@ self.addEventListener('fetch', (e) => {
       return resp;
     }).catch(() => caches.match(e.request).then(cached => cached || caches.match('/index.html')))
   );
+});
+
+self.addEventListener('push', (e) => {
+  const data = e.data ? e.data.json() : {};
+  const title = data.title || 'Central Motoboy';
+  const body = data.body || 'Nova notificacao';
+  const icon = '/icon.png';
+  const badge = '/icon.png';
+  const url = data.url || '/';
+  e.waitUntil(
+    self.registration.showNotification(title, { body, icon, badge, data: { url } })
+  );
+});
+
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const url = e.notification.data?.url || '/';
+  e.waitUntil(clients.openWindow(url));
 });
