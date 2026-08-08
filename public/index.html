@@ -602,7 +602,7 @@ function createMap(containerId,opts){
   var def={zoomControl:false,attributionControl:true,zoom:13};
   if(opts)Object.keys(opts).forEach(function(k){def[k]=opts[k]});
   var map=L.map(containerId,def).setView([DEFAULT_LAT,DEFAULT_LNG],13);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap',maxZoom:19}).addTo(map);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:'&copy; OpenStreetMap &copy; CARTO',maxZoom:19,subdomains:'abcd'}).addTo(map);
   L.control.zoom({position:'topright'}).addTo(map);
   _maps[containerId]=map;
   _mapMarkers[containerId]=[];
@@ -658,7 +658,7 @@ function fitMapToMarkers(mapId){
 
 function centerMap(mapId,lat,lng,zoom){
   var map=_maps[mapId];
-  if(map)map.setView([lat,lng],zoom||15);
+  if(map)map.setView([lat,lng],zoom||18,{animate:true,pan:{animate:true,duration:0.8},zoom:{animate:true,duration:0.5}});
 }
 
 function watchMyLocation(mapId,cb){
@@ -714,6 +714,17 @@ function createPopupContent(opts){
   return h;
 }
 
+var _userAccuracyCircles={};
+function addUserLocationMarker(mapId,lat,lng,accuracy){
+  var map=_maps[mapId];
+  if(!map)return;
+  addMarker(mapId,lat,lng,{html:'<div class="user-location"></div>',tooltip:'Voce esta aqui'});
+  if(accuracy && accuracy<200){
+    if(_userAccuracyCircles[mapId])_userAccuracyCircles[mapId].remove();
+    _userAccuracyCircles[mapId]=L.circle([lat,lng],{radius:accuracy,color:'#4285f4',weight:1,fillColor:'#4285f4',fillOpacity:0.08,interactive:false}).addTo(map);
+  }
+}
+
 // ============ AUTH ============
 document.getElementById('login-form').onsubmit=async(e)=>{
   e.preventDefault();
@@ -729,7 +740,7 @@ document.getElementById('login-form').onsubmit=async(e)=>{
   }catch(err){errEl.textContent=err.message;errEl.style.display='block';}
 };
 
-function logout(){TOKEN='';USER=null;localStorage.clear();stopLocationTracking();Object.keys(_maps).forEach(function(k){try{_maps[k].remove();}catch(e){}});_maps={};_mapMarkers={};showLogin();}
+function logout(){TOKEN='';USER=null;localStorage.clear();stopLocationTracking();Object.keys(_maps).forEach(function(k){try{_maps[k].remove();}catch(e){}});Object.keys(_userAccuracyCircles).forEach(function(k){try{_userAccuracyCircles[k].remove();}catch(e){}});_maps={};_mapMarkers={};_userAccuracyCircles={};showLogin();}
 function showLogin(){
   document.getElementById('app').style.display='none';
   document.getElementById('login-page').style.display='flex';
@@ -913,7 +924,8 @@ function navigate(page){
   document.querySelectorAll('.sidebar nav a').forEach(function(a){a.classList.toggle('active',a.dataset.page===page)});
   document.querySelectorAll('.bottom-nav a').forEach(function(a){a.classList.toggle('active',a.dataset.page===page)});
   Object.keys(_maps).forEach(function(k){try{_maps[k].remove();}catch(e){}});
-  _maps={};_mapMarkers={};
+  Object.keys(_userAccuracyCircles).forEach(function(k){try{_userAccuracyCircles[k].remove();}catch(e){}});
+  _maps={};_mapMarkers={};_userAccuracyCircles={};
   const main=document.getElementById('main-content');
   main.innerHTML='<div class="spinner"></div>';
   main.scrollTop=0;
@@ -1052,7 +1064,7 @@ function initAdminMap(loc){
   });
 
   requestGPS(function(lat,lng){
-    addMarker('admin-realtime-map',lat,lng,{html:'<div class="user-location"></div>',tooltip:'Central'});
+    addUserLocationMarker('admin-realtime-map',lat,lng);
     if(!motoboys.length&&!deliveries.length)centerMap('admin-realtime-map',lat,lng,13);
     else fitMapToMarkers('admin-realtime-map');
   },function(){
@@ -1478,7 +1490,7 @@ function initClientTrackingMap(delivery){
   }
 
   requestGPS(function(lat,lng){
-    addMarker('client-tracking-map',lat,lng,{html:'<div class="user-location"></div>',tooltip:'Voce'});
+    addUserLocationMarker('client-tracking-map',lat,lng);
     fitMapToMarkers('client-tracking-map');
   },function(){
     fitMapToMarkers('client-tracking-map');
@@ -1519,7 +1531,7 @@ function renderClientNew(el){
     var map=createMap('client-new-map',{zoomControl:true});
     if(!map)return;
     requestGPS(function(pLat,pLng){
-      centerMap('client-new-map',pLat,pLng,17);
+      centerMap('client-new-map',pLat,pLng,18);
     },function(){});
     map.on('click',function(e){
       var lat=e.latlng.lat,lng=e.latlng.lng;
@@ -1543,7 +1555,7 @@ function renderClientNew(el){
   },200);
   window.useMyLocation=function(){
     navigator.geolocation.getCurrentPosition(function(p){
-      centerMap('client-new-map',p.coords.latitude,p.coords.longitude,17);
+      centerMap('client-new-map',p.coords.latitude,p.coords.longitude,18);
     },function(){alert('Nao foi possivel obter localizacao')},{enableHighAccuracy:true});
   };
   document.getElementById('new-delivery-form').onsubmit=async function(e){
@@ -1693,8 +1705,8 @@ function initMotoboyMap(motoboyData,available,activeDels){
 
   requestGPS(function(lat,lng,acc){
     clearMarkers('motoboy-map');
-    addMarker('motoboy-map',lat,lng,{html:'<div class="user-location"></div>',tooltip:'Voce esta aqui'});
-    centerMap('motoboy-map',lat,lng,17);
+    addUserLocationMarker('motoboy-map',lat,lng,acc);
+    centerMap('motoboy-map',lat,lng,18);
     if(motoboyData.isOnline)sendLocationToServer(lat,lng);
     available.forEach(function(d,i){
       var dlat=DEFAULT_LAT+((i*0.008)%0.05),dlng=DEFAULT_LNG+((i*0.012)%0.05);
