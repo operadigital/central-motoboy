@@ -45,6 +45,7 @@ body.dark .chat-msg{background:#334155;color:var(--d)}
 body.dark .chat-msg.me{background:var(--pd)}
 html{height:100%;overflow:hidden}
 body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;color:var(--d);background:var(--gl);line-height:1.5;height:100%;overflow:hidden;-webkit-font-smoothing:antialiased}
+body::after{content:'';position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:60vw;max-width:500px;aspect-ratio:1;background:url('/logo.png') center/contain no-repeat;opacity:.03;pointer-events:none;z-index:0}
 input,button,textarea,select{font-family:inherit}
 
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 24px;border-radius:12px;font-weight:700;font-size:15px;border:none;cursor:pointer;transition:all .2s ease;-webkit-user-select:none;user-select:none;position:relative;overflow:hidden}
@@ -166,6 +167,7 @@ body.dark .autocomplete-item .ac-icon{background:#1e3a2a}
   .sidebar{display:none !important}
   html{overflow:auto;height:auto}
   body{overflow:auto;height:auto;background:#f2f2f7}
+  body::after{opacity:.025}
   body.dark{background:var(--mobile-bg)}
   body.dark .mobile-header{background:var(--mobile-header-bg);border-color:var(--mobile-header-border)}
   body.dark .bottom-nav{background:var(--mobile-nav-bg);border-color:var(--mobile-nav-border)}
@@ -185,9 +187,9 @@ body.dark .autocomplete-item .ac-icon{background:#1e3a2a}
     border-bottom:0.5px solid rgba(0,0,0,.08);
     z-index:100;
     align-items:center;
-    padding-left:20px;padding-right:20px;gap:12px;
+    padding-left:16px;padding-right:16px;gap:10px;
   }
-  .mobile-header .logo{font-size:18px;font-weight:800;letter-spacing:-.4px;color:var(--d)}
+  .mobile-header .logo{font-size:16px;font-weight:800;letter-spacing:-.4px;color:var(--d)}
   .mobile-header .logo span{color:var(--p)}
   .mobile-header .hdr-right{margin-left:auto;display:flex;align-items:center;gap:10px}
   .mobile-header .avatar{width:32px;height:32px;font-size:11px;border-radius:50%}
@@ -392,8 +394,9 @@ body.dark .autocomplete-item .ac-icon{background:#1e3a2a}
 
 <!-- ============ MOBILE HEADER ============ -->
 <div class="mobile-header" id="mobile-header">
-  <div style="display:flex;align-items:center;gap:6px">
-    <img src="/logo.png" alt="Rodae" style="height:30px;width:auto;object-fit:contain">
+  <div style="display:flex;align-items:center;gap:8px">
+    <img src="/logo.png" alt="Rodae" style="height:34px;width:auto;object-fit:contain">
+    <div class="logo" style="font-size:15px;font-weight:800;color:var(--d)">Rodae</div>
   </div>
   <div class="hdr-right">
     <div style="width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.04);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px" onclick="toggleDarkMode()">&#127769;</div>
