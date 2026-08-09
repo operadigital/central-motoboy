@@ -2339,21 +2339,24 @@ function searchAddress(input,type){
   list.innerHTML='<div class="ac-loading">Buscando enderecos...</div>';
   list.style.display='block';
   _searchTimers[type]=setTimeout(function(){
-    fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(val+' Camaqua RS Brazil')+'&format=json&limit=6&addressdetails=1&countrycodes=br&viewbox=-51.95,-30.95,-51.45,-30.75&bounded=1',{headers:{'Accept-Language':'pt-BR'}})
+    var numMatch=val.match(/(\d+)/);
+    var typedNumber=numMatch?numMatch[1]:'';
+    var searchQuery=val.replace(/\s*\d+\s*$/,'').trim();
+    fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(searchQuery+' Camaquã RS')+'&format=json&limit=8&addressdetails=1&countrycodes=br&viewbox=-51.95,-30.95,-51.45,-30.75&bounded=1',{headers:{'Accept-Language':'pt-BR'}})
     .then(function(r){return r.json();})
     .then(function(results){
-      var h='<div class="autocomplete-item" data-type="'+type+'" data-addr="'+val.replace(/"/g,'&quot;')+'" data-neigh="" data-num="" data-lat="'+DEFAULT_LAT+'" data-lng="'+DEFAULT_LNG+'"><div class="ac-icon">&#128221;</div><div><div class="ac-text">Usar: '+val+'</div><div class="ac-sub">Endereco digitado</div></div></div>';
+      var h='<div class="autocomplete-item" data-type="'+type+'" data-addr="'+val.replace(/"/g,'&quot;')+'" data-neigh="" data-num="'+typedNumber+'" data-lat="'+DEFAULT_LAT+'" data-lng="'+DEFAULT_LNG+'"><div class="ac-icon">&#128221;</div><div><div class="ac-text">Usar: '+val+'</div><div class="ac-sub">Endereco digitado</div></div></div>';
       if(results&&results.length){
         results.forEach(function(r){
           var addr=r.address||{};
-          var road=addr.road||addr.pedestrian||addr.residential||'';
-          var number=addr.house_number||'';
+          var road=addr.road||addr.pedestrian||addr.residential||addr.house||'';
+          var number=typedNumber||addr.house_number||'';
           var neighbourhood=addr.suburb||addr.neighbourhood||addr.city_district||'';
-          var full=(road+(number?' '+number:''))||r.display_name.split(',')[0];
+          var full=(road+(number?', '+number:''))||r.display_name.split(',')[0];
           h+='<div class="autocomplete-item" data-type="'+type+'" data-addr="'+road.replace(/"/g,'&quot;')+'" data-neigh="'+neighbourhood.replace(/"/g,'&quot;')+'" data-num="'+number.replace(/"/g,'&quot;')+'" data-lat="'+r.lat+'" data-lng="'+r.lon+'">';
           h+='<div class="ac-icon">&#128205;</div><div><div class="ac-text">'+full+'</div>';
-          if(neighbourhood)h+='<div class="ac-sub">'+neighbourhood+', Camaqua - RS</div>';
-          else h+='<div class="ac-sub">Camaqua - RS</div>';
+          if(neighbourhood)h+='<div class="ac-sub">'+neighbourhood+', Camaquã - RS</div>';
+          else h+='<div class="ac-sub">Camaquã - RS</div>';
           h+='</div></div>';
         });
       }
@@ -2365,14 +2368,14 @@ function searchAddress(input,type){
         });
       });
     }).catch(function(){
-      list.innerHTML='<div class="autocomplete-item" data-type="'+type+'" data-addr="'+val.replace(/"/g,'&quot;')+'" data-neigh="" data-num="" data-lat="'+DEFAULT_LAT+'" data-lng="'+DEFAULT_LNG+'"><div class="ac-icon">&#128221;</div><div><div class="ac-text">Usar: '+val+'</div><div class="ac-sub">Endereco digitado</div></div></div>';
+      list.innerHTML='<div class="autocomplete-item" data-type="'+type+'" data-addr="'+val.replace(/"/g,'&quot;')+'" data-neigh="" data-num="'+typedNumber+'" data-lat="'+DEFAULT_LAT+'" data-lng="'+DEFAULT_LNG+'"><div class="ac-icon">&#128221;</div><div><div class="ac-text">Usar: '+val+'</div><div class="ac-sub">Endereco digitado</div></div></div>';
       list.querySelectorAll('.autocomplete-item').forEach(function(item){
         item.addEventListener('click',function(){
           selectAddress(item.dataset.type,item.dataset.addr,item.dataset.neigh,item.dataset.lat,item.dataset.lng,item.dataset.num||'');
         });
       });
     });
-  },500);
+  },400);
 }
 function selectAddress(type,address,neighbourhood,lat,lng,number){
   var inputId=type==='origin'?'nd-oa':'nd-da';
