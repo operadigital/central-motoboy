@@ -103,10 +103,7 @@ tr:hover td{background:#f8fafc}
 
 /* ============ DESKTOP SIDEBAR ============ */
 .sidebar{position:fixed;left:0;top:0;height:100vh;width:260px;background:var(--w);border-right:1px solid #f1f5f9;z-index:50;display:flex;flex-direction:column;transition:transform .3s ease}
-.sidebar .logo{padding:24px 24px 20px;border-bottom:1px solid #f1f5f9}
-.sidebar .logo h1{font-size:22px;font-weight:800;letter-spacing:-.5px}
-.sidebar .logo span{color:var(--p)}
-.sidebar .logo small{display:block;font-size:11px;color:var(--g);font-weight:500;margin-top:2px}
+.sidebar .logo{padding:16px;border-bottom:1px solid #f1f5f9}
 .sidebar nav{flex:1;padding:12px 10px;overflow-y:auto}
 .sidebar nav a{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;font-size:14px;font-weight:600;color:var(--g);text-decoration:none;transition:all .15s;margin-bottom:2px}
 .sidebar nav a:hover{background:var(--gl);color:var(--d)}
@@ -395,8 +392,8 @@ body.dark .autocomplete-item .ac-icon{background:#1e3a2a}
 
 <!-- ============ MOBILE HEADER ============ -->
 <div class="mobile-header" id="mobile-header">
-  <div style="display:flex;align-items:center;gap:8px">
-    <img src="/logo.png" alt="Rodae" style="height:24px;width:auto;object-fit:contain">
+  <div style="display:flex;align-items:center;gap:6px">
+    <img src="/logo.png" alt="Rodae" style="height:30px;width:auto;object-fit:contain">
   </div>
   <div class="hdr-right">
     <div style="width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.04);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px" onclick="toggleDarkMode()">&#127769;</div>
@@ -555,11 +552,9 @@ body.dark .autocomplete-item .ac-icon{background:#1e3a2a}
 <div id="app" style="display:none">
   <!-- Desktop Sidebar -->
   <div class="sidebar" id="sidebar-desktop">
-    <div class="logo">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
-        <img src="/logo.png" alt="Rodae" style="height:32px;width:auto;object-fit:contain">
-      </div>
-      <small>Painel de Controle</small>
+    <div class="logo" style="padding:20px 20px 16px;border-bottom:1px solid #f1f5f9;text-align:center">
+      <img src="/logo.png" alt="Rodae - Central de Entregas" style="width:100%;max-height:70px;object-fit:contain;margin-bottom:6px">
+      <small style="display:block;font-size:10px;color:var(--g);font-weight:500;letter-spacing:1px;text-transform:uppercase;margin-top:4px">Painel de Controle</small>
     </div>
     <nav id="sidebar-nav"></nav>
     <div class="user-box">
