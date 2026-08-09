@@ -2015,14 +2015,20 @@ function renderClientNew(el){
     '<div class="card"><div class="card-b">'+
     '<form id="new-delivery-form">'+
     '<h3 style="font-size:16px;margin-bottom:14px;font-weight:700">&#128205; Endereco de Origem</h3>'+
-    '<div class="form-g" style="position:relative"><input class="input" id="nd-oa" placeholder="&#128269; Buscar endereco de coleta..." required autocomplete="off" oninput="searchAddress(this,\'origin\')" onfocus="searchAddress(this,\'origin\')" style="padding-left:14px;font-size:15px;height:48px"><div id="autocomplete-origin" class="autocomplete-list"></div></div>'+
+    '<div style="display:flex;gap:8px;align-items:end">'+
+    '<div class="form-g" style="position:relative;flex:1"><input class="input" id="nd-oa" placeholder="&#128269; Buscar endereco de coleta..." required autocomplete="off" oninput="searchAddress(this,\'origin\')" onfocus="searchAddress(this,\'origin\')" style="padding-left:14px;font-size:15px;height:48px"><div id="autocomplete-origin" class="autocomplete-list"></div></div>'+
+    '<div style="width:70px;flex-shrink:0"><label class="label">Nº</label><input class="input" id="nd-on" placeholder="Nº" inputmode="numeric" style="height:48px;text-align:center"></div>'+
+    '</div>'+
     '<div class="grid3 form-g">'+
     '<div><label class="label">Cidade</label><input class="input" id="nd-oc" value="Camaqua"></div>'+
     '<div><label class="label">Estado</label><input class="input" id="nd-os" value="RS" maxlength="2"></div>'+
     '<div><label class="label">Bairro</label><input class="input" id="nd-ob" placeholder="Bairro"></div>'+
     '</div>'+
     '<h3 style="font-size:16px;margin:20px 0 14px;font-weight:700">&#127968; Endereco de Destino</h3>'+
-    '<div class="form-g" style="position:relative"><input class="input" id="nd-da" placeholder="&#128269; Buscar endereco de entrega..." required autocomplete="off" oninput="searchAddress(this,\'destination\')" onfocus="searchAddress(this,\'destination\')" style="padding-left:14px;font-size:15px;height:48px"><div id="autocomplete-destination" class="autocomplete-list"></div></div>'+
+    '<div style="display:flex;gap:8px;align-items:end">'+
+    '<div class="form-g" style="position:relative;flex:1"><input class="input" id="nd-da" placeholder="&#128269; Buscar endereco de entrega..." required autocomplete="off" oninput="searchAddress(this,\'destination\')" onfocus="searchAddress(this,\'destination\')" style="padding-left:14px;font-size:15px;height:48px"><div id="autocomplete-destination" class="autocomplete-list"></div></div>'+
+    '<div style="width:70px;flex-shrink:0"><label class="label">Nº</label><input class="input" id="nd-dn" placeholder="Nº" inputmode="numeric" style="height:48px;text-align:center"></div>'+
+    '</div>'+
     '<div class="grid3 form-g">'+
     '<div><label class="label">Cidade</label><input class="input" id="nd-dc" value="Camaqua"></div>'+
     '<div><label class="label">Estado</label><input class="input" id="nd-ds" value="RS" maxlength="2"></div>'+
@@ -2092,10 +2098,16 @@ function renderClientNew(el){
       if(originState!=='RS'){document.getElementById('nd-error').textContent='Estado da origem deve ser RS';document.getElementById('nd-error').style.display='block';return;}
       if(destState!=='RS'){document.getElementById('nd-error').textContent='Estado do destino deve ser RS';document.getElementById('nd-error').style.display='block';return;}
       var _so=window._newDelSelectedOrigin(),_sd=window._newDelSelectedDest();
+      var _on=document.getElementById('nd-on').value.trim();
+      var _dn=document.getElementById('nd-dn').value.trim();
+      var _oa=document.getElementById('nd-oa').value;
+      var _da=document.getElementById('nd-da').value;
+      if(_on&&!_oa.match(/,?\s*\d+\s*$/))_oa+=', '+_on;
+      if(_dn&&!_da.match(/,?\s*\d+\s*$/))_da+=', '+_dn;
       var body={
-        originAddress:document.getElementById('nd-oa').value,originCity:document.getElementById('nd-oc').value,originState:document.getElementById('nd-os').value,originNeighborhood:document.getElementById('nd-ob').value,
+        originAddress:_oa,originCity:document.getElementById('nd-oc').value,originState:document.getElementById('nd-os').value,originNeighborhood:document.getElementById('nd-ob').value,
         originLatitude:_so?_so.lat:DEFAULT_LAT,originLongitude:_so?_so.lng:DEFAULT_LNG,
-        destinationAddress:document.getElementById('nd-da').value,destinationCity:document.getElementById('nd-dc').value,destinationState:document.getElementById('nd-ds').value,destinationNeighborhood:document.getElementById('nd-db').value,
+        destinationAddress:_da,destinationCity:document.getElementById('nd-dc').value,destinationState:document.getElementById('nd-ds').value,destinationNeighborhood:document.getElementById('nd-db').value,
         destinationLatitude:_sd?_sd.lat:DEFAULT_LAT+0.0114,destinationLongitude:_sd?_sd.lng:DEFAULT_LNG-0.0225,
         description:document.getElementById('nd-desc').value,paymentMethod:document.getElementById('nd-pm').value,observations:document.getElementById('nd-obs').value,
       };
@@ -2330,7 +2342,7 @@ function searchAddress(input,type){
     fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(val+' Camaqua RS Brazil')+'&format=json&limit=6&addressdetails=1&countrycodes=br&viewbox=-51.95,-30.95,-51.45,-30.75&bounded=1',{headers:{'Accept-Language':'pt-BR'}})
     .then(function(r){return r.json();})
     .then(function(results){
-      var h='<div class="autocomplete-item" data-type="'+type+'" data-addr="'+val.replace(/"/g,'&quot;')+'" data-neigh="" data-lat="'+DEFAULT_LAT+'" data-lng="'+DEFAULT_LNG+'"><div class="ac-icon">&#128221;</div><div><div class="ac-text">Usar: '+val+'</div><div class="ac-sub">Endereco digitado</div></div></div>';
+      var h='<div class="autocomplete-item" data-type="'+type+'" data-addr="'+val.replace(/"/g,'&quot;')+'" data-neigh="" data-num="" data-lat="'+DEFAULT_LAT+'" data-lng="'+DEFAULT_LNG+'"><div class="ac-icon">&#128221;</div><div><div class="ac-text">Usar: '+val+'</div><div class="ac-sub">Endereco digitado</div></div></div>';
       if(results&&results.length){
         results.forEach(function(r){
           var addr=r.address||{};
@@ -2338,7 +2350,7 @@ function searchAddress(input,type){
           var number=addr.house_number||'';
           var neighbourhood=addr.suburb||addr.neighbourhood||addr.city_district||'';
           var full=(road+(number?' '+number:''))||r.display_name.split(',')[0];
-          h+='<div class="autocomplete-item" data-type="'+type+'" data-addr="'+full.replace(/"/g,'&quot;')+'" data-neigh="'+neighbourhood.replace(/"/g,'&quot;')+'" data-lat="'+r.lat+'" data-lng="'+r.lon+'">';
+          h+='<div class="autocomplete-item" data-type="'+type+'" data-addr="'+road.replace(/"/g,'&quot;')+'" data-neigh="'+neighbourhood.replace(/"/g,'&quot;')+'" data-num="'+number.replace(/"/g,'&quot;')+'" data-lat="'+r.lat+'" data-lng="'+r.lon+'">';
           h+='<div class="ac-icon">&#128205;</div><div><div class="ac-text">'+full+'</div>';
           if(neighbourhood)h+='<div class="ac-sub">'+neighbourhood+', Camaqua - RS</div>';
           else h+='<div class="ac-sub">Camaqua - RS</div>';
@@ -2349,24 +2361,26 @@ function searchAddress(input,type){
       list.style.display='block';
       list.querySelectorAll('.autocomplete-item').forEach(function(item){
         item.addEventListener('click',function(){
-          selectAddress(item.dataset.type,item.dataset.addr,item.dataset.neigh,item.dataset.lat,item.dataset.lng);
+          selectAddress(item.dataset.type,item.dataset.addr,item.dataset.neigh,item.dataset.lat,item.dataset.lng,item.dataset.num||'');
         });
       });
     }).catch(function(){
-      list.innerHTML='<div class="autocomplete-item" data-type="'+type+'" data-addr="'+val.replace(/"/g,'&quot;')+'" data-neigh="" data-lat="'+DEFAULT_LAT+'" data-lng="'+DEFAULT_LNG+'"><div class="ac-icon">&#128221;</div><div><div class="ac-text">Usar: '+val+'</div><div class="ac-sub">Endereco digitado</div></div></div>';
+      list.innerHTML='<div class="autocomplete-item" data-type="'+type+'" data-addr="'+val.replace(/"/g,'&quot;')+'" data-neigh="" data-num="" data-lat="'+DEFAULT_LAT+'" data-lng="'+DEFAULT_LNG+'"><div class="ac-icon">&#128221;</div><div><div class="ac-text">Usar: '+val+'</div><div class="ac-sub">Endereco digitado</div></div></div>';
       list.querySelectorAll('.autocomplete-item').forEach(function(item){
         item.addEventListener('click',function(){
-          selectAddress(item.dataset.type,item.dataset.addr,item.dataset.neigh,item.dataset.lat,item.dataset.lng);
+          selectAddress(item.dataset.type,item.dataset.addr,item.dataset.neigh,item.dataset.lat,item.dataset.lng,item.dataset.num||'');
         });
       });
     });
   },500);
 }
-function selectAddress(type,address,neighbourhood,lat,lng){
+function selectAddress(type,address,neighbourhood,lat,lng,number){
   var inputId=type==='origin'?'nd-oa':'nd-da';
   var neighId=type==='origin'?'nd-ob':'nd-db';
+  var numId=type==='origin'?'nd-on':'nd-dn';
   document.getElementById(inputId).value=address;
   if(neighbourhood)document.getElementById(neighId).value=neighbourhood;
+  if(number)document.getElementById(numId).value=number;
   var list=document.getElementById('autocomplete-'+type);
   if(list)list.style.display='none';
   var latF=parseFloat(lat),lngF=parseFloat(lng);
