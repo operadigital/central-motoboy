@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#f97316">
+<meta name="theme-color" content="#f5a623">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <link rel="manifest" href="/manifest.json">
-<link rel="icon" href="/icon.svg">
-<link rel="apple-touch-icon" href="/icon.svg">
+<link rel="icon" href="/logo.png" type="image/png">
+<link rel="apple-touch-icon" href="/logo.png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script>
@@ -21,10 +21,10 @@ if(typeof L==='undefined'){
 }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<title>Central Motoboy</title>
+<title>Rodae - Central de Entregas</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-:root{--p:#f97316;--pd:#ea580c;--pl:#fff7ed;--d:#0f172a;--d2:#1e293b;--g:#64748b;--gl:#f8fafc;--w:#fff;--gn:#22c55e;--r:#ef4444;--b:#3b82f6;--y:#eab308;--radius:16px;--safe-b:env(safe-area-inset-bottom,0px);--safe-t:env(safe-area-inset-top,0px);--card-border:rgba(0,0,0,.04);--card-shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.03);--input-bg:#fff;--input-border:#e2e8f0;--th-bg:#f8fafc;--td-border:#f1f5f9;--sidebar-bg:#fff;--sidebar-border:#f1f5f9;--sidebar-user-bg:#fafbfc;--mobile-bg:#f2f2f7;--mobile-header-bg:rgba(255,255,255,.92);--mobile-header-border:rgba(0,0,0,.08);--mobile-nav-bg:rgba(255,255,255,.95);--mobile-nav-border:rgba(0,0,0,.06)}
+:root{--p:#f5a623;--pd:#e09400;--pl:#fff7ed;--d:#0f172a;--d2:#1e293b;--g:#64748b;--gl:#f8fafc;--w:#fff;--gn:#22c55e;--r:#ef4444;--b:#3b82f6;--y:#eab308;--radius:16px;--safe-b:env(safe-area-inset-bottom,0px);--safe-t:env(safe-area-inset-top,0px);--card-border:rgba(0,0,0,.04);--card-shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.03);--input-bg:#fff;--input-border:#e2e8f0;--th-bg:#f8fafc;--td-border:#f1f5f9;--sidebar-bg:#fff;--sidebar-border:#f1f5f9;--sidebar-user-bg:#fafbfc;--mobile-bg:#f2f2f7;--mobile-header-bg:rgba(255,255,255,.92);--mobile-header-border:rgba(0,0,0,.08);--mobile-nav-bg:rgba(255,255,255,.95);--mobile-nav-border:rgba(0,0,0,.06)}
 body.dark{--d:#e2e8f0;--d2:#cbd5e1;--g:#94a3b8;--gl:#0f172a;--w:#1e293b;--card-border:rgba(255,255,255,.06);--card-shadow:0 1px 3px rgba(0,0,0,.3),0 4px 12px rgba(0,0,0,.2);--input-bg:#334155;--input-border:#475569;--th-bg:#1e293b;--td-border:#334155;--sidebar-bg:#1e293b;--sidebar-border:#334155;--sidebar-user-bg:#0f172a;--mobile-bg:#0f172a;--mobile-header-bg:rgba(15,23,42,.95);--mobile-header-border:rgba(255,255,255,.08);--mobile-nav-bg:rgba(15,23,42,.95);--mobile-nav-border:rgba(255,255,255,.06)}
 body.dark .card{background:var(--w);border-color:var(--card-border);box-shadow:var(--card-shadow)}
 body.dark .card-h{border-color:var(--td-border)}
@@ -49,7 +49,7 @@ input,button,textarea,select{font-family:inherit}
 
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 24px;border-radius:12px;font-weight:700;font-size:15px;border:none;cursor:pointer;transition:all .2s ease;-webkit-user-select:none;user-select:none;position:relative;overflow:hidden}
 .btn:active{transform:scale(.97)}
-.btn-p{background:linear-gradient(135deg,var(--p),#fb923c);color:#fff;box-shadow:0 4px 15px rgba(249,115,22,.35)}.btn-p:hover{box-shadow:0 6px 20px rgba(249,115,22,.45)}
+.btn-p{background:linear-gradient(135deg,var(--p),#ffc107);color:#fff;box-shadow:0 4px 15px rgba(245,166,35,.35)}.btn-p:hover{box-shadow:0 6px 20px rgba(245,166,35,.45)}
 .btn-s{background:var(--gl);color:var(--d);border:1px solid #e2e8f0}.btn-s:hover{background:#e2e8f0}
 .btn-g{background:linear-gradient(135deg,var(--gn),#4ade80);color:#fff;box-shadow:0 4px 15px rgba(34,197,94,.35)}.btn-g:hover{box-shadow:0 6px 20px rgba(34,197,94,.45)}
 .btn-r{background:linear-gradient(135deg,var(--r),#f87171);color:#fff;box-shadow:0 4px 15px rgba(239,68,68,.35)}
@@ -59,7 +59,7 @@ input,button,textarea,select{font-family:inherit}
 .btn-lg{padding:16px 32px;font-size:16px;border-radius:14px}
 
 .input{width:100%;padding:14px 16px;border:1.5px solid #e2e8f0;border-radius:12px;font-size:15px;outline:none;transition:all .2s;background:#fff;-webkit-appearance:none;appearance:none}
-.input:focus{border-color:var(--p);box-shadow:0 0 0 4px rgba(249,115,22,.1)}
+.input:focus{border-color:var(--p);box-shadow:0 0 0 4px rgba(245,166,35,.1)}
 .label{display:block;font-size:13px;font-weight:700;color:var(--g);margin-bottom:6px;letter-spacing:.3px}
 .form-g{margin-bottom:18px}
 select.input{background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center;padding-right:40px}
@@ -99,7 +99,7 @@ tr:hover td{background:#f8fafc}
 .empty{text-align:center;padding:48px 20px;color:var(--g)}
 .empty p:first-child{font-size:48px;margin-bottom:12px}
 
-.avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--p),#fb923c);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
+.avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--p),#ffc107);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
 
 /* ============ DESKTOP SIDEBAR ============ */
 .sidebar{position:fixed;left:0;top:0;height:100vh;width:260px;background:var(--w);border-right:1px solid #f1f5f9;z-index:50;display:flex;flex-direction:column;transition:transform .3s ease}
@@ -110,7 +110,7 @@ tr:hover td{background:#f8fafc}
 .sidebar nav{flex:1;padding:12px 10px;overflow-y:auto}
 .sidebar nav a{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;font-size:14px;font-weight:600;color:var(--g);text-decoration:none;transition:all .15s;margin-bottom:2px}
 .sidebar nav a:hover{background:var(--gl);color:var(--d)}
-.sidebar nav a.active{background:linear-gradient(135deg,var(--pl),#fff);color:var(--p);font-weight:700;box-shadow:0 1px 4px rgba(249,115,22,.12)}
+.sidebar nav a.active{background:linear-gradient(135deg,var(--pl),#fff);color:var(--p);font-weight:700;box-shadow:0 1px 4px rgba(245,166,35,.12)}
 .sidebar nav a .nav-icon{font-size:18px;width:24px;text-align:center}
 .sidebar .user-box{padding:16px 18px;border-top:1px solid #f1f5f9;display:flex;align-items:center;gap:12px;background:#fafbfc}
 .sidebar .user-box .avatar{width:38px;height:38px;font-size:13px}
@@ -283,7 +283,7 @@ body.dark .autocomplete-item .ac-icon{background:#1e3a2a}
   
   /* ---- INPUTS ---- */
   .input{padding:14px 16px !important;font-size:16px !important;border-radius:12px !important;border:1px solid rgba(0,0,0,.1) !important;background:#fff !important}
-  .input:focus{border-color:var(--p) !important;box-shadow:0 0 0 3px rgba(249,115,22,.12) !important}
+  .input:focus{border-color:var(--p) !important;box-shadow:0 0 0 3px rgba(245,166,35,.12) !important}
   .label{font-size:13px !important;font-weight:600 !important;color:#3a3a3c !important;margin-bottom:6px !important}
   .form-g{margin-bottom:16px !important}
   
@@ -395,8 +395,8 @@ body.dark .autocomplete-item .ac-icon{background:#1e3a2a}
 
 <!-- ============ MOBILE HEADER ============ -->
 <div class="mobile-header" id="mobile-header">
-  <div style="display:flex;flex-direction:column">
-    <div class="logo">Central <span>Motoboy</span></div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <img src="/logo.png" alt="Rodae" style="height:24px;width:auto;object-fit:contain">
   </div>
   <div class="hdr-right">
     <div style="width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.04);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px" onclick="toggleDarkMode()">&#127769;</div>
@@ -409,8 +409,8 @@ body.dark .autocomplete-item .ac-icon{background:#1e3a2a}
 <div id="login-page" style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;padding-top:var(--safe-t);background:linear-gradient(160deg,#fff7ed 0%,#ffffff 50%,#f0f9ff 100%)">
   <div style="width:100%;max-width:420px">
     <div style="text-align:center;margin-bottom:36px">
-      <div style="width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,var(--p),#fb923c);margin:0 auto 20px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(249,115,22,.3)"><span style="font-size:36px">&#128690;</span></div>
-      <h1 style="font-size:30px;font-weight:800;letter-spacing:-.5px">Central <span style="color:var(--p)">Motoboy</span></h1>
+      <div style="width:auto;max-width:220px;margin:0 auto 20px;display:flex;align-items:center;justify-content:center"><img src="/logo.png" alt="Rodae - Central de Entregas" style="width:100%;max-height:120px;object-fit:contain"></div>
+      <h1 style="font-size:30px;font-weight:800;letter-spacing:-.5px"><span style="color:var(--p)">Rodae</span></h1>
       <p style="color:var(--g);margin-top:6px;font-size:15px">Acesse sua conta</p>
     </div>
     <div class="card" style="padding:28px">
@@ -432,7 +432,7 @@ body.dark .autocomplete-item .ac-icon{background:#1e3a2a}
 <div id="register-page" style="display:none;min-height:100vh;padding:20px;padding-top:var(--safe-t);background:linear-gradient(160deg,#fff7ed 0%,#ffffff 50%,#f0f9ff 100%)">
   <div style="max-width:520px;margin:0 auto">
     <div style="text-align:center;margin-bottom:28px">
-      <h1 style="font-size:26px;font-weight:800">Central <span style="color:var(--p)">Motoboy</span></h1>
+      <div style="max-width:160px;margin:0 auto 12px"><img src="/logo.png" alt="Rodae" style="width:100%;max-height:80px;object-fit:contain"></div>
       <p style="color:var(--g);margin-top:4px;font-size:14px">Cadastro profissional</p>
     </div>
 
@@ -557,7 +557,9 @@ body.dark .autocomplete-item .ac-icon{background:#1e3a2a}
   <!-- Desktop Sidebar -->
   <div class="sidebar" id="sidebar-desktop">
     <div class="logo">
-      <h1>Central <span>Motoboy</span></h1>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <img src="/logo.png" alt="Rodae" style="height:32px;width:auto;object-fit:contain">
+      </div>
       <small>Painel de Controle</small>
     </div>
     <nav id="sidebar-nav"></nav>
@@ -840,7 +842,7 @@ function exportCSV(endpoint,filename){
 }
 
 // ============ AVATAR COLORS ============
-var _avatarColors=['#f97316','#3b82f6','#22c55e','#8b5cf6','#ec4899','#06b6d4','#f59e0b','#ef4444'];
+var _avatarColors=['#f5a623','#3b82f6','#22c55e','#8b5cf6','#ec4899','#06b6d4','#f59e0b','#ef4444'];
 function getAvatarColor(name){
   var hash=0;
   for(var i=0;i<(name||'').length;i++)hash=name.charCodeAt(i)+((hash<<5)-hash);
@@ -1301,7 +1303,7 @@ async function submitRegister(){
     var r=await api('/auth/register',{method:'POST',body:JSON.stringify(body)});
     ['reg-step1','reg-step2','reg-step3','reg-step4','reg-step4-client'].forEach(function(s){document.getElementById(s).style.display='none'});
     document.getElementById('reg-step5').style.display='block';
-    document.getElementById('reg-success-msg').textContent=regRole==='MOTOBOY'?'Seu cadastro com documentos foi enviado para analise. A Central Motoboy ira revisar seus documentos e aprovar sua conta em ate 24 horas.':'Cadastro realizado com sucesso! Faca login para continuar.';
+    document.getElementById('reg-success-msg').textContent=regRole==='MOTOBOY'?'Seu cadastro com documentos foi enviado para analise. A Rodae ira revisar seus documentos e aprovar sua conta em ate 24 horas.':'Cadastro realizado com sucesso! Faca login para continuar.';
   }catch(err){errEl.textContent=err.message;errEl.style.display='block';btn.disabled=false;btn.innerHTML='&#10004; Finalizar Cadastro';}
 }
 
@@ -1526,7 +1528,7 @@ async function renderAdminMotoboys(el){
       // Header do motoboy
       h+='<div style="padding:16px;display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:12px">';
       h+='<div style="display:flex;gap:12px;align-items:center">';
-      h+='<div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,var(--p),#fb923c);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0">'+(m.user?.firstName||'M')[0]+''+(m.user?.lastName||'B')[0]+'</div>';
+      h+='<div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,var(--p),#ffc107);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0">'+(m.user?.firstName||'M')[0]+''+(m.user?.lastName||'B')[0]+'</div>';
       h+='<div><div style="font-weight:800;font-size:16px">'+m.user?.firstName+' '+m.user?.lastName+'</div>';
       h+='<div style="font-size:12px;color:var(--g);margin-top:2px">'+m.user?.email+'</div>';
       h+='<div style="font-size:12px;color:var(--g)">'+m.user?.phone+'</div>';
@@ -1649,7 +1651,7 @@ async function viewMotoboyDetail(id){
   
   // Header
   h+='<div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">';
-  h+='<div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,var(--p),#fb923c);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px">'+(m.user?.firstName||'M')[0]+''+(m.user?.lastName||'B')[0]+'</div>';
+  h+='<div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,var(--p),#ffc107);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px">'+(m.user?.firstName||'M')[0]+''+(m.user?.lastName||'B')[0]+'</div>';
   h+='<div><h2 style="font-weight:800;font-size:20px">'+m.user?.firstName+' '+m.user?.lastName+'</h2>';
   h+='<div style="font-size:13px;color:var(--g)">'+m.user?.email+' | '+m.user?.phone+'</div>';
   h+='<div style="margin-top:4px">'+(m.user?.status==='ACTIVE'?'<span class="badge bg">Ativo</span>':m.user?.status==='PENDING'?'<span class="badge by">Pendente</span>':'<span class="badge br">Inativo</span>')+(m.approvedAt?'<span class="badge bg" style="margin-left:4px">Aprovado</span>':'<span class="badge by" style="margin-left:4px">Aguardando</span>')+'</div></div></div>';
@@ -2078,9 +2080,9 @@ function renderClientNew(el){
         mapClickState.step='origin';
         map.eachLayer(function(layer){if(layer instanceof L.Polyline&&!(layer instanceof L.Polygon)){map.removeLayer(layer);}});
         api('/route?origLat='+o.lat+'&origLng='+o.lng+'&destLat='+lat+'&destLng='+lng).then(function(r){
-          if(r.success&&r.data&&r.data.geometry){L.geoJSON(r.data.geometry,{style:{color:'#f97316',weight:5,opacity:0.8}}).addTo(map);map.fitBounds(L.latLngBounds([[o.lat,o.lng],[lat,lng]]),{padding:[50,50],maxZoom:16});}
-          else{L.polyline([[o.lat,o.lng],[lat,lng]],{color:'#f97316',weight:4,opacity:0.7,dashArray:'8,8'}).addTo(map);fitMapToMarkers('client-new-map');}
-        }).catch(function(){L.polyline([[o.lat,o.lng],[lat,lng]],{color:'#f97316',weight:4,opacity:0.7,dashArray:'8,8'}).addTo(map);fitMapToMarkers('client-new-map');});
+          if(r.success&&r.data&&r.data.geometry){L.geoJSON(r.data.geometry,{style:{color:'#f5a623',weight:5,opacity:0.8}}).addTo(map);map.fitBounds(L.latLngBounds([[o.lat,o.lng],[lat,lng]]),{padding:[50,50],maxZoom:16});}
+          else{L.polyline([[o.lat,o.lng],[lat,lng]],{color:'#f5a623',weight:4,opacity:0.7,dashArray:'8,8'}).addTo(map);fitMapToMarkers('client-new-map');}
+        }).catch(function(){L.polyline([[o.lat,o.lng],[lat,lng]],{color:'#f5a623',weight:4,opacity:0.7,dashArray:'8,8'}).addTo(map);fitMapToMarkers('client-new-map');});
       }
     });
   },200);

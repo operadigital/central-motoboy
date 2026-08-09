@@ -1,8 +1,9 @@
-const CACHE_NAME = 'central-motoboy-v3';
+const CACHE_NAME = 'rodae-v1';
 const ASSETS = [
   '/',
   '/index.html',
-  '/manifest.json'
+  '/manifest.json',
+  '/logo.png'
 ];
 
 self.addEventListener('install', (e) => {
@@ -34,10 +35,10 @@ self.addEventListener('fetch', (e) => {
 
 self.addEventListener('push', (e) => {
   const data = e.data ? e.data.json() : {};
-  const title = data.title || 'Central Motoboy';
+  const title = data.title || 'Rodae';
   const body = data.body || 'Nova notificacao';
-  const icon = '/icon.png';
-  const badge = '/icon.png';
+  const icon = '/logo.png';
+  const badge = '/logo.png';
   const url = data.url || '/';
   e.waitUntil(
     self.registration.showNotification(title, { body, icon, badge, data: { url } })

@@ -9,7 +9,7 @@ const app = express();
 const JWT_SECRET = process.env.JWT_SECRET || 'central-motoboy-portable-key';
 const VAPID_PUBLIC = process.env.VAPID_PUBLIC || 'BIrqXEbrJbhivbzdvRm3X1KG1l34Wp_mPWJXWeE9I7m8YOsXTjleJjF63XJcFk745E6nHKn9zDZcWCZlTGBQTLQ';
 const VAPID_PRIVATE = process.env.VAPID_PRIVATE || '72YdBWeQdVIyg2T5r_I_Be4f6HLAgdLNGUOn9LSLH0M';
-const VAPID_EMAIL = 'mailto:admin@centralmotoboy.com';
+const VAPID_EMAIL = 'mailto:admin@rodac.com.br';
 
 webpush.setVapidDetails(VAPID_EMAIL, VAPID_PUBLIC, VAPID_PRIVATE);
 
@@ -117,7 +117,7 @@ app.get('/api/push/vapid-key', (req, res) => {
 
 app.get('/api/push/test', auth, async (req, res) => {
   try {
-    await sendPushToUser(req.user.id, 'Teste Central Motoboy!', 'Se voce recebeu esta mensagem, as notificacoes push estao funcionando!', '/');
+    await sendPushToUser(req.user.id, 'Teste Rodae!', 'Se voce recebeu esta mensagem, as notificacoes push estao funcionando!', '/');
     res.json({ success: true, message: 'Push enviado' });
   } catch (e) {
     res.status(500).json({ success: false, message: e.message });

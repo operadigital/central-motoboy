@@ -1,23 +1,22 @@
 {
-  "name": "Central Motoboy",
-  "short_name": "Central",
-  "description": "Plataforma de entregas profissional",
+  "name": "Rodae - Central de Entregas",
+  "short_name": "Rodae",
+  "description": "Sua entrega. Seu destino. No tempo certo.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#f97316",
+  "background_color": "#000000",
+  "theme_color": "#f5a623",
   "orientation": "portrait",
-  "gcm_sender_id": "1039538005032",
   "icons": [
     {
-      "src": "/icon-192.svg",
+      "src": "/logo.png",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/png"
     },
     {
-      "src": "/icon-512.svg",
+      "src": "/logo.png",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/png"
     }
   ]
 }

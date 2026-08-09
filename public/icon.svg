@@ -1,6 +1,44 @@
 ﻿<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-<rect width="512" height="512" rx="80" fill="#7c3aed"/>
-<text x="256" y="180" text-anchor="middle" fill="white" font-size="120" font-weight="800" font-family="Arial">CM</text>
-<text x="256" y="340" text-anchor="middle" fill="white" font-size="50" font-weight="600" font-family="Arial">CENTRAL</text>
-<text x="256" y="400" text-anchor="middle" fill="rgba(255,255,255,.8)" font-size="45" font-weight="400" font-family="Arial">MOTOBOY</text>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f97316"/>
+      <stop offset="100%" style="stop-color:#ea580c"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:rgba(255,255,255,0.2)"/>
+      <stop offset="100%" style="stop-color:rgba(255,255,255,0)"/>
+    </linearGradient>
+  </defs>
+  <!-- Background rounded square -->
+  <rect width="512" height="512" rx="100" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="100" fill="url(#shine)"/>
+  <!-- Motorcycle body -->
+  <g transform="translate(256,260)" fill="none" stroke="white" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Rear wheel -->
+    <circle cx="-90" cy="50" r="42" fill="none"/>
+    <circle cx="-90" cy="50" r="8" fill="white"/>
+    <!-- Front wheel -->
+    <circle cx="90" cy="50" r="42" fill="none"/>
+    <circle cx="90" cy="50" r="8" fill="white"/>
+    <!-- Frame -->
+    <path d="M-90,50 L-40,-10 L40,-10 L90,50" stroke-width="12"/>
+    <!-- Seat -->
+    <path d="M-50,-10 L-20,-10" stroke-width="16" stroke-linecap="round"/>
+    <!-- Handlebar -->
+    <path d="M40,-10 L60,-40 L80,-45" stroke-width="10"/>
+    <path d="M60,-40 L45,-50" stroke-width="10" stroke-linecap="round"/>
+    <!-- Engine block -->
+    <rect x="-30" y="10" width="50" height="30" rx="6" fill="white" opacity="0.3" stroke="none"/>
+    <!-- Exhaust -->
+    <path d="M-50,30 L-80,35" stroke-width="8" stroke-linecap="round" opacity="0.7"/>
+    <!-- Delivery box -->
+    <rect x="-65" y="-55" width="50" height="40" rx="6" fill="white" opacity="0.95" stroke="none"/>
+    <text x="-40" y="-28" text-anchor="middle" fill="#ea580c" font-size="18" font-weight="800" font-family="Arial">CM</text>
+  </g>
+  <!-- Speed lines -->
+  <g stroke="white" stroke-width="4" stroke-linecap="round" opacity="0.4">
+    <line x1="80" y1="200" x2="40" y2="200"/>
+    <line x1="90" y1="220" x2="30" y2="220"/>
+    <line x1="85" y1="240" x2="45" y2="240"/>
+  </g>
 </svg>

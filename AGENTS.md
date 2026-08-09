@@ -1,4 +1,4 @@
-# Central Motoboy - Contexto do Projeto
+# Rodae - Central de Entregas - Contexto do Projeto
 
 ## Arquitetura
 - **Plataforma SaaS** para gerenciamento de entregas de motoboy
