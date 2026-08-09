@@ -179,14 +179,14 @@ body.dark .autocomplete-item .ac-icon{background:#1e3a2a}
   .mobile-header{
     display:flex !important;
     position:fixed;top:0;left:0;right:0;
-    height:74px;
+    height:88px;
     padding-top:var(--safe-t);
     background:#fff;
     border-bottom:1px solid rgba(0,0,0,.06);
-    box-shadow:0 1px 4px rgba(0,0,0,.06);
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
     z-index:100;
     align-items:center;
-    padding-left:16px;padding-right:16px;gap:12px;
+    padding-left:18px;padding-right:18px;gap:14px;
   }
   .mobile-header .logo{font-size:16px;font-weight:800;letter-spacing:-.4px;color:var(--d)}
   .mobile-header .logo span{color:var(--p)}
@@ -194,7 +194,7 @@ body.dark .autocomplete-item .ac-icon{background:#1e3a2a}
   .mobile-header .avatar{width:32px;height:32px;font-size:11px;border-radius:50%;background:linear-gradient(135deg,var(--p),#ffc107);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
   
   /* ---- BOTTOM NAV ---- */
-  .main{margin-left:0 !important;padding:0 !important;min-height:100vh;height:auto;width:100% !important;padding-top:calc(84px + var(--safe-t))!important;padding-bottom:calc(82px + var(--safe-b))!important;overflow:visible;background:#f2f2f7}
+  .main{margin-left:0 !important;padding:0 !important;min-height:100vh;height:auto;width:100% !important;padding-top:calc(98px + var(--safe-t))!important;padding-bottom:calc(82px + var(--safe-b))!important;overflow:visible;background:#f2f2f7}
   
   .bottom-nav{
     display:flex !important;
@@ -393,14 +393,14 @@ body.dark .autocomplete-item .ac-icon{background:#1e3a2a}
 
 <!-- ============ MOBILE HEADER ============ -->
 <div class="mobile-header" id="mobile-header">
-  <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
-    <img src="/logo.png" alt="Rodae" style="height:46px;width:auto;object-fit:contain">
-    <div class="logo" style="font-size:19px;font-weight:800;color:var(--d)">Rodae</div>
+  <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
+    <img src="/logo.png" alt="Rodae" style="height:54px;width:auto;object-fit:contain">
+    <div class="logo" style="font-size:22px;font-weight:800;color:var(--d)">Rodae</div>
   </div>
   <div class="hdr-right">
-    <div style="width:42px;height:42px;border-radius:50%;background:rgba(0,0,0,.05);display:flex;align-items:center;justify-content:center;cursor:pointer" onclick="toggleDarkMode()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
-    <div style="width:42px;height:42px;border-radius:50%;background:rgba(0,0,0,.05);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative" onclick="openPushModal()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
-    <div class="avatar" id="m-avatar" style="width:40px;height:40px;font-size:14px">A</div>
+    <div style="width:46px;height:46px;border-radius:50%;background:rgba(0,0,0,.05);display:flex;align-items:center;justify-content:center;cursor:pointer" onclick="toggleDarkMode()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
+    <div style="width:46px;height:46px;border-radius:50%;background:rgba(0,0,0,.05);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative" onclick="openPushModal()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+    <div class="avatar" id="m-avatar" style="width:44px;height:44px;font-size:15px">A</div>
   </div>
 </div>
 
