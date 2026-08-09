@@ -462,7 +462,7 @@ body.dark .autocomplete-item .ac-icon{background:#1e3a2a}
       <div class="form-g"><label class="label">Senha *</label><input class="input" type="password" id="reg-pass" placeholder="Minimo 6 caracteres" required></div>
       <div id="reg2-error" style="display:none;color:var(--r);font-size:13px;margin-bottom:12px;padding:10px;background:#fef2f2;border-radius:8px"></div>
       <button onclick="goStep(3)" class="btn btn-p btn-lg" style="width:100%;margin-top:8px">Proximo &#8594;</button>
-      <div style="text-align:center;margin-top:14px"><a href="#" onclick="event.preventDefault();showLogin()" style="color:var(--g);font-size:13px;text-decoration:none">&#8592; Voltar ao login</a></div>
+      <div style="text-align:center;margin-top:14px"><a href="#" onclick="event.preventDefault();showLogin()" style="color:var(--g);font-size:13px;text-decoration:none">&#8592; Voltar ao entrar</a></div>
     </div>
 
     <div id="reg-step3" class="card" style="padding:28px;display:none">
@@ -540,14 +540,14 @@ body.dark .autocomplete-item .ac-icon{background:#1e3a2a}
         <div id="preview-photo-client"><div style="font-size:36px;margin-bottom:8px">&#128247;</div><div style="font-size:13px;color:var(--g);font-weight:500">Toque para foto de perfil</div></div>
       </div>
       <button onclick="submitRegister()" class="btn btn-p btn-lg" style="width:100%;margin-top:16px">&#10004; Finalizar Cadastro</button>
-      <div style="text-align:center;margin-top:14px"><a href="#" onclick="event.preventDefault();showLogin()" style="color:var(--g);font-size:13px;text-decoration:none">&#8592; Voltar ao login</a></div>
+      <div style="text-align:center;margin-top:14px"><a href="#" onclick="event.preventDefault();showLogin()" style="color:var(--g);font-size:13px;text-decoration:none">&#8592; Voltar ao entrar</a></div>
     </div>
 
     <div id="reg-step5" class="card" style="padding:32px;display:none;text-align:center">
       <div style="font-size:64px;margin-bottom:16px">&#127881;</div>
       <h2 style="font-size:22px;font-weight:800;color:var(--gn);margin-bottom:8px">Cadastro Enviado!</h2>
       <p style="color:var(--g);font-size:14px;margin-bottom:24px" id="reg-success-msg"></p>
-      <button onclick="showLogin()" class="btn btn-p btn-lg" style="width:100%">Ir para o Login</button>
+      <button onclick="showLogin()" class="btn btn-p btn-lg" style="width:100%">Ir para o Acesso</button>
     </div>
   </div>
 </div>
@@ -652,7 +652,7 @@ function connectSSE(){
   evtSource.addEventListener('chat-message',function(e){
     try{
       var d=JSON.parse(e.data);
-      if(document.getElementById('chat-messages')){loadChatMessages(d.deliveryId,true);}
+      if(document.getElementById('chat-messages')){loadConversaMessages(d.deliveryId,true);}
       if(d.senderId!==USER.id)playNotifSound();
     }catch(x){}
   });
@@ -739,9 +739,9 @@ async function initPushNotifications(){
 }
 function showPushStatus(){
   if(!('serviceWorker' in navigator)||!('PushManager' in window)){
-    return '<span style="color:var(--r);font-size:12px">&#10008; Push nao suportado neste browser</span>';
+    return '<span style="color:var(--r);font-size:12px">&#10008; Notificacoes nao suportadas neste navegador</span>';
   }
-  return '<span style="color:var(--gn);font-size:12px">&#10004; Push disponivel</span>';
+  return '<span style="color:var(--gn);font-size:12px">&#10004; Notificacoes disponiveis</span>';
 }
 function openPushModal(){
   var status=showPushStatus();
@@ -749,8 +749,8 @@ function openPushModal(){
     '<h3 style="font-size:18px;font-weight:700;margin-bottom:12px">&#128276; Notificacoes</h3>'+
     '<div style="margin-bottom:16px">'+status+'</div>'+
     '<button class="btn btn-b" onclick="testPush()" style="width:100%;margin-bottom:8px">&#128276; Enviar Notificacao de Teste</button>'+
-    '<button class="btn btn-s" onclick="initPushNotifications().then(()=>showNotifToast(\'&#10004; Push ativado!\',\'new\'))" style="width:100%;margin-bottom:8px">&#128232; Ativar Push</button>'+
-    '<p style="font-size:12px;color:var(--g);margin-top:12px">Se voce esta no iPhone, instale o app na tela inicial para receber notificacoes com o app fechado.</p>'+
+    '<button class="btn btn-s" onclick="initPushNotifications().then(()=>showNotifToast(\'&#10004; Push ativado!\',\'new\'))" style="width:100%;margin-bottom:8px">&#128232; Ativar Notificacoes</button>'+
+    '<p style="font-size:12px;color:var(--g);margin-top:12px">Se voce esta no iPhone, instale o aplicativo na tela inicial para receber notificacoes com o aplicativo fechado.</p>'+
     '</div>');
 }
 
@@ -895,22 +895,22 @@ async function applyCoupon(){
       window._couponCode=r.data.code;
       var disc=document.getElementById('coupon-result');
       if(disc){disc.innerHTML='<span style="color:var(--gn);font-weight:700">&#10004; Cupom '+r.data.code+' - '+r.data.discount+'% de desconto!</span>';}
-      showNotifToast('&#127942; Cupom aplicado: '+r.data.discount+'% off!','new');
+      showNotifToast('&#127942; Cupom aplicado: '+r.data.discount+'% de desconto!','new');
     }
   }catch(e){var disc2=document.getElementById('coupon-result');if(disc2){disc2.innerHTML='<span style="color:var(--r);font-weight:600">'+e.message+'</span>';}}
 }
 
 // ============ CHAT ============
 var _chatInterval=null;
-function openChat(deliveryId){
-  openModal('<div style="padding:0"><div style="padding:16px 20px;border-bottom:1px solid var(--td-border);display:flex;justify-content:space-between;align-items:center"><h3 style="font-size:16px;font-weight:700">&#128172; Chat da Entrega</h3><button onclick="closeModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--g)">&times;</button></div>'+
+function openConversa(deliveryId){
+  openModal('<div style="padding:0"><div style="padding:16px 20px;border-bottom:1px solid var(--td-border);display:flex;justify-content:space-between;align-items:center"><h3 style="font-size:16px;font-weight:700">&#128172; Conversa da Entrega</h3><button onclick="closeModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--g)">&times;</button></div>'+
     '<div class="chat-container"><div id="chat-messages" class="chat-messages"><div style="text-align:center;color:var(--g);font-size:13px;padding:20px">Carregando...</div></div>'+
-    '<div class="chat-input-wrap"><input id="chat-input" placeholder="Digite sua mensagem..." onkeydown="if(event.key===\'Enter\')sendChatMessage(\''+deliveryId+'\')"><button onclick="sendChatMessage(\''+deliveryId+'\')">&#10148;</button></div></div></div>');
-  loadChatMessages(deliveryId);
+    '<div class="chat-input-wrap"><input id="chat-input" placeholder="Digite sua mensagem..." onkeydown="if(event.key===\'Enter\')sendConversaMessage(\''+deliveryId+'\')"><button onclick="sendConversaMessage(\''+deliveryId+'\')">&#10148;</button></div></div></div>');
+  loadConversaMessages(deliveryId);
   if(_chatInterval)clearInterval(_chatInterval);
-  _chatInterval=setInterval(function(){loadChatMessages(deliveryId,true);},3000);
+  _chatInterval=setInterval(function(){loadConversaMessages(deliveryId,true);},3000);
 }
-async function loadChatMessages(deliveryId,silent){
+async function loadConversaMessages(deliveryId,silent){
   try{
     var r=await api('/chat/'+deliveryId+'/messages');
     if(!r.success)return;
@@ -933,14 +933,14 @@ async function loadChatMessages(deliveryId,silent){
     el.scrollTop=el.scrollHeight;
   }catch(e){}
 }
-async function sendChatMessage(deliveryId){
+async function sendConversaMessage(deliveryId){
   var input=document.getElementById('chat-input');
   if(!input||!input.value.trim())return;
   var msg=input.value.trim();
   input.value='';
   try{
     await api('/chat/'+deliveryId+'/messages',{method:'POST',body:JSON.stringify({message:msg})});
-    loadChatMessages(deliveryId,true);
+    loadConversaMessages(deliveryId,true);
   }catch(e){}
 }
 
@@ -949,7 +949,7 @@ var _proofPhoto=null;
 function handleProofPhoto(input){
   var file=input.files[0];
   if(!file)return;
-  if(file.size>5*1024*1024){alert('Foto muito grande (max 5MB)');return;}
+  if(file.size>5*1024*1024){alert('Foto muito grande (maximo 5MB)');return;}
   var reader=new FileReader();
   reader.onload=function(e){
     _proofPhoto=e.target.result;
@@ -1015,7 +1015,7 @@ function createMap(containerId,opts){
   var el=document.getElementById(containerId);
   if(!el)return null;
   if(typeof L==='undefined'){
-    el.innerHTML='<div style="height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:20px;text-align:center;background:#f1f5f9;border-radius:14px"><div style="font-size:40px;margin-bottom:8px">&#128506;</div><div style="font-weight:700;color:#64748b">Mapa offline</div><div style="font-size:12px;color:#94a3b8;margin-top:4px">Verifique sua conexao</div></div>';
+    el.innerHTML='<div style="height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:20px;text-align:center;background:#f1f5f9;border-radius:14px"><div style="font-size:40px;margin-bottom:8px">&#128506;</div><div style="font-weight:700;color:#64748b">Mapa indisponivel</div><div style="font-size:12px;color:#94a3b8;margin-top:4px">Verifique sua conexao</div></div>';
     return null;
   }
   var isMobile=window.innerWidth<=768;
@@ -1237,7 +1237,7 @@ function handlePhoto(input,previewId,dataId){
       canvas.width=w;canvas.height=h;
       canvas.getContext('2d').drawImage(img,0,0,w,h);
       var dataUrl=canvas.toDataURL('image/jpeg',0.7);
-      document.getElementById(previewId).innerHTML='<img src="'+dataUrl+'" alt="Preview">';
+      document.getElementById(previewId).innerHTML='<img src="'+dataUrl+'" alt="Pre-visualizacao">';
       document.getElementById(dataId).value=dataUrl;
     };
     img.src=e.target.result;
@@ -1420,7 +1420,7 @@ async function renderAdminDash(el){
   h+='<div style="display:flex;align-items:center;gap:6px"><span class="online-dot"></span><span style="font-size:12px;color:var(--g);font-weight:500">Tempo real</span></div></div></div>';
   
   h+='<div class="mobile-grid-patch"><div class="grid4" style="margin-bottom:20px">';
-  h+=buildAdminKPI('Motoboys Online',s.activeMotoboys,'&#128690;','#6366f1,#8b5cf6');
+  h+=buildAdminKPI('Motoboys Conectados',s.activeMotoboys,'&#128690;','#6366f1,#8b5cf6');
   h+=buildAdminKPI('Pedidos Ativos',s.activeDeliveries+s.pendingDeliveries,'&#128230;','#f59e0b,#d97706');
   h+=buildAdminKPI('Concluidos Hoje',s.completedToday,'&#10004;','#22c55e,#16a34a');
   h+=buildAdminKPI('Faturamento Hoje',fmt(s.dailyRevenue),'&#128176;','#3b82f6,#2563eb');
@@ -1485,7 +1485,7 @@ function initAdminMap(loc){
     var lat=Number(mb.currentLatitude),lng=Number(mb.currentLongitude);
     if(!lat||!lng)return;
     var name=(mb.user?.firstName||'M')+' '+(mb.user?.lastName||'B');
-    var popup=createPopupContent({title:name,subtitle:'Online',actions:[{label:'Rastrear',color:'#3b82f6',onclick:"centerMap('admin-realtime-map',"+lat+","+lng+",18)"}]});
+    var popup=createPopupContent({title:name,subtitle:'Conectado',actions:[{label:'Rastrear',color:'#3b82f6',onclick:"centerMap('admin-realtime-map',"+lat+","+lng+",18)"}]});
     addMarker('admin-realtime-map',lat,lng,{color:'#3b82f6',emoji:'&#128690;',popup:popup,tooltip:name});
   });
 
@@ -1670,7 +1670,7 @@ async function viewMotoboyDetail(id){
   h+='<div class="grid3" style="margin-bottom:16px">';
   h+='<div style="background:var(--gl);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--gn)">&#9733; '+Number(m.averageRating).toFixed(1)+'</div><div style="font-size:10px;color:var(--g);font-weight:600">Avaliacao</div></div>';
   h+='<div style="background:var(--gl);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800">'+(m.completedDeliveries||0)+'</div><div style="font-size:10px;color:var(--g);font-weight:600">Entregas</div></div>';
-  h+='<div style="background:var(--gl);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800">'+(m.isOnline?'&#128994;':'&#128308;')+'</div><div style="font-size:10px;color:var(--g);font-weight:600">'+(m.isOnline?'Online':'Offline')+'</div></div>';
+  h+='<div style="background:var(--gl);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800">'+(m.isOnline?'&#128994;':'&#128308;')+'</div><div style="font-size:10px;color:var(--g);font-weight:600">'+(m.isOnline?'Conectado':'Desconectado')+'</div></div>';
   h+='</div>';
 
   // Documentos
@@ -1835,7 +1835,7 @@ async function renderAdminReports(el){
     ['Total de Usuarios',s.totalUsers,'&#128100;'],
     ['Total Clientes',s.totalClients,'&#128100;'],
     ['Total Motoboys',s.totalMotoboys,'&#128690;'],
-    ['Motoboys Online',s.activeMotoboys,'&#128690;'],
+    ['Motoboys Conectados',s.activeMotoboys,'&#128690;'],
     ['Taxa de Sucesso',s.completedToday+s.cancelledToday>0?Math.round(s.completedToday/(s.completedToday+s.cancelledToday)*100)+'%':'-','&#10004;']
   ];
   metrics.forEach(function(m){
@@ -1878,7 +1878,7 @@ async function renderAdminSettings(el){
   h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:14px">Sons de Notificacao</span><span style="color:var(--gn);font-weight:700">&#10004; Ativado</span></div>';
   h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:14px">Alerta Novo Cadastro</span><span style="color:var(--gn);font-weight:700">&#10004; Ativado</span></div>';
   h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0"><span style="font-size:14px">Alerta Nova Entrega</span><span style="color:var(--gn);font-weight:700">&#10004; Ativado</span></div>';
-  h+='<div style="margin-top:12px"><button class="btn btn-b" onclick="testPush()" style="width:100%">&#128276; Testar Notificacao Push</button></div>';
+  h+='<div style="margin-top:12px"><button class="btn btn-b" onclick="testPush()" style="width:100%">&#128276; Testar Notificacao</button></div>';
   h+='</div></div>';
   h+='<div class="card"><div class="card-h">&#128264; Sons</div><div class="card-b">';
   h+='<div style="display:flex;flex-direction:column;gap:8px">';
@@ -1915,7 +1915,7 @@ async function renderClientDash(el){
     active.forEach(function(d){
       h+='<div style="display:flex;justify-content:space-between;align-items:start;padding:14px;background:var(--gl);border-radius:12px;margin-bottom:10px;gap:10px">';
       h+='<div style="min-width:0;flex:1;overflow:hidden"><div style="font-weight:700;font-family:monospace;font-size:14px">'+d.trackingCode+'</div><div style="font-size:12px;color:var(--g);margin-top:2px;word-break:break-word">'+d.originAddress+' &#8594; '+d.destinationAddress+'</div></div>';
-      h+='<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0"><span class="'+(ST[d.status]||['',''])[0]+'">'+(ST[d.status]||['',''])[1]+'</span><button onclick="openChat(\''+d.id+'\')" style="background:var(--b);color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:11px;cursor:pointer;font-weight:600;white-space:nowrap">&#128172; Chat</button></div></div>';
+      h+='<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0"><span class="'+(ST[d.status]||['',''])[0]+'">'+(ST[d.status]||['',''])[1]+'</span><button onclick="openConversa(\''+d.id+'\')" style="background:var(--b);color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:11px;cursor:pointer;font-weight:600;white-space:nowrap">&#128172; Conversa</button></div></div>';
     });
     h+='</div></div>';
   }
@@ -2116,7 +2116,7 @@ function renderClientNew(el){
       if(window._couponCode)body.couponCode=window._couponCode;
       var r=await api('/deliveries',{method:'POST',body:JSON.stringify(body)});
       var scheduledMsg=scheduled?'<br><span style="font-size:13px;color:var(--b)">Agendada para: '+new Date(scheduled).toLocaleString('pt-BR')+'</span>':'';
-      openModal('<div style="text-align:center;padding:8px 0"><h2 style="color:var(--gn);margin-bottom:8px;font-size:20px">&#10004; Entrega Criada!</h2><p style="font-size:14px;color:var(--g);margin-bottom:16px">Codigo de rastreio:</p><p style="font-size:32px;font-family:monospace;font-weight:800;color:var(--p)">'+r.data.trackingCode+'</p><p style="font-size:14px;color:var(--g);margin:16px 0">Valor: <b>'+fmt(r.data.totalPrice)+'</b></p>'+scheduledMsg+'<button class="btn btn-p btn-lg" onclick="closeModal();navigate(\'client-dash\')" style="margin-top:12px;width:100%">Voltar ao Dashboard</button></div>');
+      openModal('<div style="text-align:center;padding:8px 0"><h2 style="color:var(--gn);margin-bottom:8px;font-size:20px">&#10004; Entrega Criada!</h2><p style="font-size:14px;color:var(--g);margin-bottom:16px">Codigo de rastreio:</p><p style="font-size:32px;font-family:monospace;font-weight:800;color:var(--p)">'+r.data.trackingCode+'</p><p style="font-size:14px;color:var(--g);margin:16px 0">Valor: <b>'+fmt(r.data.totalPrice)+'</b></p>'+scheduledMsg+'<button class="btn btn-p btn-lg" onclick="closeModal();navigate(\'client-dash\')" style="margin-top:12px;width:100%">Voltar ao Painel</button></div>');
       window._couponCode=null;window._couponDiscount=null;
     }catch(err){document.getElementById('nd-error').textContent=err.message;document.getElementById('nd-error').style.display='block';}
   };
@@ -2133,7 +2133,7 @@ async function renderClientHistory(el){
     '<div class="card"><div class="table-w"><table><thead><tr><th>Codigo</th><th>Origem</th><th>Destino</th><th>Valor</th><th>Status</th><th>Data</th><th>Acoes</th></tr></thead><tbody id="delivery-table-body">'+
     data.map(function(d){
       var actions='';
-      if(d.status==='ACCEPTED'||d.status==='PICKED_UP'||d.status==='IN_TRANSIT')actions='<button class="btn btn-sm btn-b" onclick="openChat(\''+d.id+'\')" style="padding:6px 10px;font-size:11px">&#128172; Chat</button>';
+      if(d.status==='ACCEPTED'||d.status==='PICKED_UP'||d.status==='IN_TRANSIT')actions='<button class="btn btn-sm btn-b" onclick="openConversa(\''+d.id+'\')" style="padding:6px 10px;font-size:11px">&#128172; Conversa</button>';
       else if(d.status==='DELIVERED')actions='<button class="btn btn-sm" onclick="openRatingModal(\''+d.id+'\',\'MOTOBOY\',\'Motoboy\')" style="padding:6px 10px;font-size:11px;background:#f59e0b;color:#fff;border:none">&#11088; Avaliar</button>';
       return '<tr data-status="'+d.status+'"><td style="font-family:monospace;font-weight:700;color:var(--p)">'+d.trackingCode+'</td><td>'+d.originAddress+'</td><td>'+d.destinationAddress+'</td><td style="font-weight:700">'+fmt(d.totalPrice)+'</td><td><span class="'+(ST[d.status]||['',''])[0]+'">'+(ST[d.status]||['',''])[1]+'</span></td><td style="font-size:12px">'+fmtDate(d.createdAt)+'</td><td>'+actions+'</td></tr>';
     }).join('')+
@@ -2184,7 +2184,7 @@ async function renderMotoboyDash(el){
   var activeDels=myDeliveries.filter(function(d){return ['ACCEPTED','PICKED_UP','IN_TRANSIT'].includes(d.status)});
   var h='';
   h+='<div class="header-bar"><div><h1 style="font-size:22px;font-weight:800">Ola, '+USER.firstName+'!</h1><p style="color:var(--g);font-size:13px">'+(m.vehiclePlate||'')+' - '+(m.vehicleModel||'')+'</p></div>';
-  h+='<button onclick="toggleOnline()" class="toggle-wrap"><button class="'+(m.isOnline?'active t-online':'t-offline')+'" style="border-radius:12px">'+(m.isOnline?'&#9889; ONLINE':'&#9898; OFFLINE')+'</button></button></div>';
+  h+='<button onclick="toggleOnline()" class="toggle-wrap"><button class="'+(m.isOnline?'active t-online':'t-offline')+'" style="border-radius:12px">'+(m.isOnline?'&#9889; CONECTADO':'&#9898; DESCONECTADO')+'</button></button></div>';
   h+='<div class="mobile-grid-patch"><div style="margin:0 16px 16px">'+clockButton(m.clockedIn)+'</div></div>';
   h+='<div class="mobile-grid-patch"><div class="grid4" style="margin-bottom:20px">';
   h+=buildMiniStat('Ganhos Hoje',fmt(e.daily),'#22c55e','&#128176;');
@@ -2218,7 +2218,7 @@ async function renderMotoboyDash(el){
         h+='<button class="btn btn-b" onclick="drawRouteToTarget(\''+d.id+'\',\'destination\')" style="flex:1;min-width:0">&#128663; Ir a Entrega</button>';
         h+='<button class="btn btn-g" onclick="completeDel(\''+d.id+'\')" style="flex:1;min-width:0">&#10004; Concluir</button>';
       }
-      h+='<button class="btn btn-s" onclick="openChat(\''+d.id+'\')" style="flex:1;min-width:0">&#128172; Chat</button>';
+      h+='<button class="btn btn-s" onclick="openConversa(\''+d.id+'\')" style="flex:1;min-width:0">&#128172; Conversa</button>';
       h+='</div></div>';
     });
     h+='</div></div>';
@@ -2231,7 +2231,7 @@ async function renderMotoboyDash(el){
     h+=available.map(buildAvailableCard).join('');
     h+='</div></div>';
   } else {
-    var emptyMsg=m.isOnline?'Aguardando novas corridas...':'Fique online para receber corridas';
+    var emptyMsg=m.isOnline?'Aguardando novas corridas...':'Fique conectado para receber corridas';
     h+='<div class="card"><div class="card-b empty" style="padding:48px 20px"><p style="font-size:52px;margin-bottom:12px">&#128269;</p><p style="font-size:16px;font-weight:600;color:var(--d)">Nenhuma corrida disponivel</p><p style="font-size:14px;margin-top:4px">'+emptyMsg+'</p></div></div>';
   }
   el.innerHTML=h;
@@ -2554,7 +2554,7 @@ function resetIdleTimer(){
 function showNotifLogout(msg){
   var t=document.createElement('div');
   t.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999;max-width:340px;width:90%;padding:28px;border-radius:20px;color:#fff;font-size:15px;font-weight:600;text-align:center;background:linear-gradient(135deg,#ef4444,#dc2626);box-shadow:0 12px 40px rgba(239,68,68,.5);animation:fadeIn .3s ease';
-  t.innerHTML='<div style="font-size:48px;margin-bottom:12px">&#128682;</div>'+msg+'<br><button onclick="location.reload()" style="margin-top:16px;padding:10px 24px;border:none;border-radius:10px;background:#fff;color:#ef4444;font-weight:800;cursor:pointer;font-size:14px">Fazer Login</button>';
+  t.innerHTML='<div style="font-size:48px;margin-bottom:12px">&#128682;</div>'+msg+'<br><button onclick="location.reload()" style="margin-top:16px;padding:10px 24px;border:none;border-radius:10px;background:#fff;color:#ef4444;font-weight:800;cursor:pointer;font-size:14px">Entrar</button>';
   document.body.appendChild(t);
 }
 ['click','keypress','mousemove','touchstart','scroll'].forEach(function(evt){

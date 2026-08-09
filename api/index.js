@@ -320,7 +320,7 @@ app.get('/api/admin/financial', auth, admin, async (req, res) => {
 app.get('/api/admin/export/deliveries', auth, admin, async (req, res) => {
   try {
     const { data: d } = await supabase.from('deliveries').select('*').order('created_at', { ascending: false });
-    const headers = ['ID','Tracking Code','Client ID','Motoboy ID','Status','Type','Origin Address','Destination Address','Distance','Total Price','Commission','Motoboy Earning','Payment Method','Created At'];
+    const headers = ['ID','Codigo de Rastreamento','ID Cliente','ID Motoboy','Status','Tipo','Endereco Origem','Endereco Destino','Distancia','Preco Total','Comissao','Ganho Motoboy','Forma de Pagamento','Criado Em'];
     const rows = (d || []).map(x => [
       x.id, x.tracking_code, x.client_id, x.motoboy_id || '', x.status, x.type,
       `${x.origin_address || ''} ${x.origin_number || ''} ${x.origin_neighborhood || ''} ${x.origin_city || ''} ${x.origin_state || ''}`.trim(),
@@ -339,7 +339,7 @@ app.get('/api/admin/export/deliveries', auth, admin, async (req, res) => {
 app.get('/api/admin/export/financial', auth, admin, async (req, res) => {
   try {
     const { data: d } = await supabase.from('deliveries').select('*').eq('status', 'DELIVERED').order('created_at', { ascending: false });
-    const headers = ['ID','Tracking Code','Total Price','Commission Amount','Motoboy Earning','Payment Method','Created At'];
+    const headers = ['ID','Codigo de Rastreamento','Preco Total','Valor Comissao','Ganho Motoboy','Forma de Pagamento','Criado Em'];
     const rows = (d || []).map(x => [
       x.id, x.tracking_code, x.total_price || 0, x.commission_amount || 0, x.motoboy_earning || 0, x.payment_method || '', x.created_at || ''
     ]);
