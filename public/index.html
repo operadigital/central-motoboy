@@ -2035,6 +2035,9 @@ function renderClientNew(el){
     '</form></div></div>';
   var mapClickState={step:'origin'};
   var selectedOrigin=null,selectedDest=null;
+  window._newDelSelectedOrigin=function(v){if(v!==undefined)selectedOrigin=v;return selectedOrigin;};
+  window._newDelSelectedDest=function(v){if(v!==undefined)selectedDest=v;return selectedDest;};
+  window._newDelMapClickState=mapClickState;
   setTimeout(function(){
     var mapEl=document.getElementById('client-new-map');
     if(!mapEl||typeof L==='undefined')return;
@@ -2045,16 +2048,17 @@ function renderClientNew(el){
       var lat=e.latlng.lat,lng=e.latlng.lng;
       clearMarkers('client-new-map');
       if(mapClickState.step==='origin'){
-        selectedOrigin={lat:lat,lng:lng};
+        window._newDelSelectedOrigin({lat:lat,lng:lng});
         addMarker('client-new-map',lat,lng,{color:'#22c55e',emoji:'&#128205;',tooltip:'Origem'});
         document.getElementById('nd-oa').value=lat.toFixed(5)+', '+lng.toFixed(5);
         mapClickState.step='dest';
         showNotifToast('&#128205; Origem definida! Agora toque no destino','new');
       } else {
-        selectedDest={lat:lat,lng:lng};
-        addMarker('client-new-map',selectedOrigin.lat,selectedOrigin.lng,{color:'#22c55e',emoji:'&#128205;',tooltip:'Origem'});
+        window._newDelSelectedDest({lat:lat,lng:lng});
+        var o=window._newDelSelectedOrigin();
+        addMarker('client-new-map',o.lat,o.lng,{color:'#22c55e',emoji:'&#128205;',tooltip:'Origem'});
         addMarker('client-new-map',lat,lng,{color:'#ef4444',emoji:'&#127968;',tooltip:'Destino'});
-        L.polyline([[selectedOrigin.lat,selectedOrigin.lng],[lat,lng]],{color:'#f97316',weight:4,opacity:0.7,dashArray:'8,8'}).addTo(map);
+        L.polyline([[o.lat,o.lng],[lat,lng]],{color:'#f97316',weight:4,opacity:0.7,dashArray:'8,8'}).addTo(map);
         document.getElementById('nd-da').value=lat.toFixed(5)+', '+lng.toFixed(5);
         mapClickState.step='origin';
         fitMapToMarkers('client-new-map');
@@ -2065,69 +2069,13 @@ function renderClientNew(el){
       requestGPS(function(lat,lng){
         centerMap('client-new-map',lat,lng,16);
         clearMarkers('client-new-map');
-        selectedOrigin={lat:lat,lng:lng};
+        window._newDelSelectedOrigin({lat:lat,lng:lng});
         addMarker('client-new-map',lat,lng,{color:'#22c55e',emoji:'&#128205;',tooltip:'Origem'});
         document.getElementById('nd-oa').value=lat.toFixed(5)+', '+lng.toFixed(5);
-        mapClickState.step='dest';
+        window._newDelMapClickState.step='dest';
         showNotifToast('&#128205; Origem definida! Agora toque no destino','new');
       },function(err){alert('Nao foi possivel obter localizacao: '+err);});
     };
-
-    var _searchTimers={};
-    window.searchAddress=function(input,type){
-      var val=input.value.trim();
-      var list=document.getElementById('autocomplete-'+type);
-      if(!list)return;
-      if(val.length<3){list.style.display='none';return;}
-      if(_searchTimers[type])clearTimeout(_searchTimers[type]);
-      _searchTimers[type]=setTimeout(function(){
-        fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(val+' Camaqua RS')+'&format=json&limit=5&addressdetails=1&countrycodes=br&viewbox=-50.95,-30.95,-50.65,-30.75&bounded=1',{headers:{'Accept-Language':'pt-BR'}})
-        .then(function(r){return r.json();})
-        .then(function(results){
-          if(!results||!results.length){list.style.display='none';return;}
-          var h='';
-          results.forEach(function(r){
-            var addr=r.address||{};
-            var road=addr.road||addr.pedestrian||'';
-            var number=addr.house_number||'';
-            var neighbourhood=addr.suburb||addr.neighbourhood||'';
-            var full=(road+(number?' '+number:''))||r.display_name.split(',')[0];
-            h+='<div class="autocomplete-item" onclick="selectAddress(\''+type+'\',\''+full.replace(/'/g,"\\'")+'\',\''+neighbourhood.replace(/'/g,"\\'")+'\',\''+r.lat+'\',\''+r.lon+'\')">';
-            h+='<span class="ac-icon">&#128205;</span><div><div class="ac-text">'+full+'</div>';
-            if(neighbourhood)h+='<div class="ac-sub">'+neighbourhood+', Camaqua - RS</div>';
-            h+='</div></div>';
-          });
-          list.innerHTML=h;
-          list.style.display='block';
-        }).catch(function(){list.style.display='none';});
-      },400);
-    };
-    window.selectAddress=function(type,address,neighbourhood,lat,lng){
-      var inputId=type==='origin'?'nd-oa':'nd-da';
-      var neighId=type==='origin'?'nd-ob':'nd-db';
-      document.getElementById(inputId).value=address;
-      if(neighbourhood)document.getElementById(neighId).value=neighbourhood;
-      var list=document.getElementById('autocomplete-'+type);
-      if(list)list.style.display='none';
-      var latF=parseFloat(lat),lngF=parseFloat(lng);
-      if(type==='origin'){
-        selectedOrigin={lat:latF,lng:lngF};
-        clearMarkers('client-new-map');
-        addMarker('client-new-map',latF,lngF,{color:'#22c55e',emoji:'&#128205;',tooltip:'Origem'});
-      }else{
-        selectedDest={lat:latF,lng:lngF};
-        if(selectedOrigin){clearMarkers('client-new-map');addMarker('client-new-map',selectedOrigin.lat,selectedOrigin.lng,{color:'#22c55e',emoji:'&#128205;',tooltip:'Origem'});}
-        addMarker('client-new-map',latF,lngF,{color:'#ef4444',emoji:'&#127968;',tooltip:'Destino'});
-      }
-      centerMap('client-new-map',latF,lngF,16);
-      mapClickState.step=type==='origin'?'dest':'origin';
-    };
-    document.addEventListener('click',function(e){
-      if(!e.target.closest('.form-g')){
-        var lists=document.querySelectorAll('.autocomplete-list');
-        lists.forEach(function(l){l.style.display='none';});
-      }
-    });
   document.getElementById('new-delivery-form').onsubmit=async function(e){
     e.preventDefault();
     try{
@@ -2139,11 +2087,12 @@ function renderClientNew(el){
       if(destCity!=='camaquã'&&destCity!=='camaqua'){document.getElementById('nd-error').textContent='Endereco de destino deve ser em Camaqua (CEP 96180-000)';document.getElementById('nd-error').style.display='block';return;}
       if(originState!=='RS'){document.getElementById('nd-error').textContent='Estado da origem deve ser RS';document.getElementById('nd-error').style.display='block';return;}
       if(destState!=='RS'){document.getElementById('nd-error').textContent='Estado do destino deve ser RS';document.getElementById('nd-error').style.display='block';return;}
+      var _so=window._newDelSelectedOrigin(),_sd=window._newDelSelectedDest();
       var body={
         originAddress:document.getElementById('nd-oa').value,originCity:document.getElementById('nd-oc').value,originState:document.getElementById('nd-os').value,originNeighborhood:document.getElementById('nd-ob').value,
-        originLatitude:selectedOrigin?selectedOrigin.lat:DEFAULT_LAT,originLongitude:selectedOrigin?selectedOrigin.lng:DEFAULT_LNG,
+        originLatitude:_so?_so.lat:DEFAULT_LAT,originLongitude:_so?_so.lng:DEFAULT_LNG,
         destinationAddress:document.getElementById('nd-da').value,destinationCity:document.getElementById('nd-dc').value,destinationState:document.getElementById('nd-ds').value,destinationNeighborhood:document.getElementById('nd-db').value,
-        destinationLatitude:selectedDest?selectedDest.lat:DEFAULT_LAT+0.0114,destinationLongitude:selectedDest?selectedDest.lng:DEFAULT_LNG-0.0225,
+        destinationLatitude:_sd?_sd.lat:DEFAULT_LAT+0.0114,destinationLongitude:_sd?_sd.lng:DEFAULT_LNG-0.0225,
         description:document.getElementById('nd-desc').value,paymentMethod:document.getElementById('nd-pm').value,observations:document.getElementById('nd-obs').value,
       };
       var scheduled=document.getElementById('nd-scheduled').value;
@@ -2363,6 +2312,70 @@ var _activeDeliveryCache={};
 function isInCamaqua(lat,lng){
   return lat>=-30.95&&lat<=-30.75&&lng>=-50.95&&lng<=-50.65;
 }
+
+var _searchTimers={};
+function searchAddress(input,type){
+  var val=input.value.trim();
+  var list=document.getElementById('autocomplete-'+type);
+  if(!list)return;
+  if(val.length<3){list.style.display='none';return;}
+  if(_searchTimers[type])clearTimeout(_searchTimers[type]);
+  _searchTimers[type]=setTimeout(function(){
+    fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(val+' Camaqua RS')+'&format=json&limit=5&addressdetails=1&countrycodes=br&viewbox=-50.95,-30.95,-50.65,-30.75&bounded=1',{headers:{'Accept-Language':'pt-BR'}})
+    .then(function(r){return r.json();})
+    .then(function(results){
+      if(!results||!results.length){list.style.display='none';return;}
+      var h='';
+      results.forEach(function(r){
+        var addr=r.address||{};
+        var road=addr.road||addr.pedestrian||'';
+        var number=addr.house_number||'';
+        var neighbourhood=addr.suburb||addr.neighbourhood||'';
+        var full=(road+(number?' '+number:''))||r.display_name.split(',')[0];
+        h+='<div class="autocomplete-item" data-type="'+type+'" data-lat="'+r.lat+'" data-lng="'+r.lon+'" data-addr="'+full.replace(/"/g,'&quot;')+'" data-neigh="'+neighbourhood.replace(/"/g,'&quot;')+'">';
+        h+='<span class="ac-icon">&#128205;</span><div><div class="ac-text">'+full+'</div>';
+        if(neighbourhood)h+='<div class="ac-sub">'+neighbourhood+', Camaqua - RS</div>';
+        h+='</div></div>';
+      });
+      list.innerHTML=h;
+      list.style.display='block';
+      list.querySelectorAll('.autocomplete-item').forEach(function(item){
+        item.addEventListener('click',function(){
+          selectAddress(item.dataset.type,item.dataset.addr,item.dataset.neigh,item.dataset.lat,item.dataset.lng);
+        });
+      });
+    }).catch(function(){list.style.display='none';});
+  },400);
+}
+function selectAddress(type,address,neighbourhood,lat,lng){
+  var inputId=type==='origin'?'nd-oa':'nd-da';
+  var neighId=type==='origin'?'nd-ob':'nd-db';
+  document.getElementById(inputId).value=address;
+  if(neighbourhood)document.getElementById(neighId).value=neighbourhood;
+  var list=document.getElementById('autocomplete-'+type);
+  if(list)list.style.display='none';
+  var latF=parseFloat(lat),lngF=parseFloat(lng);
+  var map=_maps['client-new-map'];
+  if(!map)return;
+  if(type==='origin'){
+    window._newDelSelectedOrigin({lat:latF,lng:lngF});
+    clearMarkers('client-new-map');
+    addMarker('client-new-map',latF,lngF,{color:'#22c55e',emoji:'&#128205;',tooltip:'Origem'});
+  }else{
+    window._newDelSelectedDest({lat:latF,lng:lngF});
+    var o=window._newDelSelectedOrigin();
+    if(o&&o.lat){clearMarkers('client-new-map');addMarker('client-new-map',o.lat,o.lng,{color:'#22c55e',emoji:'&#128205;',tooltip:'Origem'});}
+    addMarker('client-new-map',latF,lngF,{color:'#ef4444',emoji:'&#127968;',tooltip:'Destino'});
+  }
+  centerMap('client-new-map',latF,lngF,16);
+  window._newDelMapClickState.step=type==='origin'?'dest':'origin';
+}
+document.addEventListener('click',function(e){
+  if(!e.target.closest('.form-g')){
+    var lists=document.querySelectorAll('.autocomplete-list');
+    lists.forEach(function(l){l.style.display='none';});
+  }
+});
 function drawRouteToTarget(deliveryId,target){
   var d=_activeDeliveryCache[deliveryId];
   if(!d){showNotifToast('&#10008; Entrega nao encontrada','');return;}
