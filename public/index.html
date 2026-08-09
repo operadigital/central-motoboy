@@ -1007,7 +1007,7 @@ var _maps={};
 var _mapMarkers={};
 var _mapCircles={};
 var _geoWatchId=null;
-var DEFAULT_LAT=-30.8511,DEFAULT_LNG=-50.8075;
+var DEFAULT_LAT=-30.8511,DEFAULT_LNG=-51.8075;
 var _lastGPSLat=null,_lastGPSLng=null;
 
 function createMap(containerId,opts){
@@ -1019,7 +1019,7 @@ function createMap(containerId,opts){
     return null;
   }
   var isMobile=window.innerWidth<=768;
-  var camaquaBounds=L.latLngBounds(L.latLng(-30.95,-50.95),L.latLng(-30.75,-50.65));
+  var camaquaBounds=L.latLngBounds(L.latLng(-30.95,-51.95),L.latLng(-30.75,-51.45));
   var def={zoomControl:!isMobile,attributionControl:!isMobile,zoom:14,tap:true,touchZoom:true,dragging:true,bounceAtZoomLimits:true,maxBounds:camaquaBounds,maxBoundsViscosity:1.0,minZoom:12,maxZoom:18};
   if(opts)Object.keys(opts).forEach(function(k){def[k]=opts[k]});
   var map=L.map(containerId,def).setView([DEFAULT_LAT,DEFAULT_LNG],14);
@@ -2314,7 +2314,7 @@ function openNavigation(address,lat,lng){
 
 var _activeDeliveryCache={};
 function isInCamaqua(lat,lng){
-  return lat>=-30.95&&lat<=-30.75&&lng>=-50.95&&lng<=-50.65;
+  return lat>=-30.95&&lat<=-30.75&&lng>=-51.95&&lng<=-51.45;
 }
 
 var _searchTimers={};
@@ -2327,7 +2327,7 @@ function searchAddress(input,type){
   list.innerHTML='<div class="ac-loading">Buscando enderecos...</div>';
   list.style.display='block';
   _searchTimers[type]=setTimeout(function(){
-    fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(val+' Camaqua RS Brazil')+'&format=json&limit=6&addressdetails=1&countrycodes=br&viewbox=-50.95,-30.95,-50.65,-30.75&bounded=1',{headers:{'Accept-Language':'pt-BR'}})
+    fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(val+' Camaqua RS Brazil')+'&format=json&limit=6&addressdetails=1&countrycodes=br&viewbox=-51.95,-30.95,-51.45,-30.75&bounded=1',{headers:{'Accept-Language':'pt-BR'}})
     .then(function(r){return r.json();})
     .then(function(results){
       var h='<div class="autocomplete-item" data-type="'+type+'" data-addr="'+val.replace(/"/g,'&quot;')+'" data-neigh="" data-lat="'+DEFAULT_LAT+'" data-lng="'+DEFAULT_LNG+'"><div class="ac-icon">&#128221;</div><div><div class="ac-text">Usar: '+val+'</div><div class="ac-sub">Endereco digitado</div></div></div>';

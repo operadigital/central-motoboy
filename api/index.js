@@ -378,7 +378,7 @@ app.get('/api/deliveries', auth, async (req, res) => {
     query = supabase.from('deliveries').select('*').order('created_at', { ascending: false });
   }
   const { data: d } = await query.limit(50);
-  const inCamaqua = (lat, lng) => lat >= -30.95 && lat <= -30.75 && lng >= -50.95 && lng <= -50.65;
+  const inCamaqua = (lat, lng) => lat >= -30.95 && lat <= -30.75 && lng >= -51.95 && lng <= -51.45;
   const result = (d || []).filter(x => {
     const oLat = parseFloat(x.origin_latitude), oLng = parseFloat(x.origin_longitude);
     const dLat = parseFloat(x.destination_latitude), dLng = parseFloat(x.destination_longitude);
@@ -405,7 +405,7 @@ app.get('/api/deliveries', auth, async (req, res) => {
 
 app.get('/api/deliveries/available', auth, async (req, res) => {
   const { data: d } = await supabase.from('deliveries').select('*').eq('status', 'PENDING').order('created_at', { ascending: false });
-  const inCamaqua = (lat, lng) => lat >= -30.95 && lat <= -30.75 && lng >= -50.95 && lng <= -50.65;
+  const inCamaqua = (lat, lng) => lat >= -30.95 && lat <= -30.75 && lng >= -51.95 && lng <= -51.45;
   const result = (d || []).filter(x => {
     const oLat = parseFloat(x.origin_latitude), oLng = parseFloat(x.origin_longitude);
     const dLat = parseFloat(x.destination_latitude), dLng = parseFloat(x.destination_longitude);
@@ -443,7 +443,7 @@ app.post('/api/deliveries', auth, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Entregas somente dentro de Camaquã (CEP 96180-000)' });
     }
     // Validar coordenadas dentro de Camaqua
-    const inCamaqua = (lat, lng) => lat >= -30.95 && lat <= -30.75 && lng >= -50.95 && lng <= -50.65;
+    const inCamaqua = (lat, lng) => lat >= -30.95 && lat <= -30.75 && lng >= -51.95 && lng <= -51.45;
     const oLat = parseFloat(b.originLatitude), oLng = parseFloat(b.originLongitude);
     const dLat = parseFloat(b.destinationLatitude), dLng = parseFloat(b.destinationLongitude);
     if (oLat && oLng && !inCamaqua(oLat, oLng)) {
@@ -878,8 +878,8 @@ app.get('/api/route', auth, async (req, res) => {
   try {
     const { origLat, origLng, destLat, destLng } = req.query;
     if (!origLat || !origLng || !destLat || !destLng) return res.status(400).json({ success: false, message: 'Coordenadas obrigatorias' });
-    // Validar Camaquã (-30.95 a -30.75 lat, -50.95 a -50.65 lng)
-    const inCamaqua = (lat, lng) => lat >= -30.95 && lat <= -30.75 && lng >= -50.95 && lng <= -50.65;
+    // Validar Camaquã (-30.95 a -30.75 lat, -51.95 a -51.45 lng)
+    const inCamaqua = (lat, lng) => lat >= -30.95 && lat <= -30.75 && lng >= -51.95 && lng <= -51.45;
     if (!inCamaqua(parseFloat(origLat), parseFloat(origLng)) || !inCamaqua(parseFloat(destLat), parseFloat(destLng))) {
       return res.status(400).json({ success: false, message: 'Rota fora de Camaquã. Entregas somente na regiao de Camaquã/RS' });
     }
