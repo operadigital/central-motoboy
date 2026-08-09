@@ -148,15 +148,19 @@ body.dark .skeleton{background:linear-gradient(90deg,#334155 25%,#475569 50%,#33
 .chat-msg.me{background:var(--p);color:#fff;border-bottom-right-radius:4px;align-self:flex-end}
 .chat-msg.other{background:var(--gl);color:var(--d);border-bottom-left-radius:4px;align-self:flex-start}
 .chat-msg .chat-time{font-size:10px;opacity:.6;margin-top:4px}
-.autocomplete-list{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #e5e7eb;border-radius:0 0 12px 12px;max-height:220px;overflow-y:auto;z-index:1000;display:none;box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.autocomplete-list{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #e5e7eb;border-radius:0 0 16px 16px;max-height:300px;overflow-y:auto;z-index:1000;display:none;box-shadow:0 12px 32px rgba(0,0,0,.15)}
 body.dark .autocomplete-list{background:#1e293b;border-color:#334155}
-.autocomplete-item{padding:12px 16px;cursor:pointer;border-bottom:1px solid #f1f5f9;font-size:13px;display:flex;align-items:start;gap:8px}
+.ac-loading{padding:16px;text-align:center;color:var(--g);font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px}
+.ac-loading::before{content:'';width:18px;height:18px;border:2px solid #e5e7eb;border-top-color:var(--p);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.autocomplete-item{padding:14px 16px;cursor:pointer;border-bottom:1px solid #f1f5f9;font-size:14px;display:flex;align-items:center;gap:12px;transition:background .15s}
 body.dark .autocomplete-item{border-color:#334155}
-.autocomplete-item:hover{background:#f0fdf4}
-body.dark .autocomplete-item:hover{background:#1e3a2a}
-.autocomplete-item .ac-icon{color:#22c55e;font-size:16px;margin-top:1px}
-.autocomplete-item .ac-text{font-weight:500}
-.autocomplete-item .ac-sub{font-size:11px;color:#6b7280;margin-top:2px}
+.autocomplete-item:active{background:#f0fdf4}
+body.dark .autocomplete-item:active{background:#1e3a2a}
+.autocomplete-item .ac-icon{width:36px;height:36px;border-radius:50%;background:#f0fdf4;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+body.dark .autocomplete-item .ac-icon{background:#1e3a2a}
+.autocomplete-item .ac-text{font-weight:600;font-size:14px;color:var(--d)}
+.autocomplete-item .ac-sub{font-size:12px;color:#6b7280;margin-top:2px}
 .chat-input-wrap{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--td-border);background:var(--w)}
 .chat-input-wrap input{flex:1;padding:10px 14px;border:1.5px solid var(--input-border);border-radius:20px;font-size:14px;background:var(--input-bg);color:var(--d);outline:none}
 .chat-input-wrap button{width:40px;height:40px;border-radius:50%;border:none;background:var(--p);color:#fff;font-size:18px;cursor:pointer;flex-shrink:0}
@@ -2011,14 +2015,14 @@ function renderClientNew(el){
     '<div class="card"><div class="card-b">'+
     '<form id="new-delivery-form">'+
     '<h3 style="font-size:16px;margin-bottom:14px;font-weight:700">&#128205; Endereco de Origem</h3>'+
-    '<div class="form-g" style="position:relative"><label class="label">Endereco</label><input class="input" id="nd-oa" placeholder="Rua, numero" required autocomplete="off" oninput="searchAddress(this,\'origin\')" onfocus="searchAddress(this,\'origin\')"><div id="autocomplete-origin" class="autocomplete-list"></div></div>'+
+    '<div class="form-g" style="position:relative"><input class="input" id="nd-oa" placeholder="&#128269; Buscar endereco de coleta..." required autocomplete="off" oninput="searchAddress(this,\'origin\')" onfocus="searchAddress(this,\'origin\')" style="padding-left:14px;font-size:15px;height:48px"><div id="autocomplete-origin" class="autocomplete-list"></div></div>'+
     '<div class="grid3 form-g">'+
     '<div><label class="label">Cidade</label><input class="input" id="nd-oc" value="Camaqua"></div>'+
     '<div><label class="label">Estado</label><input class="input" id="nd-os" value="RS" maxlength="2"></div>'+
     '<div><label class="label">Bairro</label><input class="input" id="nd-ob" placeholder="Bairro"></div>'+
     '</div>'+
-    '<h3 style="font-size:16px;margin:20px 0 14px;font-weight:700">&#128205; Endereco de Destino</h3>'+
-    '<div class="form-g" style="position:relative"><label class="label">Endereco</label><input class="input" id="nd-da" placeholder="Rua, numero" required autocomplete="off" oninput="searchAddress(this,\'destination\')" onfocus="searchAddress(this,\'destination\')"><div id="autocomplete-destination" class="autocomplete-list"></div></div>'+
+    '<h3 style="font-size:16px;margin:20px 0 14px;font-weight:700">&#127968; Endereco de Destino</h3>'+
+    '<div class="form-g" style="position:relative"><input class="input" id="nd-da" placeholder="&#128269; Buscar endereco de entrega..." required autocomplete="off" oninput="searchAddress(this,\'destination\')" onfocus="searchAddress(this,\'destination\')" style="padding-left:14px;font-size:15px;height:48px"><div id="autocomplete-destination" class="autocomplete-list"></div></div>'+
     '<div class="grid3 form-g">'+
     '<div><label class="label">Cidade</label><input class="input" id="nd-dc" value="Camaqua"></div>'+
     '<div><label class="label">Estado</label><input class="input" id="nd-ds" value="RS" maxlength="2"></div>'+
@@ -2320,23 +2324,27 @@ function searchAddress(input,type){
   if(!list)return;
   if(val.length<3){list.style.display='none';return;}
   if(_searchTimers[type])clearTimeout(_searchTimers[type]);
+  list.innerHTML='<div class="ac-loading">Buscando enderecos...</div>';
+  list.style.display='block';
   _searchTimers[type]=setTimeout(function(){
-    fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(val+' Camaqua RS')+'&format=json&limit=5&addressdetails=1&countrycodes=br&viewbox=-50.95,-30.95,-50.65,-30.75&bounded=1',{headers:{'Accept-Language':'pt-BR'}})
+    fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(val+' Camaqua RS Brazil')+'&format=json&limit=6&addressdetails=1&countrycodes=br&viewbox=-50.95,-30.95,-50.65,-30.75&bounded=1',{headers:{'Accept-Language':'pt-BR'}})
     .then(function(r){return r.json();})
     .then(function(results){
-      if(!results||!results.length){list.style.display='none';return;}
-      var h='';
-      results.forEach(function(r){
-        var addr=r.address||{};
-        var road=addr.road||addr.pedestrian||'';
-        var number=addr.house_number||'';
-        var neighbourhood=addr.suburb||addr.neighbourhood||'';
-        var full=(road+(number?' '+number:''))||r.display_name.split(',')[0];
-        h+='<div class="autocomplete-item" data-type="'+type+'" data-lat="'+r.lat+'" data-lng="'+r.lon+'" data-addr="'+full.replace(/"/g,'&quot;')+'" data-neigh="'+neighbourhood.replace(/"/g,'&quot;')+'">';
-        h+='<span class="ac-icon">&#128205;</span><div><div class="ac-text">'+full+'</div>';
-        if(neighbourhood)h+='<div class="ac-sub">'+neighbourhood+', Camaqua - RS</div>';
-        h+='</div></div>';
-      });
+      var h='<div class="autocomplete-item" data-type="'+type+'" data-addr="'+val.replace(/"/g,'&quot;')+'" data-neigh="" data-lat="'+DEFAULT_LAT+'" data-lng="'+DEFAULT_LNG+'"><div class="ac-icon">&#128221;</div><div><div class="ac-text">Usar: '+val+'</div><div class="ac-sub">Endereco digitado</div></div></div>';
+      if(results&&results.length){
+        results.forEach(function(r){
+          var addr=r.address||{};
+          var road=addr.road||addr.pedestrian||addr.residential||'';
+          var number=addr.house_number||'';
+          var neighbourhood=addr.suburb||addr.neighbourhood||addr.city_district||'';
+          var full=(road+(number?' '+number:''))||r.display_name.split(',')[0];
+          h+='<div class="autocomplete-item" data-type="'+type+'" data-addr="'+full.replace(/"/g,'&quot;')+'" data-neigh="'+neighbourhood.replace(/"/g,'&quot;')+'" data-lat="'+r.lat+'" data-lng="'+r.lon+'">';
+          h+='<div class="ac-icon">&#128205;</div><div><div class="ac-text">'+full+'</div>';
+          if(neighbourhood)h+='<div class="ac-sub">'+neighbourhood+', Camaqua - RS</div>';
+          else h+='<div class="ac-sub">Camaqua - RS</div>';
+          h+='</div></div>';
+        });
+      }
       list.innerHTML=h;
       list.style.display='block';
       list.querySelectorAll('.autocomplete-item').forEach(function(item){
@@ -2344,8 +2352,15 @@ function searchAddress(input,type){
           selectAddress(item.dataset.type,item.dataset.addr,item.dataset.neigh,item.dataset.lat,item.dataset.lng);
         });
       });
-    }).catch(function(){list.style.display='none';});
-  },400);
+    }).catch(function(){
+      list.innerHTML='<div class="autocomplete-item" data-type="'+type+'" data-addr="'+val.replace(/"/g,'&quot;')+'" data-neigh="" data-lat="'+DEFAULT_LAT+'" data-lng="'+DEFAULT_LNG+'"><div class="ac-icon">&#128221;</div><div><div class="ac-text">Usar: '+val+'</div><div class="ac-sub">Endereco digitado</div></div></div>';
+      list.querySelectorAll('.autocomplete-item').forEach(function(item){
+        item.addEventListener('click',function(){
+          selectAddress(item.dataset.type,item.dataset.addr,item.dataset.neigh,item.dataset.lat,item.dataset.lng);
+        });
+      });
+    });
+  },500);
 }
 function selectAddress(type,address,neighbourhood,lat,lng){
   var inputId=type==='origin'?'nd-oa':'nd-da';
