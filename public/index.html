@@ -1181,7 +1181,7 @@ document.getElementById('login-form').onsubmit=async(e)=>{
   }catch(err){errEl.textContent=err.message;errEl.style.display='block';}
 };
 
-function logout(){TOKEN='';USER=null;localStorage.clear();clearAllCookies();clearSensitiveData();stopLocationTracking();destroyMap('admin-realtime-map');destroyMap('motoboy-map');destroyMap('client-tracking-map');destroyMap('client-new-map');if(_idleTimer)clearTimeout(_idleTimer);showLogin();}
+function logout(){TOKEN='';USER=null;localStorage.clear();clearAllCookies();clearSensitiveData();stopLocationTracking();destroyMap('admin-realtime-map');destroyMap('motoboy-map');destroyMap('client-tracking-map');destroyMap('client-new-map');showLogin();}
 function showLogin(){
   document.getElementById('app').style.display='none';
   document.getElementById('login-page').style.display='flex';
@@ -2574,34 +2574,11 @@ function clearSensitiveData(){
 clearAllCookies();
 clearSensitiveData();
 
-// ============ AUTO LOGOUT POR INATIVIDADE ============
-var _idleTimer=null;
-var IDLE_TIMEOUT=30*60*1000;
-function resetIdleTimer(){
-  if(_idleTimer)clearTimeout(_idleTimer);
-  _idleTimer=setTimeout(function(){
-    if(TOKEN){
-      logout();
-      showNotifLogout('Sessao expirou por inatividade');
-    }
-  },IDLE_TIMEOUT);
-}
-function showNotifLogout(msg){
-  var t=document.createElement('div');
-  t.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999;max-width:340px;width:90%;padding:28px;border-radius:20px;color:#fff;font-size:15px;font-weight:600;text-align:center;background:linear-gradient(135deg,#ef4444,#dc2626);box-shadow:0 12px 40px rgba(239,68,68,.5);animation:fadeIn .3s ease';
-  t.innerHTML='<div style="font-size:48px;margin-bottom:12px">&#128682;</div>'+msg+'<br><button onclick="location.reload()" style="margin-top:16px;padding:10px 24px;border:none;border-radius:10px;background:#fff;color:#ef4444;font-weight:800;cursor:pointer;font-size:14px">Entrar</button>';
-  document.body.appendChild(t);
-}
-['click','keypress','mousemove','touchstart','scroll'].forEach(function(evt){
-  document.addEventListener(evt,resetIdleTimer,{passive:true});
-});
-
 // ============ INIT ============
 var saved=localStorage.getItem('token');
 var savedUser=localStorage.getItem('user');
 if(saved&&savedUser){
   TOKEN=saved;USER=JSON.parse(savedUser);
-  resetIdleTimer();
   api('/auth/me').then(function(){showApp()}).catch(function(){localStorage.clear();TOKEN='';USER=null;showLogin();});
 }
 </script>
