@@ -1975,19 +1975,25 @@ function initClientTrackingMap(delivery){
     routeColor=status==='PICKED_UP'||status==='IN_TRANSIT'?'#ef4444':'#6366f1';
   }
 
-  api('/route?origLat='+routeFrom[0]+'&origLng='+routeFrom[1]+'&destLat='+routeTo[0]+'&destLng='+routeTo[1]).then(function(r){
-    if(r.success&&r.data&&r.data.geometry){
-      window._trackingRoute=L.geoJSON(r.data.geometry,{style:{color:routeColor,weight:5,opacity:0.8}}).addTo(map);
-      var bounds=window._trackingRoute.getBounds();
-      if(bounds.isValid())map.fitBounds(bounds,{padding:[40,40]});
-    }else{
-      L.polyline([routeFrom,routeTo],{color:routeColor,weight:4,opacity:0.7,dashArray:'8,8'}).addTo(map);
-      fitMapToMarkers('client-tracking-map');
-    }
-  }).catch(function(){
-    L.polyline([routeFrom,routeTo],{color:routeColor,weight:4,opacity:0.7,dashArray:'8,8'}).addTo(map);
-    fitMapToMarkers('client-tracking-map');
-  });
+  function tryTrackingRoute(at){
+    api('/route?origLat='+routeFrom[0]+'&origLng='+routeFrom[1]+'&destLat='+routeTo[0]+'&destLng='+routeTo[1]).then(function(r){
+      if(r.success&&r.data&&r.data.geometry){
+        window._trackingRoute=L.geoJSON(r.data.geometry,{style:{color:routeColor,weight:5,opacity:0.8}}).addTo(map);
+        var pts=[routeFrom,routeTo];
+        try{var b=window._trackingRoute.getBounds();if(b.isValid()){pts.push([b.getSouthWest().lat,b.getSouthWest().lng]);pts.push([b.getNorthEast().lat,b.getNorthEast().lng]);}}catch(e){}
+        map.fitBounds(L.latLngBounds(pts),{padding:[50,50],maxZoom:16});
+      }else if(at<2){
+        setTimeout(function(){tryTrackingRoute(at+1);},1000);
+      }else{
+        var lp=L.polyline([routeFrom,routeTo],{color:routeColor,weight:4,opacity:0.7,dashArray:'8,8'}).addTo(map);
+        map.fitBounds(lp.getBounds(),{padding:[50,50],maxZoom:16});
+      }
+    }).catch(function(){
+      if(at<2){setTimeout(function(){tryTrackingRoute(at+1);},1000);}
+      else{var lp2=L.polyline([routeFrom,routeTo],{color:routeColor,weight:4,opacity:0.7,dashArray:'8,8'}).addTo(map);map.fitBounds(lp2.getBounds(),{padding:[50,50],maxZoom:16});}
+    });
+  }
+  tryTrackingRoute(0);
 
   var navHtml='<div style="position:absolute;bottom:12px;right:12px;z-index:1000;display:flex;flex-direction:column;gap:8px">'+
     '<button onclick="openNavigation(\''+origAddr.replace(/'/g,"\\'")+'\')" style="width:48px;height:48px;border-radius:50%;background:#22c55e;border:none;box-shadow:0 2px 12px rgba(0,0,0,.25);cursor:pointer;font-size:20px" title="Navegar ate coleta">&#128205;</button>'+
@@ -2068,10 +2074,13 @@ function renderClientNew(el){
         var o=window._newDelSelectedOrigin();
         addMarker('client-new-map',o.lat,o.lng,{color:'#22c55e',emoji:'&#128205;',tooltip:'Origem'});
         addMarker('client-new-map',lat,lng,{color:'#ef4444',emoji:'&#127968;',tooltip:'Destino'});
-        L.polyline([[o.lat,o.lng],[lat,lng]],{color:'#f97316',weight:4,opacity:0.7,dashArray:'8,8'}).addTo(map);
         document.getElementById('nd-da').value=lat.toFixed(5)+', '+lng.toFixed(5);
         mapClickState.step='origin';
-        fitMapToMarkers('client-new-map');
+        map.eachLayer(function(layer){if(layer instanceof L.Polyline&&!(layer instanceof L.Polygon)){map.removeLayer(layer);}});
+        api('/route?origLat='+o.lat+'&origLng='+o.lng+'&destLat='+lat+'&destLng='+lng).then(function(r){
+          if(r.success&&r.data&&r.data.geometry){L.geoJSON(r.data.geometry,{style:{color:'#f97316',weight:5,opacity:0.8}}).addTo(map);map.fitBounds(L.latLngBounds([[o.lat,o.lng],[lat,lng]]),{padding:[50,50],maxZoom:16});}
+          else{L.polyline([[o.lat,o.lng],[lat,lng]],{color:'#f97316',weight:4,opacity:0.7,dashArray:'8,8'}).addTo(map);fitMapToMarkers('client-new-map');}
+        }).catch(function(){L.polyline([[o.lat,o.lng],[lat,lng]],{color:'#f97316',weight:4,opacity:0.7,dashArray:'8,8'}).addTo(map);fitMapToMarkers('client-new-map');});
       }
     });
   },200);
@@ -2277,17 +2286,31 @@ function initMotoboyMap(motoboyData,available,activeDels){
     var rOrigLat,rOrigLng,rDestLat,rDestLng;
     if(d.status==='ACCEPTED'){
       routeColor='#22c55e';
-      rOrigLat=isInCamaqua(_lastGPSLat,_lastGPSLng)?_lastGPSLat:origLat;
-      rOrigLng=isInCamaqua(_lastGPSLat,_lastGPSLng)?_lastGPSLng:origLng;
+      if(isInCamaqua(_lastGPSLat,_lastGPSLng)){rOrigLat=_lastGPSLat;rOrigLng=_lastGPSLng;}
+      else{rOrigLat=origLat;rOrigLng=origLng;}
       rDestLat=origLat;rDestLng=origLng;
     }else{
       routeColor='#ef4444';
       rOrigLat=origLat;rOrigLng=origLng;
       rDestLat=destLat;rDestLng=destLng;
     }
-    api('/route?origLat='+rOrigLat+'&origLng='+rOrigLng+'&destLat='+rDestLat+'&destLng='+rDestLng).then(function(r){
-      if(r.success&&r.data&&r.data.geometry){L.geoJSON(r.data.geometry,{style:{color:routeColor,weight:5,opacity:0.8}}).addTo(map);}
-    }).catch(function(){});
+    function tryMotoboyRoute(at){
+      api('/route?origLat='+rOrigLat+'&origLng='+rOrigLng+'&destLat='+rDestLat+'&destLng='+rDestLng).then(function(r){
+        if(r.success&&r.data&&r.data.geometry){
+          L.geoJSON(r.data.geometry,{style:{color:routeColor,weight:5,opacity:0.8}}).addTo(map);
+          fitMapToMarkers('motoboy-map');
+        }else if(at<2){
+          setTimeout(function(){tryMotoboyRoute(at+1);},800);
+        }else{
+          L.polyline([[rOrigLat,rOrigLng],[rDestLat,rDestLng]],{color:routeColor,weight:4,opacity:0.7,dashArray:'8,8'}).addTo(map);
+          fitMapToMarkers('motoboy-map');
+        }
+      }).catch(function(){
+        if(at<2){setTimeout(function(){tryMotoboyRoute(at+1);},800);}
+        else{L.polyline([[rOrigLat,rOrigLng],[rDestLat,rDestLng]],{color:routeColor,weight:4,opacity:0.7,dashArray:'8,8'}).addTo(map);fitMapToMarkers('motoboy-map');}
+      });
+    }
+    tryMotoboyRoute(0);
   });
 
   setTimeout(function(){fitMapToMarkers('motoboy-map');},1000);
@@ -2416,8 +2439,8 @@ function drawRouteToTarget(deliveryId,target){
 
   map.eachLayer(function(layer){if(layer instanceof L.Polyline&&!(layer instanceof L.Polygon)){map.removeLayer(layer);}});
 
-  var gpsLat=isInCamaqua(_lastGPSLat,_lastGPSLng)?_lastGPSLat:DEFAULT_LAT;
-  var gpsLng=isInCamaqua(_lastGPSLat,_lastGPSLng)?_lastGPSLng:DEFAULT_LNG;
+  var gpsLat=isInCamaqua(_lastGPSLat,_lastGPSLng)?_lastGPSLat:null;
+  var gpsLng=isInCamaqua(_lastGPSLat,_lastGPSLng)?_lastGPSLng:null;
   var tLat,tLng,tColor;
   if(target==='origin'){
     tLat=Number(d.originLatitude);tLng=Number(d.originLongitude);tColor='#22c55e';
@@ -2425,24 +2448,36 @@ function drawRouteToTarget(deliveryId,target){
     tLat=Number(d.destinationLatitude);tLng=Number(d.destinationLongitude);tColor='#ef4444';
   }
   if(!tLat||!tLng){showNotifToast('&#10008; Coordenadas nao encontradas','');return;}
+  if(!gpsLat||!gpsLng){showNotifToast('&#128205; Aguardando GPS...','');return;}
 
-  if(isInCamaqua(gpsLat,gpsLng)){
-    addUserLocationMarker('motoboy-map',gpsLat,gpsLng);
+  addUserLocationMarker('motoboy-map',gpsLat,gpsLng);
+
+  function tryRoute(attempt){
+    api('/route?origLat='+gpsLat+'&origLng='+gpsLng+'&destLat='+tLat+'&destLng='+tLng).then(function(r){
+      if(r.success&&r.data&&r.data.geometry){
+        var line=L.geoJSON(r.data.geometry,{style:{color:tColor,weight:6,opacity:0.9}}).addTo(map);
+        var pts=[[gpsLat,gpsLng],[tLat,tLng]];
+        try{var b=line.getBounds();if(b.isValid())pts.push([b.getSouthWest().lat,b.getSouthWest().lng]);pts.push([b.getNorthEast().lat,b.getNorthEast().lng]);}catch(e){}
+        map.fitBounds(L.latLngBounds(pts),{padding:[50,50],maxZoom:16});
+        showNotifToast('&#128205; Rota para '+(target==='origin'?'coleta':'entrega')+' tracada','new');
+      }else if(attempt<2){
+        setTimeout(function(){tryRoute(attempt+1);},1000);
+      }else{
+        var lp=L.polyline([[gpsLat,gpsLng],[tLat,tLng]],{color:tColor,weight:5,opacity:0.8,dashArray:'10,6'}).addTo(map);
+        map.fitBounds(lp.getBounds(),{padding:[50,50],maxZoom:16});
+        showNotifToast('&#9888; Rota aproximada (ruas indisponiveis)','new');
+      }
+    }).catch(function(){
+      if(attempt<2){
+        setTimeout(function(){tryRoute(attempt+1);},1000);
+      }else{
+        var lp2=L.polyline([[gpsLat,gpsLng],[tLat,tLng]],{color:tColor,weight:5,opacity:0.8,dashArray:'10,6'}).addTo(map);
+        map.fitBounds(lp2.getBounds(),{padding:[50,50],maxZoom:16});
+        showNotifToast('&#9888; Rota aproximada (sem conexao)','new');
+      }
+    });
   }
-
-  api('/route?origLat='+gpsLat+'&origLng='+gpsLng+'&destLat='+tLat+'&destLng='+tLng).then(function(r){
-    if(r.success&&r.data&&r.data.geometry){
-      var line=L.geoJSON(r.data.geometry,{style:{color:tColor,weight:6,opacity:0.9}}).addTo(map);
-      map.fitBounds(line.getBounds(),{padding:[50,50]});
-    }else{
-      var line2=L.polyline([[gpsLat,gpsLng],[tLat,tLng]],{color:tColor,weight:5,opacity:0.8,dashArray:'10,6'}).addTo(map);
-      map.fitBounds(line2.getBounds(),{padding:[50,50]});
-    }
-    showNotifToast('&#128205; Rota para '+(target==='origin'?'coleta':'entrega')+' tracada','new');
-  }).catch(function(){
-    var line3=L.polyline([[gpsLat,gpsLng],[tLat,tLng]],{color:tColor,weight:5,opacity:0.8,dashArray:'10,6'}).addTo(map);
-    map.fitBounds(line3.getBounds(),{padding:[50,50]});
-  });
+  tryRoute(0);
 }
 
 async function toggleOnline(){
