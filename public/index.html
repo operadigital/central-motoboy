@@ -113,9 +113,9 @@ tr:hover td{background:#f8fafc}
 .sidebar .user-box{padding:14px 16px;border-top:1px solid #f1f5f9;display:flex;align-items:center;gap:10px;background:#fafbfc}
 .sidebar .user-box .avatar{width:36px;height:36px;font-size:12px}
 
-.main{margin-left:260px;padding:8px 28px 28px;min-height:100vh;overflow-y:auto;height:100vh;width:calc(100vw - 260px)}
+.main{margin-left:260px;padding:0 24px 24px;min-height:100vh;overflow-y:auto;height:100vh;width:calc(100vw - 260px)}
 .page{display:none}.page.active{display:block}
-.header-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px}
+.header-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
 .grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
@@ -558,7 +558,7 @@ body.dark .autocomplete-item .ac-icon{background:#1e3a2a}
   <!-- Desktop Sidebar -->
   <div class="sidebar" id="sidebar-desktop">
     <div class="logo" style="padding:8px 16px;border-bottom:1px solid #f1f5f9;text-align:center">
-      <img src="/logo.png" alt="Rodae - Central de Entregas" style="width:100%;max-height:85px;object-fit:contain">
+      <img src="/logo.png" alt="Rodae - Central de Entregas" style="width:100%;max-height:65px;object-fit:contain">
       <small style="display:block;font-size:10px;color:var(--g);font-weight:500;letter-spacing:1px;text-transform:uppercase;margin-top:2px">Painel de Controle</small>
     </div>
     <nav id="sidebar-nav"></nav>
@@ -1418,7 +1418,7 @@ async function renderAdminDash(el){
   var greeting=hours<12?'Bom dia':hours<18?'Boa tarde':'Boa noite';
   var pendingM=(await api('/admin/motoboys')).data.filter(function(m){return !m.approvedAt}).length;
   var h='';
-  h+='<div class="header-bar"><div><h1 style="font-size:24px;font-weight:800;letter-spacing:-.5px">'+greeting+', '+USER.firstName+'!</h1><p style="color:var(--g);font-size:13px;margin-top:2px">'+now.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})+'</p></div>';
+  h+='<div class="header-bar"><div><h1 style="font-size:20px;font-weight:800;letter-spacing:-.5px;margin:0">'+greeting+', '+USER.firstName+'!</h1><p style="color:var(--g);font-size:12px;margin:2px 0 0 0">'+now.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})+'</p></div>';
   h+='<div style="display:flex;align-items:center;gap:12px">';
   if(pendingM>0) h+='<button class="btn btn-p btn-sm" onclick="navigate(\'admin-motoboys\')" style="position:relative">'+pendingM+' pendente(s)</button>';
   h+='<div style="display:flex;align-items:center;gap:6px"><span class="online-dot"></span><span style="font-size:12px;color:var(--g);font-weight:500">Tempo real</span></div></div></div>';
