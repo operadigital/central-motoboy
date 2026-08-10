@@ -1,7 +1,6 @@
-const CACHE_NAME = 'rodae-v1';
+const CACHE_NAME = 'rodae-v3';
 const ASSETS = [
   '/',
-  '/index.html',
   '/manifest.json',
   '/logo.png'
 ];
@@ -22,14 +21,18 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', (e) => {
   if (e.request.url.includes('/api/')) return;
+  if (e.request.destination === 'document') {
+    e.respondWith(fetch(e.request).catch(() => caches.match('/')));
+    return;
+  }
   e.respondWith(
-    fetch(e.request).then(resp => {
+    caches.match(e.request).then(cached => cached || fetch(e.request).then(resp => {
       if (resp.status === 200 && resp.type === 'basic') {
         const clone = resp.clone();
         caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
       }
       return resp;
-    }).catch(() => caches.match(e.request).then(cached => cached || caches.match('/index.html')))
+    }))
   );
 });
 
