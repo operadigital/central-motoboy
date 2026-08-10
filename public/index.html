@@ -1463,15 +1463,6 @@ async function renderAdminDash(el){
     h+='<div style="text-align:right"><div style="font-weight:700;color:var(--gn)">&#9733; '+Number(m.averageRating).toFixed(1)+'</div><div style="font-size:11px;color:var(--g)">'+m.completedDeliveries+' entregas</div></div></div>';
   });
   h+='</div></div>';
-  h+='<div class="card"><div class="card-h">&#9889; Acoes Rapidas</div><div class="card-b" style="display:flex;flex-direction:column;gap:10px">';
-  h+='<button class="btn btn-p" onclick="navigate(\'admin-deliveries\')" style="width:100%">&#128230; Gerenciar Entregas</button>';
-  h+='<button class="btn btn-s" onclick="navigate(\'admin-motoboys\')" style="width:100%">&#128690; Aprovar Motoboys'+(pendingM>0?' ('+pendingM+')':'')+'</button>';
-  h+='<button class="btn btn-s" onclick="navigate(\'admin-financial\')" style="width:100%">&#128176; Financeiro</button>';
-  h+='<button class="btn btn-s" onclick="navigate(\'admin-clients\')" style="width:100%">&#128100; Clientes</button>';
-  h+='<button class="btn btn-s" onclick="navigate(\'admin-reports\')" style="width:100%">&#128200; Relatorios</button>';
-  h+='<button class="btn btn-s" onclick="navigate(\'admin-withdrawals\')" style="width:100%">&#128179; Saques</button>';
-  h+='<button class="btn btn-s" onclick="navigate(\'admin-settings\')" style="width:100%">&#9881; Configuracoes</button>';
-  h+='</div></div></div></div></div>';
   el.innerHTML=h;
 
   setTimeout(function(){
