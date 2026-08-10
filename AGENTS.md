@@ -80,7 +80,8 @@ central-motoboy/
 - `GET /api/motoboys/earnings` — Ganhos do motoboy
 - `GET /api/motoboys/deliveries` — Entregas do motoboy
 - `GET /api/wallets` — Carteira + transacoes
-- `POST /api/wallets/withdraw` — Saque
+- `POST /api/wallets/withdraw` — Solicitar saque (valida saldo, minimo, dados bancarios)
+- `GET /api/wallets/withdrawals` — Historico de saques do motoboy
 - `GET /api/route` — Rota OSRM (com retry no frontend)
 - `POST /api/rate` — Avaliar entrega
 - `POST /api/motoboys/documents` — Upload documentos
@@ -89,6 +90,11 @@ central-motoboy/
 - `GET /api/admin/motoboys` — Gerenciar motoboys (admin)
 - `PUT /api/admin/motoboys/:id/approve` — Aprovar motoboy
 - `PUT /api/admin/motoboys/:id/reject` — Rejeitar motoboy
+- `GET /api/admin/withdrawals` — Listar saques (admin, filtro por status)
+- `PUT /api/admin/withdrawals/:id/approve` — Aprovar saque (admin)
+- `PUT /api/admin/withdrawals/:id/reject` — Recusar saque + estorno (admin)
+- `PUT /api/admin/withdrawals/:id/paid` — Marcar como pago (admin)
+- `POST /api/admin/payouts/auto` — Payout automatico para saldos acima do minimo
 - `GET /api/admin/settings` — Buscar configuracoes (admin)
 - `PUT /api/admin/settings` — Atualizar configuracoes (admin)
 - `GET /api/reports/dashboard` — Relatorios admin
@@ -117,6 +123,7 @@ central-motoboy/
 - `push_subscriptions` — id, user_id, endpoint, p256dh, auth, created_at
 - `settings` — key (TEXT PK), value (TEXT), updated_at
 - `clock_records` — id, motoboy_id, clock_in, clock_out, hours_worked, created_at
+- `withdrawals` — id, user_id, amount, status (PENDING/APPROVED/PAID/REJECTED), payment_type, pix_key, bank_name, agency, account_number, account_type, cpf, processed_at, paid_at, created_at
 
 ## Fluxo de Entrega (Uber-like)
 1. Cliente cria entrega com endereco origem/destino + numero
