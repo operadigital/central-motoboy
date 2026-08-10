@@ -1388,7 +1388,7 @@ function navigate(page){
     'client-dash':renderClientDash,'client-new':renderClientNew,'client-history':renderClientHistory,'client-wallet':renderClientWallet,
     'motoboy-dash':renderMotoboyDash,'motoboy-earnings':renderMotoboyEarnings,'motoboy-wallet':renderMotoboyWallet,
   };
-  if(renderers[page]) renderers[page](main);
+  if(renderers[page]) renderers[page](main).catch(function(e){console.error('Render error:',e);main.innerHTML='<div class="empty"><p>&#9888;</p><p>Erro ao carregar. Tente novamente.</p><button class="btn btn-p" onclick="navigate(\''+page+'\')" style="margin-top:12px">Tentar Novamente</button></div>';});
 }
 
 function openModal(html){document.getElementById('modal-content').innerHTML=html;document.getElementById('modal').classList.add('show');}
