@@ -1756,6 +1756,7 @@ function filterDeliveries(status,search){
 async function renderAdminFinancial(el){
   var f=(await api('/admin/financial')).data;
   var dels=(await api('/admin/deliveries')).data;
+  var s=(await api('/admin/settings')).data||{};
   var delivered=dels.filter(function(d){return d.status==='DELIVERED'});
   var byPayment={PIX:0,CREDIT_CARD:0,CASH:0,DEBIT_CARD:0,WALLET:0};
   delivered.forEach(function(d){byPayment[d.paymentMethod]=(byPayment[d.paymentMethod]||0)+d.totalPrice});
@@ -1780,11 +1781,11 @@ async function renderAdminFinancial(el){
   h+='<div class="card"><div class="card-h">&#128202; Resumo Operacional</div><div class="card-b">';
   var items=[
     ['Receita Total',fmt(f.totalRevenue),'var(--gn)','&#128176;'],
-    ['Comissoes Central (20%)',fmt(f.totalCommissions),'var(--p)','&#9830;'],
-    ['Ganhos Motoboys (80%)',fmt(f.totalMotoboyEarnings),'var(--b)','&#128690;'],
+    ['Comissoes Central ('+fmt(s.platform_commission||1)+'/entrega)',fmt(f.totalCommissions),'var(--p)','&#9830;'],
+    ['Ganhos Motoboys ('+fmt(s.motoboy_base||7)+' base + km)',fmt(f.totalMotoboyEarnings),'var(--b)','&#128690;'],
     ['Entregas Concluidas',delivered.length,'var(--gn)','&#10004;'],
     ['Ticket Medio',fmt(delivered.length?f.totalRevenue/delivered.length:0),'var(--p)','&#128179;'],
-    ['Taxa Comissao','20%','var(--g)','&#9878;']
+    ['Taxa Cartao Credito',fmt(s.card_fee||0.36),'var(--g)','&#9878;']
   ];
   items.forEach(function(it){
     h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid #f1f5f9">';
@@ -1858,37 +1859,50 @@ async function renderAdminReports(el){
 }
 
 async function renderAdminSettings(el){
+  var s=(await api('/admin/settings')).data||{};
   var h='<div class="header-bar"><h1 style="font-size:22px;font-weight:800">Configuracoes</h1></div>';
   h+='<div class="mobile-grid-patch"><div class="admin-bottom-grid">';
-  h+='<div class="card"><div class="card-h">&#128176; Comissoes</div><div class="card-b">';
-  h+='<div class="form-g"><label class="label">Taxa de Comissao (%)</label><input class="input" type="number" value="20" min="0" max="50"></div>';
-  h+='<div class="form-g"><label class="label">Valor Minimo de Saque (R$)</label><input class="input" type="number" value="50" min="10"></div>';
-  h+='<button class="btn btn-p" style="width:100%;margin-top:8px">Salvar</button></div></div>';
+  h+='<div class="card"><div class="card-h">&#128176; Precificacao</div><div class="card-b">';
+  h+='<div class="form-g"><label class="label">Preco Base (R$)</label><input class="input" type="number" id="cfg-base-price" value="'+(s.base_price||8)+'" min="0" step="0.01"></div>';
+  h+='<div class="form-g"><label class="label">Km Inclusos</label><input class="input" type="number" id="cfg-included-km" value="'+(s.included_km||10)+'" min="1"></div>';
+  h+='<div class="form-g"><label class="label">Preco por Km Extra (R$)</label><input class="input" type="number" id="cfg-price-per-km" value="'+(s.price_per_km||0.80)+'" min="0" step="0.01"></div>';
+  h+='<div class="form-g"><label class="label">Taxa Cartao Credito (R$)</label><input class="input" type="number" id="cfg-card-fee" value="'+(s.card_fee||0.36)+'" min="0" step="0.01"></div>';
+  h+='<div class="form-g"><label class="label">Ganho Motoboy Base (R$)</label><input class="input" type="number" id="cfg-motoboy-base" value="'+(s.motoboy_base||7)+'" min="0" step="0.01"></div>';
+  h+='<div class="form-g"><label class="label">Comissao Plataforma (R$)</label><input class="input" type="number" id="cfg-platform-commission" value="'+(s.platform_commission||1)+'" min="0" step="0.01"></div>';
+  h+='<button class="btn btn-p" style="width:100%;margin-top:8px" onclick="saveSettings()">&#128190; Salvar Precificacao</button></div></div>';
   h+='<div class="card"><div class="card-h">&#128690; Entregas</div><div class="card-b">';
-  h+='<div class="form-g"><label class="label">Raio de Busca (km)</label><input class="input" type="number" value="10" min="1" max="50"></div>';
-  h+='<div class="form-g"><label class="label">Tempo Maximo Aceitacao (seg)</label><input class="input" type="number" value="30" min="10" max="120"></div>';
-  h+='<button class="btn btn-p" style="width:100%;margin-top:8px">Salvar</button></div></div>';
-  h+='<div class="card"><div class="card-h">&#128274; Seguranca</div><div class="card-b">';
-  h+='<div class="form-g"><label class="label">Chave JWT</label><input class="input" value="central-motoboy-portable-key" readonly style="background:#f8fafc"></div>';
-  h+='<div class="form-g"><label class="label">Porta do Servidor</label><input class="input" value="3000" readonly style="background:#f8fafc"></div>';
-  h+='<p style="font-size:12px;color:var(--g);margin-top:8px">&#9888; Alteracoes aqui afetam todos os usuarios</p></div></div>';
+  h+='<div class="form-g"><label class="label">Max Entregas Simultaneas</label><input class="input" type="number" id="cfg-max-active" value="'+(s.max_active_deliveries||3)+'" min="1" max="10"></div>';
+  h+='<button class="btn btn-p" style="width:100%;margin-top:8px" onclick="saveSettings()">&#128190; Salvar Entregas</button></div></div>';
+  h+='<div class="card"><div class="card-h">&#128179; Saque</div><div class="card-b">';
+  h+='<div class="form-g"><label class="label">Valor Minimo Saque (R$)</label><input class="input" type="number" id="cfg-min-withdrawal" value="'+(s.min_withdrawal||50)+'" min="1"></div>';
+  h+='<button class="btn btn-p" style="width:100%;margin-top:8px" onclick="saveSettings()">&#128190; Salvar Saque</button></div></div>';
   h+='<div class="card"><div class="card-h">&#128231; Notificacoes</div><div class="card-b">';
   h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:14px">Sons de Notificacao</span><span style="color:var(--gn);font-weight:700">&#10004; Ativado</span></div>';
   h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:14px">Alerta Novo Cadastro</span><span style="color:var(--gn);font-weight:700">&#10004; Ativado</span></div>';
   h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0"><span style="font-size:14px">Alerta Nova Entrega</span><span style="color:var(--gn);font-weight:700">&#10004; Ativado</span></div>';
   h+='<div style="margin-top:12px"><button class="btn btn-b" onclick="testPush()" style="width:100%">&#128276; Testar Notificacao</button></div>';
   h+='</div></div>';
-  h+='<div class="card"><div class="card-h">&#128264; Sons</div><div class="card-b">';
-  h+='<div style="display:flex;flex-direction:column;gap:8px">';
-  h+='<div onclick="setNotifSound(\'default\')" style="padding:12px;background:var(--gl);border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center"><span>Padrao</span>'+(localStorage.getItem('notifSound')==='default'||!localStorage.getItem('notifSound')?'<span style="color:var(--gn)">&#10004;</span>':'')+'</div>';
-  h+='<div onclick="setNotifSound(\'new\')" style="padding:12px;background:var(--gl);border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center"><span>Nova Entrega</span>'+(localStorage.getItem('notifSound')==='new'?'<span style="color:var(--gn)">&#10004;</span>':'')+'</div>';
-  h+='<div onclick="setNotifSound(\'accepted\')" style="padding:12px;background:var(--gl);border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center"><span>Entrega Aceita</span>'+(localStorage.getItem('notifSound')==='accepted'?'<span style="color:var(--gn)">&#10004;</span>':'')+'</div>';
-  h+='</div></div></div>';
   h+='<div class="card"><div class="card-h">&#128230; Exportar Dados</div><div class="card-b">';
   h+='<button class="btn btn-s" onclick="exportCSV(\'admin/export/deliveries\',\'entregas.csv\')" style="width:100%;margin-bottom:8px">&#128230; Exportar Entregas (CSV)</button>';
   h+='<button class="btn btn-s" onclick="exportCSV(\'admin/export/financial\',\'financeiro.csv\')" style="width:100%">&#128176; Exportar Financeiro (CSV)</button>';
   h+='</div></div></div></div></div>';
   el.innerHTML=h;
+}
+async function saveSettings(){
+  var body={
+    base_price:parseFloat(document.getElementById('cfg-base-price').value),
+    included_km:parseInt(document.getElementById('cfg-included-km').value),
+    price_per_km:parseFloat(document.getElementById('cfg-price-per-km').value),
+    card_fee:parseFloat(document.getElementById('cfg-card-fee').value),
+    motoboy_base:parseFloat(document.getElementById('cfg-motoboy-base').value),
+    platform_commission:parseFloat(document.getElementById('cfg-platform-commission').value),
+    max_active_deliveries:parseInt(document.getElementById('cfg-max-active').value),
+    min_withdrawal:parseFloat(document.getElementById('cfg-min-withdrawal').value)
+  };
+  try{
+    await api('/admin/settings',{method:'PUT',body:JSON.stringify(body)});
+    showNotifToast('&#10004; Configuracoes salvas com sucesso!','new');
+  }catch(e){showNotifToast('&#10060; Erro ao salvar: '+e.message,'error');}
 }
 
 // ============ CLIENT ============

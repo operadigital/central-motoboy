@@ -70,7 +70,7 @@ central-motoboy/
 - `POST /api/deliveries` — Criar entrega (client) com validacao Camaqua
 - `PUT /api/deliveries/:id/accept` — Aceitar entrega (motoboy, max 3 simultaneas)
 - `PUT /api/deliveries/:id/pickup` — Confirmar coleta
-- `PUT /api/deliveries/:id/complete` — Completar entrega (pagamento automatico 80/20)
+- `PUT /api/deliveries/:id/complete` — Completar entrega (pagamento automatico)
 - `PUT /api/deliveries/:id/cancel` — Cancelar entrega
 - `PUT /api/deliveries/:id/location` — Atualizar localizacao da entrega
 - `GET /api/deliveries/:id` — Detalhes da entrega
@@ -89,6 +89,8 @@ central-motoboy/
 - `GET /api/admin/motoboys` — Gerenciar motoboys (admin)
 - `PUT /api/admin/motoboys/:id/approve` — Aprovar motoboy
 - `PUT /api/admin/motoboys/:id/reject` — Rejeitar motoboy
+- `GET /api/admin/settings` — Buscar configuracoes (admin)
+- `PUT /api/admin/settings` — Atualizar configuracoes (admin)
 - `GET /api/reports/dashboard` — Relatorios admin
 - `GET /api/reports/financial` — Exportar CSV financeiro
 - `GET /api/coupons` — Cupons
@@ -113,6 +115,8 @@ central-motoboy/
 - `coupons` — id, code, discount_percent, active, max_uses, used_count, expires_at, created_at
 - `delivery_photos` — id, delivery_id, user_id, photo_url, type, created_at
 - `push_subscriptions` — id, user_id, endpoint, p256dh, auth, created_at
+- `settings` — key (TEXT PK), value (TEXT), updated_at
+- `clock_records` — id, motoboy_id, clock_in, clock_out, hours_worked, created_at
 
 ## Fluxo de Entrega (Uber-like)
 1. Cliente cria entrega com endereco origem/destino + numero
@@ -127,11 +131,22 @@ central-motoboy/
 Quando motoboy clica "Concluir" (`PUT /api/deliveries/:id/complete`):
 1. Busca entrega no banco
 2. Atualiza status para DELIVERED + payment_status COMPLETED
-3. Credita carteira do motoboy com 80% do valor (CREDIT)
-4. Credita carteira do admin (plataforma) com 20% do valor (CREDIT)
+3. Credita carteira do motoboy com R$7 base + km extra (CREDIT)
+4. Credita carteira do admin (plataforma) com R$1 fixo (CREDIT)
 5. Cria transacoes em ambas as carteiras
 6. Atualiza estatisticas do motoboy
 7. Envia SSE notification
+
+## Sistema de Configuracoes
+Configuracoes ficam na tabela `settings` (key-value) e sao editaveis pelo admin em Configuracoes.
+- `base_price` — Preco base (R$8,00)
+- `included_km` — Km inclusos no base (10)
+- `price_per_km` — Preco por km extra (R$0,80)
+- `card_fee` — Taxa cartao credito (R$0,36)
+- `motoboy_base` — Ganho base do motoboy (R$7,00)
+- `platform_commission` — Comissao plataforma (R$1,00)
+- `max_active_deliveries` — Max entregas simultaneas (3)
+- `min_withdrawal` — Valor minimo saque (R$50)
 
 ## Sistema de Rotas (Precisao)
 - OSRM com **retry 3x** no frontend antes de fallback

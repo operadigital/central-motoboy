@@ -31,11 +31,46 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE);
         hours_worked DECIMAL(5,2),
         created_at TIMESTAMP DEFAULT NOW()
       );
+      CREATE TABLE IF NOT EXISTS settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL,
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
     ` });
-  } catch (e) {
-    // Tables may already exist or RPC not available
-  }
+  } catch (e) {}
 })();
+
+// ============ SETTINGS (key-value) ============
+const DEFAULT_SETTINGS = {
+  base_price: 8.00,
+  included_km: 10,
+  price_per_km: 0.80,
+  card_fee: 0.36,
+  motoboy_base: 7.00,
+  platform_commission: 1.00,
+  max_active_deliveries: 3,
+  min_withdrawal: 50
+};
+let cachedSettings = null;
+async function getSettings() {
+  if (cachedSettings) return cachedSettings;
+  try {
+    const { data } = await supabase.from('settings').select('key,value');
+    if (data && data.length) {
+      cachedSettings = {};
+      data.forEach(s => { cachedSettings[s.key] = isNaN(s.value) ? s.value : parseFloat(s.value); });
+    }
+  } catch (e) {}
+  if (!cachedSettings) cachedSettings = {};
+  return { ...DEFAULT_SETTINGS, ...cachedSettings };
+}
+async function saveSettings(obj) {
+  const rows = Object.entries(obj).map(([key, value]) => ({ key, value: String(value) }));
+  for (const row of rows) {
+    await supabase.from('settings').upsert(row, { onConflict: 'key' });
+  }
+  cachedSettings = null;
+}
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -220,6 +255,31 @@ app.post('/api/auth/reset-password', async (req, res) => {
     const { data, error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) return res.status(400).json({ success: false, message: error.message });
     res.json({ success: true, message: 'Senha atualizada com sucesso' });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+// ============ ADMIN SETTINGS ============
+app.get('/api/admin/settings', auth, admin, async (req, res) => {
+  try {
+    const settings = await getSettings();
+    res.json({ success: true, data: settings });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+app.put('/api/admin/settings', auth, admin, async (req, res) => {
+  try {
+    const allowed = ['base_price','included_km','price_per_km','card_fee','motoboy_base','platform_commission','max_active_deliveries','min_withdrawal'];
+    const updates = {};
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) updates[key] = req.body[key];
+    }
+    await saveSettings(updates);
+    const settings = await getSettings();
+    res.json({ success: true, data: settings });
   } catch (e) {
     res.status(500).json({ success: false, message: e.message });
   }
@@ -422,7 +482,7 @@ app.get('/api/deliveries/available', auth, async (req, res) => {
     destinationCity: x.destination_city, destinationState: x.destination_state,
     destinationLatitude: x.destination_latitude, destinationLongitude: x.destination_longitude,
     description: x.description, distance: x.distance, estimatedTime: x.estimated_time,
-    totalPrice: Number(x.total_price), commissionAmount: Number(x.commission_amount), commissionPercent: 20,
+    totalPrice: Number(x.total_price), commissionAmount: Number(x.commission_amount),     commissionPercent: 12.5,
     motoboyEarning: Number(x.motoboy_earning), paymentMethod: x.payment_method,
     createdAt: x.created_at,
     scheduledFor: x.scheduled_for, proofPhoto: x.proof_photo
@@ -454,7 +514,7 @@ app.post('/api/deliveries', auth, async (req, res) => {
     }
 
     // Dynamic pricing via OSRM
-    let basePrice = 10, distancePrice = 0, totalPrice = 10, distanceKm = b.distance || 0;
+    let distanceKm = b.distance || 0;
     if (b.originLatitude && b.originLongitude && b.destinationLatitude && b.destinationLongitude) {
       try {
         const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${parseFloat(b.originLongitude)},${parseFloat(b.originLatitude)};${parseFloat(b.destinationLongitude)},${parseFloat(b.destinationLatitude)}`;
@@ -466,9 +526,25 @@ app.post('/api/deliveries', auth, async (req, res) => {
       } catch (osrmErr) { /* fallback to provided distance */ }
     }
     if (!distanceKm || distanceKm <= 0) distanceKm = b.distance || 5;
-    distancePrice = Math.round(distanceKm * 5 * 100) / 100;
-    basePrice = 10;
-    totalPrice = Math.max(10, Math.round((basePrice + distancePrice) * 100) / 100);
+
+    // Tabela de precificacao via settings
+    const cfg = await getSettings();
+    const basePrice = Number(cfg.base_price) || 8.00;
+    const includedKm = Number(cfg.included_km) || 10;
+    const pricePerKm = Number(cfg.price_per_km) || 0.80;
+    const cardFeeValue = Number(cfg.card_fee) || 0.36;
+    const motoboyBase = Number(cfg.motoboy_base) || 7.00;
+    const platformCommission = Number(cfg.platform_commission) || 1.00;
+
+    const extraKm = Math.max(0, Math.round((distanceKm - includedKm) * 10) / 10);
+    const distancePrice = Math.round(extraKm * pricePerKm * 100) / 100;
+    let totalPrice = Math.round((basePrice + distancePrice) * 100) / 100;
+    const paymentMethod = b.paymentMethod || 'PIX';
+    const cardFee = paymentMethod === 'CREDIT_CARD' ? cardFeeValue : 0;
+    totalPrice = Math.round((totalPrice + cardFee) * 100) / 100;
+
+    const motoboyEarning = Math.round((motoboyBase + distancePrice) * 100) / 100;
+    const commissionAmount = platformCommission;
 
     const { data: d, error } = await supabase.from('deliveries').insert({
       tracking_code: code, client_id: req.user.id, status: 'PENDING', type: b.type || 'IMMEDIATE',
@@ -480,9 +556,9 @@ app.post('/api/deliveries', auth, async (req, res) => {
       destination_latitude: b.destinationLatitude, destination_longitude: b.destinationLongitude,
       description: b.description, distance: distanceKm, estimated_time: b.estimatedTime || Math.round(distanceKm * 3),
       base_price: basePrice, distance_price: distancePrice, total_price: totalPrice,
-      commission_amount: Math.round(totalPrice * 0.2 * 100) / 100, commission_percent: 20,
-      motoboy_earning: Math.round(totalPrice * 0.8 * 100) / 100,
-      payment_method: b.paymentMethod || 'PIX', payment_status: 'PENDING',
+      commission_amount: commissionAmount, commission_percent: 12.5,
+      motoboy_earning: motoboyEarning,
+      payment_method: paymentMethod, payment_status: 'PENDING',
       scheduled_for: b.scheduledFor || null
     }).select().single();
     if (error) return res.status(500).json({ success: false, message: error.message });
@@ -502,7 +578,9 @@ app.put('/api/deliveries/:id/accept', auth, async (req, res) => {
     const { data: mb } = await supabase.from('motoboys').select('id').eq('user_id', req.user.id).single();
     if (!mb) return res.status(400).json({ success: false, message: 'Motoboy nao encontrado' });
     const { data: active } = await supabase.from('deliveries').select('id').eq('motoboy_id', mb.id).in('status', ['ACCEPTED', 'PICKED_UP', 'IN_TRANSIT']);
-    if (active && active.length >= 3) return res.status(400).json({ success: false, message: 'Limite maximo de 3 entregas simultaneas atingido' });
+    const cfgMax = await getSettings();
+    const maxActive = Number(cfgMax.max_active_deliveries) || 3;
+    if (active && active.length >= maxActive) return res.status(400).json({ success: false, message: 'Limite maximo de '+maxActive+' entregas simultaneas atingido' });
     await supabase.from('deliveries').update({ status: 'ACCEPTED', motoboy_id: mb.id, accepted_at: new Date().toISOString() }).eq('id', req.params.id);
     res.json({ success: true, data: { id: d.id, trackingCode: d.tracking_code, status: 'ACCEPTED' } });
     sendSSE('delivery-accepted', { id: d.id, trackingCode: d.tracking_code, motoboyName: req.user.firstName + ' ' + req.user.lastName });
@@ -583,7 +661,7 @@ app.put('/api/deliveries/:id/complete', auth, async (req, res) => {
         }
         await supabase.from('transactions').insert({
           wallet_id: pWallet.id, type: 'CREDIT', amount: commission,
-          balance: Number(pWallet.balance), description: 'Comissao entrega #' + d.tracking_code + ' (20%)'
+          balance: Number(pWallet.balance), description: 'Comissao entrega #' + d.tracking_code + ' (R$1,00)'
         });
       }
     }
