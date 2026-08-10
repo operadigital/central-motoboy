@@ -1172,16 +1172,23 @@ var _userAccuracyCircles={};
 // ============ AUTH ============
 document.getElementById('login-form').onsubmit=async(e)=>{
   e.preventDefault();
-  const email=document.getElementById('login-email').value;
-  const password=document.getElementById('login-pass').value;
-  const errEl=document.getElementById('login-error');
+  var btn=document.querySelector('#login-form button[type="submit"]');
+  var email=document.getElementById('login-email').value;
+  var password=document.getElementById('login-pass').value;
+  var errEl=document.getElementById('login-error');
   errEl.style.display='none';
+  btn.disabled=true;btn.innerHTML='&#8987; Entrando...';
   try{
-    const r=await api('/auth/login',{method:'POST',body:JSON.stringify({email,password})});
+    var r=await api('/auth/login',{method:'POST',body:JSON.stringify({email:email,password:password})});
     TOKEN=r.data.accessToken;USER=r.data.user;
     localStorage.setItem('token',TOKEN);localStorage.setItem('user',JSON.stringify(USER));
     showApp();
-  }catch(err){console.error('Login error:',err);errEl.textContent=err.message;errEl.style.display='block';}
+  }catch(err){
+    console.error('Login error:',err);
+    errEl.textContent=err.message||'Erro ao fazer login';
+    errEl.style.display='block';
+    btn.disabled=false;btn.innerHTML='Entrar';
+  }
 };
 
 function logout(){TOKEN='';USER=null;localStorage.clear();clearAllCookies();clearSensitiveData();stopLocationTracking();destroyMap('admin-realtime-map');destroyMap('motoboy-map');destroyMap('client-tracking-map');destroyMap('client-new-map');showLogin();}
