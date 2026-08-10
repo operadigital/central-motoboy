@@ -1181,15 +1181,15 @@ document.getElementById('login-form').onsubmit=async(e)=>{
     TOKEN=r.data.accessToken;USER=r.data.user;
     localStorage.setItem('token',TOKEN);localStorage.setItem('user',JSON.stringify(USER));
     showApp();
-  }catch(err){errEl.textContent=err.message;errEl.style.display='block';}
+  }catch(err){console.error('Login error:',err);errEl.textContent=err.message;errEl.style.display='block';}
 };
 
 function logout(){TOKEN='';USER=null;localStorage.clear();clearAllCookies();clearSensitiveData();stopLocationTracking();destroyMap('admin-realtime-map');destroyMap('motoboy-map');destroyMap('client-tracking-map');destroyMap('client-new-map');showLogin();}
 function showLogin(){
+  TOKEN='';USER=null;localStorage.clear();
   document.getElementById('app').style.display='none';
   document.getElementById('login-page').style.display='flex';
   document.getElementById('register-page').style.display='none';
-  document.getElementById('mobile-header').style.display='none';
 }
 function showRegister(){
   document.getElementById('login-page').style.display='none';
@@ -1309,19 +1309,21 @@ async function submitRegister(){
 }
 
 function showApp(){
-  document.getElementById('login-page').style.display='none';
-  document.getElementById('register-page').style.display='none';
-  document.getElementById('app').style.display='flex';
-  document.getElementById('user-name').textContent=USER.firstName+' '+USER.lastName;
-  document.getElementById('user-avatar').textContent=USER.firstName[0]+USER.lastName[0];
-  if(document.getElementById('m-avatar')) document.getElementById('m-avatar').textContent=USER.firstName[0]+USER.lastName[0];
-  const rl={ADMIN:'Administrador',CLIENT:'Cliente',MOTOBOY:'Motoboy'};
-  document.getElementById('user-role').textContent=rl[USER.role]||USER.role;
-  buildNav();buildBottomNav();
-  navigate(USER.role==='ADMIN'?'admin-dash':USER.role==='CLIENT'?'client-dash':'motoboy-dash');
-  connectSSE();
-  initPushNotifications();
-  if(USER.role==='MOTOBOY')startLocationTracking();
+  try{
+    document.getElementById('login-page').style.display='none';
+    document.getElementById('register-page').style.display='none';
+    document.getElementById('app').style.display='flex';
+    document.getElementById('user-name').textContent=USER.firstName+' '+USER.lastName;
+    document.getElementById('user-avatar').textContent=USER.firstName[0]+USER.lastName[0];
+    if(document.getElementById('m-avatar')) document.getElementById('m-avatar').textContent=USER.firstName[0]+USER.lastName[0];
+    const rl={ADMIN:'Administrador',CLIENT:'Cliente',MOTOBOY:'Motoboy'};
+    document.getElementById('user-role').textContent=rl[USER.role]||USER.role;
+    buildNav();buildBottomNav();
+    navigate(USER.role==='ADMIN'?'admin-dash':USER.role==='CLIENT'?'client-dash':'motoboy-dash');
+    connectSSE();
+    initPushNotifications();
+    if(USER.role==='MOTOBOY')startLocationTracking();
+  }catch(e){console.error('showApp error:',e);alert('Erro ao carregar painel: '+e.message);}
 }
 
 function buildNav(){
