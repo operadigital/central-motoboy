@@ -1344,6 +1344,7 @@ function getNavItems(){
       {id:'admin-deliveries',icon:'&#128230;',label:'Entregas'},
       {id:'admin-financial',icon:'&#128176;',label:'Financeiro'},
       {id:'admin-reports',icon:'&#128200;',label:'Relatorios'},
+      {id:'admin-withdrawals',icon:'&#128179;',label:'Saques'},
       {id:'admin-settings',icon:'&#9881;',label:'Configuracoes'},
     ],
     CLIENT:[
@@ -1370,7 +1371,7 @@ function navigate(page){
   main.innerHTML=skeletonDashboard();
   main.scrollTop=0;
   const renderers={
-    'admin-dash':renderAdminDash,'admin-motoboys':renderAdminMotoboys,'admin-clients':renderAdminClients,'admin-deliveries':renderAdminDeliveries,'admin-financial':renderAdminFinancial,'admin-reports':renderAdminReports,'admin-settings':renderAdminSettings,
+    'admin-dash':renderAdminDash,'admin-motoboys':renderAdminMotoboys,'admin-clients':renderAdminClients,'admin-deliveries':renderAdminDeliveries,'admin-financial':renderAdminFinancial,'admin-reports':renderAdminReports,'admin-withdrawals':renderAdminWithdrawals,'admin-settings':renderAdminSettings,
     'client-dash':renderClientDash,'client-new':renderClientNew,'client-history':renderClientHistory,'client-wallet':renderClientWallet,
     'motoboy-dash':renderMotoboyDash,'motoboy-earnings':renderMotoboyEarnings,'motoboy-wallet':renderMotoboyWallet,
   };
@@ -1463,6 +1464,7 @@ async function renderAdminDash(el){
   h+='<button class="btn btn-s" onclick="navigate(\'admin-financial\')" style="width:100%">&#128176; Financeiro</button>';
   h+='<button class="btn btn-s" onclick="navigate(\'admin-clients\')" style="width:100%">&#128100; Clientes</button>';
   h+='<button class="btn btn-s" onclick="navigate(\'admin-reports\')" style="width:100%">&#128200; Relatorios</button>';
+  h+='<button class="btn btn-s" onclick="navigate(\'admin-withdrawals\')" style="width:100%">&#128179; Saques</button>';
   h+='<button class="btn btn-s" onclick="navigate(\'admin-settings\')" style="width:100%">&#9881; Configuracoes</button>';
   h+='</div></div></div></div></div>';
   el.innerHTML=h;
@@ -1905,6 +1907,92 @@ async function saveSettings(){
     await api('/admin/settings',{method:'PUT',body:JSON.stringify(body)});
     showNotifToast('&#10004; Configuracoes salvas com sucesso!','new');
   }catch(e){showNotifToast('&#10060; Erro ao salvar: '+e.message,'error');}
+}
+
+async function renderAdminWithdrawals(el){
+  el.innerHTML=skeletonDashboard();
+  var pending=(await api('/admin/withdrawals?status=PENDING')).data||[];
+  var approved=(await api('/admin/withdrawals?status=APPROVED')).data||[];
+  var paid=(await api('/admin/withdrawals?status=PAID')).data||[];
+  var rejected=(await api('/admin/withdrawals?status=REJECTED')).data||[];
+  var ST={PENDING:['by','Pendente'],APPROVED:['bg','Aprovado'],PAID:['bg','Pago'],REJECTED:['br','Recusado']};
+  var h='<div class="header-bar"><h1 style="font-size:22px;font-weight:800">Saqes</h1><div style="display:flex;gap:8px"><button class="btn btn-s btn-sm" onclick="autoPayout()" style="white-space:nowrap">&#9889; Payout Automatico</button></div></div>';
+  h+='<div class="mobile-grid-patch"><div class="grid4" style="margin-bottom:20px">';
+  h+=buildAdminKPI('Pendentes',pending.length,'&#128276;','#eab308,#ca8a04');
+  h+=buildAdminKPI('Aguardando Pgto',approved.length,'&#128179;','#3b82f6,#2563eb');
+  h+=buildAdminKPI('Pagos',paid.length,'&#10004;','#22c55e,#16a34a');
+  h+=buildAdminKPI('Total Pago',fmt(paid.reduce(function(a,b){return a+Number(b.amount)},0)),'&#128176;','#8b5cf6,#7c3aed');
+  h+='</div></div>';
+  h+='<div class="mobile-grid-patch"><div class="card" style="margin-bottom:16px"><div class="card-h" style="display:flex;justify-content:space-between"><span>&#128276; Saques Pendentes ('+pending.length+')</span></div>';
+  if(pending.length){
+    h+='<div class="table-w"><table><thead><tr><th>Motoboy</th><th>Valor</th><th>Tipo</th><th>Chave/Dados</th><th>Data</th><th>Acoes</th></tr></thead><tbody>';
+    pending.forEach(function(w){
+      var dados=w.paymentType==='PIX'?w.pixKey:(w.bankName+' Ag:'+w.agency+' Cc:'+w.accountNumber);
+      h+='<tr><td><div style="font-weight:600">'+(w.user?w.user.firstName+' '+w.user.lastName:'-')+'</div><div style="font-size:11px;color:var(--g)">'+(w.user?w.user.email:'')+'</div></td>';
+      h+='<td style="font-weight:700;color:var(--gn)">'+fmt(w.amount)+'</td>';
+      h+='<td><span class="badge by">'+w.paymentType+'</span></td>';
+      h+='<td style="font-size:12px;max-width:200px;word-break:break-word">'+dados+'</td>';
+      h+='<td style="font-size:12px">'+fmtDate(w.createdAt)+'</td>';
+      h+='<td><div style="display:flex;gap:6px"><button class="btn btn-g btn-sm" onclick="approveWithdraw(\''+w.id+'\')">&#10004;</button><button class="btn btn-r btn-sm" onclick="rejectWithdraw(\''+w.id+'\')">&#10006;</button></div></td></tr>';
+    });
+    h+='</tbody></table></div>';
+  } else {
+    h+='<div class="card-b" style="text-align:center;padding:32px;color:var(--g)">Nenhum saque pendente</div>';
+  }
+  h+='</div></div>';
+  h+='<div class="mobile-grid-patch"><div class="card" style="margin-bottom:16px"><div class="card-h">&#128179; Aprovados - Aguardando Pagamento ('+approved.length+')</div>';
+  if(approved.length){
+    h+='<div class="table-w"><table><thead><tr><th>Motoboy</th><th>Valor</th><th>Tipo</th><th>Chave/Dados</th><th>Data</th><th>Acoes</th></tr></thead><tbody>';
+    approved.forEach(function(w){
+      var dados=w.paymentType==='PIX'?w.pixKey:(w.bankName+' Ag:'+w.agency+' Cc:'+w.accountNumber);
+      h+='<tr><td><div style="font-weight:600">'+(w.user?w.user.firstName+' '+w.user.lastName:'-')+'</div><div style="font-size:11px;color:var(--g)">'+(w.user?w.user.email:'')+'</div></td>';
+      h+='<td style="font-weight:700;color:var(--gn)">'+fmt(w.amount)+'</td>';
+      h+='<td><span class="badge by">'+w.paymentType+'</span></td>';
+      h+='<td style="font-size:12px;max-width:200px;word-break:break-word">'+dados+'</td>';
+      h+='<td style="font-size:12px">'+fmtDate(w.createdAt)+'</td>';
+      h+='<td><button class="btn btn-g btn-sm" onclick="markPaid(\''+w.id+'\')">&#128176; Pago</button></td></tr>';
+    });
+    h+='</tbody></table></div>';
+  } else {
+    h+='<div class="card-b" style="text-align:center;padding:24px;color:var(--g)">Nenhum aguardando pagamento</div>';
+  }
+  h+='</div></div>';
+  h+='<div class="mobile-grid-patch"><div class="card" style="margin-bottom:16px"><div class="card-h">&#10004; Pagos ('+paid.length+')</div>';
+  if(paid.length){
+    h+='<div class="table-w"><table><thead><tr><th>Motoboy</th><th>Valor</th><th>Tipo</th><th>Data Pgto</th></tr></thead><tbody>';
+    paid.slice(0,20).forEach(function(w){
+      h+='<tr><td>'+(w.user?w.user.firstName+' '+w.user.lastName:'-')+'</td><td style="font-weight:700;color:var(--gn)">'+fmt(w.amount)+'</td><td><span class="badge bg">'+w.paymentType+'</span></td><td style="font-size:12px">'+fmtDate(w.paidAt||w.createdAt)+'</td></tr>';
+    });
+    h+='</tbody></table></div>';
+  } else {
+    h+='<div class="card-b" style="text-align:center;padding:24px;color:var(--g)">Nenhum pagamento registrado</div>';
+  }
+  h+='</div></div></div>';
+  el.innerHTML=h;
+}
+async function approveWithdraw(id){
+  await api('/admin/withdrawals/'+id+'/approve',{method:'PUT'});
+  showNotifToast('&#10004; Saque aprovado!','new');
+  navigate('admin-withdrawals');
+}
+async function rejectWithdraw(id){
+  if(!confirm('Recusar este saque? O valor sera estornado ao motoboy.'))return;
+  await api('/admin/withdrawals/'+id+'/reject',{method:'PUT'});
+  showNotifToast('Saque recusado','error');
+  navigate('admin-withdrawals');
+}
+async function markPaid(id){
+  await api('/admin/withdrawals/'+id+'/paid',{method:'PUT'});
+  showNotifToast('&#10004; Marcado como pago!','new');
+  navigate('admin-withdrawals');
+}
+async function autoPayout(){
+  if(!confirm('Executar payout automatico? Motoboys com saldo acima do minimo terao o valor transferido automaticamente.'))return;
+  try{
+    var r=await api('/admin/payouts/auto',{method:'POST'});
+    showNotifToast('&#10004; Payout executado! '+r.data.processed+' motoboys processados.','new');
+    navigate('admin-withdrawals');
+  }catch(e){showNotifToast('&#10060; Erro: '+e.message,'error');}
 }
 
 // ============ CLIENT ============
@@ -2560,15 +2648,78 @@ async function renderMotoboyEarnings(el){
 
 async function renderMotoboyWallet(el){
   var w=(await api('/wallets')).data;
-  el.innerHTML='<div class="header-bar"><h1 style="font-size:22px;font-weight:800">Carteira</h1><button class="btn btn-p">Solicitar Saque</button></div>'+
-    '<div class="mobile-grid-patch"><div class="grid3" style="margin-bottom:20px">'+
-    '<div class="stat-c" style="background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border-radius:var(--radius)"><div style="font-size:28px;font-weight:800;margin-top:8px">'+fmt(w.wallet?.balance)+'</div><div style="opacity:.85;font-size:13px;font-weight:600">Saldo Disponivel</div></div>'+
-    '<div class="stat-c" style="background:linear-gradient(135deg,#eab308,#ca8a04);color:#fff;border-radius:var(--radius)"><div style="font-size:28px;font-weight:800;margin-top:8px">'+fmt(w.wallet?.pendingBalance)+'</div><div style="opacity:.85;font-size:13px;font-weight:600">Saldo Pendente</div></div>'+
-    '<div class="stat-c" style="background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;border-radius:var(--radius)"><div style="font-size:28px;font-weight:800;margin-top:8px">'+fmt(w.wallet?.blockedBalance)+'</div><div style="opacity:.85;font-size:13px;font-weight:600">Bloqueado</div></div>'+
-    '</div></div>'+
-    '<div class="card"><div class="card-h">&#128179; Extrato</div><div class="table-w"><table><thead><tr><th>Data</th><th>Tipo</th><th>Descricao</th><th>Valor</th><th>Saldo</th></tr></thead><tbody>'+
-    (w.transactions&&w.transactions.length?w.transactions.map(function(t){return '<tr><td style="font-size:12px">'+fmtDate(t.createdAt)+'</td><td><span class="'+(t.amount>0?'badge bg':'badge br')+'">'+t.type+'</span></td><td>'+t.description+'</td><td style="font-weight:700;color:'+(t.amount>0?'var(--gn)':'var(--r)')+'">'+(t.amount>0?'+':'')+' '+fmt(t.amount)+'</td><td style="font-family:monospace;font-size:12px">'+fmt(t.balance)+'</td></tr>'}).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--g);padding:32px">Nenhuma transacao</td></tr>')+
-    '</tbody></table></div></div>';
+  var withdrawals=(await api('/wallets/withdrawals')).data||[];
+  var s=(await api('/admin/settings')).data||{};
+  var minWithdrawal=s.min_withdrawal||50;
+  var balance=Number(w.wallet?.balance||0);
+  var pending=withdrawals.filter(function(x){return x.status==='PENDING'});
+  var history=withdrawals.slice(0,10);
+  var ST={PENDING:['by','Pendente'],APPROVED:['bg','Aprovado'],PAID:['bg','Pago'],REJECTED:['br','Recusado']};
+  var h='<div class="header-bar"><h1 style="font-size:22px;font-weight:800">Carteira</h1></div>';
+  h+='<div class="mobile-grid-patch"><div class="grid3" style="margin-bottom:20px">';
+  h+='<div class="stat-c" style="background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border-radius:var(--radius)"><div style="font-size:28px;font-weight:800;margin-top:8px">'+fmt(balance)+'</div><div style="opacity:.85;font-size:13px;font-weight:600">Saldo Disponivel</div></div>';
+  h+='<div class="stat-c" style="background:linear-gradient(135deg,#eab308,#ca8a04);color:#fff;border-radius:var(--radius)"><div style="font-size:28px;font-weight:800;margin-top:8px">'+fmt(pending.reduce(function(a,b){return a+Number(b.amount)},0))+'</div><div style="opacity:.85;font-size:13px;font-weight:600">Saque Pendente</div></div>';
+  h+='<div class="stat-c" style="background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;border-radius:var(--radius)"><div style="font-size:28px;font-weight:800;margin-top:8px">'+fmt(withdrawals.filter(function(x){return x.status==='PAID'}).reduce(function(a,b){return a+Number(b.amount)},0))+'</div><div style="opacity:.85;font-size:13px;font-weight:600">Total Sacado</div></div>';
+  h+='</div></div>';
+  h+='<div class="mobile-grid-patch"><div class="grid2">';
+  h+='<div class="card"><div class="card-h">&#128176; Solicitar Saque</div><div class="card-b">';
+  if(pending.length>0){
+    h+='<div style="background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;padding:12px;margin-bottom:12px"><span style="font-size:13px;color:#92400e;font-weight:600">Saque pendente em analise. Aguarde.</span></div>';
+  } else if(balance<minWithdrawal){
+    h+='<div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;padding:12px;margin-bottom:12px"><span style="font-size:13px;color:#991b1b;font-weight:600">Saldo minimo para saque: '+fmt(minWithdrawal)+'<br>Seu saldo: '+fmt(balance)+'</span></div>';
+  } else {
+    h+='<div class="form-g"><label class="label">Valor do Saque (R$)</label><input class="input" type="number" id="withdraw-amount" value="'+balance.toFixed(2)+'" min="'+minWithdrawal+'" max="'+balance+'" step="0.01"></div>';
+    h+='<div class="form-g"><label class="label">Tipo de Pagamento</label><select class="input" id="withdraw-type" onchange="toggleWithdrawFields()"><option value="PIX">PIX</option><option value="BANK_TRANSFER">Transferencia Bancaria</option></select></div>';
+    h+='<div id="withdraw-pix-fields">';
+    h+='<div class="form-g"><label class="label">Chave PIX</label><input class="input" id="withdraw-pix" placeholder="CPF, email, celular ou chave aleatoria"></div>';
+    h+='</div>';
+    h+='<div id="withdraw-bank-fields" style="display:none">';
+    h+='<div class="form-g"><label class="label">Banco</label><input class="input" id="withdraw-bank" placeholder="Nome do banco"></div>';
+    h+='<div class="grid2 form-g"><div><label class="label">Agencia</label><input class="input" id="withdraw-agency" placeholder="0000"></div><div><label class="label">Conta</label><input class="input" id="withdraw-account" placeholder="00000-0"></div></div>';
+    h+='<div class="form-g"><label class="label">Tipo Conta</label><select class="input" id="withdraw-account-type"><option value="CORRENTE">Corrente</option><option value="POUPANCA">Poupanca</option></select></div>';
+    h+='</div>';
+    h+='<div id="withdraw-error" style="display:none;color:var(--r);font-size:13px;margin-bottom:8px"></div>';
+    h+='<button class="btn btn-p" style="width:100%;margin-top:8px" onclick="requestWithdraw()">&#128176; Solicitar Saque</button>';
+  }
+  h+='</div></div>';
+  h+='<div class="card"><div class="card-h">&#128203; Historico de Saques</div><div class="table-w"><table><thead><tr><th>Data</th><th>Valor</th><th>Tipo</th><th>Status</th></tr></thead><tbody>';
+  if(history.length){
+    history.forEach(function(x){h+='<tr><td style="font-size:12px">'+fmtDate(x.createdAt)+'</td><td style="font-weight:700">'+fmt(x.amount)+'</td><td><span class="badge by">'+x.paymentType+'</span></td><td><span class="'+(ST[x.status]||['',''])[0]+'">'+(ST[x.status]||['',''])[1]+'</span></td></tr>';});
+  } else {
+    h+='<tr><td colspan="4" style="text-align:center;color:var(--g);padding:24px">Nenhum saque registrado</td></tr>';
+  }
+  h+='</tbody></table></div></div></div></div>';
+  h+='<div class="card"><div class="card-h">&#128179; Extrato</div><div class="table-w"><table><thead><tr><th>Data</th><th>Tipo</th><th>Descricao</th><th>Valor</th><th>Saldo</th></tr></thead><tbody>'+
+  (w.transactions&&w.transactions.length?w.transactions.map(function(t){return '<tr><td style="font-size:12px">'+fmtDate(t.createdAt)+'</td><td><span class="'+(t.amount>0?'badge bg':'badge br')+'">'+t.type+'</span></td><td>'+t.description+'</td><td style="font-weight:700;color:'+(t.amount>0?'var(--gn)':'var(--r)')+'">'+(t.amount>0?'+':'')+' '+fmt(t.amount)+'</td><td style="font-family:monospace;font-size:12px">'+fmt(t.balance)+'</td></tr>'}).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--g);padding:32px">Nenhuma transacao</td></tr>')+
+  '</tbody></table></div></div>';
+  el.innerHTML=h;
+}
+function toggleWithdrawFields(){
+  var t=document.getElementById('withdraw-type').value;
+  document.getElementById('withdraw-pix-fields').style.display=t==='PIX'?'block':'none';
+  document.getElementById('withdraw-bank-fields').style.display=t==='BANK_TRANSFER'?'block':'none';
+}
+async function requestWithdraw(){
+  var errEl=document.getElementById('withdraw-error');
+  errEl.style.display='none';
+  var amount=parseFloat(document.getElementById('withdraw-amount').value);
+  var type=document.getElementById('withdraw-type').value;
+  var body={amount:amount,paymentType:type};
+  if(type==='PIX'){
+    body.pixKey=document.getElementById('withdraw-pix').value.trim();
+    if(!body.pixKey){errEl.textContent='Chave PIX obrigatoria';errEl.style.display='block';return;}
+  } else {
+    body.bankName=document.getElementById('withdraw-bank').value.trim();
+    body.agency=document.getElementById('withdraw-agency').value.trim();
+    body.accountNumber=document.getElementById('withdraw-account').value.trim();
+    body.accountType=document.getElementById('withdraw-account-type').value;
+    if(!body.bankName||!body.accountNumber){errEl.textContent='Preencha dados bancarios';errEl.style.display='block';return;}
+  }
+  try{
+    await api('/wallets/withdraw',{method:'POST',body:JSON.stringify(body)});
+    showNotifToast('&#10004; Saque solicitado com sucesso!','new');
+    navigate('motoboy-wallet');
+  }catch(e){errEl.textContent=e.message;errEl.style.display='block';}
 }
 
 // ============ LIMPEZA COOKIES ============

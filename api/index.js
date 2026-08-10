@@ -36,6 +36,22 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE);
         value TEXT NOT NULL,
         updated_at TIMESTAMP DEFAULT NOW()
       );
+      CREATE TABLE IF NOT EXISTS withdrawals (
+        id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+        user_id UUID,
+        amount DECIMAL(10,2),
+        status TEXT DEFAULT 'PENDING',
+        payment_type TEXT,
+        pix_key TEXT,
+        bank_name TEXT,
+        agency TEXT,
+        account_number TEXT,
+        account_type TEXT,
+        cpf TEXT,
+        processed_at TIMESTAMP,
+        paid_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
     ` });
   } catch (e) {}
 })();
@@ -872,7 +888,166 @@ app.get('/api/wallets', auth, async (req, res) => {
 });
 
 app.post('/api/wallets/withdraw', auth, async (req, res) => {
-  res.json({ success: true, data: { id: 'w' + Date.now(), status: 'PENDING', ...req.body } });
+  try {
+    const { amount, paymentType, pixKey, bankName, agency, accountNumber, accountType, cpf } = req.body;
+    if (!amount || amount <= 0) return res.status(400).json({ success: false, message: 'Valor invalido' });
+    if (!paymentType) return res.status(400).json({ success: false, message: 'Tipo de pagamento obrigatorio' });
+
+    const cfg = await getSettings();
+    const minWithdrawal = Number(cfg.min_withdrawal) || 50;
+    if (amount < minWithdrawal) return res.status(400).json({ success: false, message: 'Valor minimo para saque: R$ ' + minWithdrawal.toFixed(2) });
+
+    const { data: w } = await supabase.from('wallets').select('id,balance').eq('user_id', req.user.id).single();
+    if (!w) return res.status(404).json({ success: false, message: 'Carteira nao encontrada' });
+    if (Number(w.balance) < amount) return res.status(400).json({ success: false, message: 'Saldo insuficiente' });
+
+    const { data: pending } = await supabase.from('withdrawals').select('id').eq('user_id', req.user.id).eq('status', 'PENDING');
+    if (pending && pending.length > 0) return res.status(400).json({ success: false, message: 'Voce ja tem um saque pendente' });
+
+    const newBalance = Math.round((Number(w.balance) - amount) * 100) / 100;
+    await supabase.from('wallets').update({ balance: newBalance }).eq('id', w.id);
+
+    const { data: withdrawal, error } = await supabase.from('withdrawals').insert({
+      user_id: req.user.id, amount, status: 'PENDING',
+      payment_type: paymentType, pix_key: pixKey || null,
+      bank_name: bankName || null, agency: agency || null,
+      account_number: accountNumber || null, account_type: accountType || null,
+      cpf: cpf || null
+    }).select().single();
+    if (error) throw error;
+
+    await supabase.from('transactions').insert({
+      wallet_id: w.id, type: 'DEBIT', amount,
+      balance: newBalance, description: 'Saque solicitado - ' + (paymentType === 'PIX' ? 'PIX' : 'Transferencia Bancaria')
+    });
+
+    res.json({ success: true, data: { id: withdrawal.id, amount, status: 'PENDING' } });
+    sendSSE('withdrawal-request', { userId: req.user.id, amount });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+app.get('/api/wallets/withdrawals', auth, async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('withdrawals').select('*').eq('user_id', req.user.id).order('created_at', { ascending: false });
+    if (error) throw error;
+    const result = (data || []).map(w => ({
+      id: w.id, amount: Number(w.amount), status: w.status, paymentType: w.payment_type,
+      pixKey: w.pix_key, bankName: w.bank_name, createdAt: w.created_at, paidAt: w.paid_at
+    }));
+    res.json({ success: true, data: result });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+// ============ ADMIN WITHDRAWALS ============
+app.get('/api/admin/withdrawals', auth, admin, async (req, res) => {
+  try {
+    let query = supabase.from('withdrawals').select('*, users:user_id(first_name,last_name,email,phone)').order('created_at', { ascending: false });
+    if (req.query.status) query = query.eq('status', req.query.status);
+    const { data, error } = await query;
+    if (error) throw error;
+    const result = (data || []).map(w => ({
+      id: w.id, amount: Number(w.amount), status: w.status, paymentType: w.payment_type,
+      pixKey: w.pix_key, bankName: w.bank_name, agency: w.agency,
+      accountNumber: w.account_number, accountType: w.account_type, cpf: w.cpf,
+      user: w.users ? { firstName: w.users.first_name, lastName: w.users.last_name, email: w.users.email, phone: w.users.phone } : null,
+      createdAt: w.created_at, paidAt: w.paid_at
+    }));
+    res.json({ success: true, data: result });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+app.put('/api/admin/withdrawals/:id/approve', auth, admin, async (req, res) => {
+  try {
+    const { data: w } = await supabase.from('withdrawals').select('*').eq('id', req.params.id).single();
+    if (!w) return res.status(404).json({ success: false, message: 'Saque nao encontrado' });
+    if (w.status !== 'PENDING') return res.status(400).json({ success: false, message: 'Saque ja processado' });
+    await supabase.from('withdrawals').update({ status: 'APPROVED', processed_at: new Date().toISOString() }).eq('id', req.params.id);
+    res.json({ success: true, data: { id: w.id, status: 'APPROVED' } });
+    sendSSE('withdrawal-approved', { userId: w.user_id, amount: w.amount });
+    sendPushToUser(w.user_id, 'Saque Aprovado!', 'Seu saque de R$ ' + Number(w.amount).toFixed(2) + ' foi aprovado', '/');
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+app.put('/api/admin/withdrawals/:id/reject', auth, admin, async (req, res) => {
+  try {
+    const { data: w } = await supabase.from('withdrawals').select('*').eq('id', req.params.id).single();
+    if (!w) return res.status(404).json({ success: false, message: 'Saque nao encontrado' });
+    if (w.status !== 'PENDING') return res.status(400).json({ success: false, message: 'Saque ja processado' });
+
+    const { data: wallet } = await supabase.from('wallets').select('id,balance').eq('user_id', w.user_id).single();
+    if (wallet) {
+      const newBal = Math.round((Number(wallet.balance) + Number(w.amount)) * 100) / 100;
+      await supabase.from('wallets').update({ balance: newBal }).eq('id', wallet.id);
+      await supabase.from('transactions').insert({
+        wallet_id: wallet.id, type: 'CREDIT', amount: Number(w.amount),
+        balance: newBal, description: 'Estorno saque recusado #' + w.id.substring(0, 8)
+      });
+    }
+    await supabase.from('withdrawals').update({ status: 'REJECTED' }).eq('id', req.params.id);
+    res.json({ success: true, data: { id: w.id, status: 'REJECTED' } });
+    sendPushToUser(w.user_id, 'Saque Recusado', 'Seu saque de R$ ' + Number(w.amount).toFixed(2) + ' foi recusado. Valor estornado.', '/');
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+app.put('/api/admin/withdrawals/:id/paid', auth, admin, async (req, res) => {
+  try {
+    const { data: w } = await supabase.from('withdrawals').select('*').eq('id', req.params.id).single();
+    if (!w) return res.status(404).json({ success: false, message: 'Saque nao encontrado' });
+    if (w.status !== 'APPROVED') return res.status(400).json({ success: false, message: 'Saque precisa estar aprovado' });
+    await supabase.from('withdrawals').update({ status: 'PAID', paid_at: new Date().toISOString() }).eq('id', req.params.id);
+    res.json({ success: true, data: { id: w.id, status: 'PAID' } });
+    sendPushToUser(w.user_id, 'Saque Pago!', 'Seu saque de R$ ' + Number(w.amount).toFixed(2) + ' foi processado', '/');
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+// ============ AUTO PAYOUT (diario) ============
+app.post('/api/admin/payouts/auto', auth, admin, async (req, res) => {
+  try {
+    const cfg = await getSettings();
+    const minWithdrawal = Number(cfg.min_withdrawal) || 50;
+    const { data: wallets } = await supabase.from('wallets').select('id,user_id,balance').gte('balance', minWithdrawal);
+    if (!wallets || !wallets.length) return res.json({ success: true, data: { processed: 0 } });
+
+    let processed = 0;
+    for (const w of wallets) {
+      const { data: pending } = await supabase.from('withdrawals').select('id').eq('user_id', w.user_id).eq('status', 'PENDING');
+      if (pending && pending.length > 0) continue;
+
+      const { data: mb } = await supabase.from('motoboys').select('pix_key,bank_name,account_number').eq('user_id', w.user_id).single();
+      if (!mb || (!mb.pix_key && !mb.bank_name)) continue;
+
+      const amount = Math.round(Number(w.balance) * 100) / 100;
+      const newBalance = 0;
+      await supabase.from('wallets').update({ balance: newBalance }).eq('id', w.id);
+      await supabase.from('withdrawals').insert({
+        user_id: w.user_id, amount, status: 'APPROVED',
+        payment_type: mb.pix_key ? 'PIX' : 'BANK_TRANSFER',
+        pix_key: mb.pix_key || null, bank_name: mb.bank_name || null,
+        account_number: mb.account_number || null
+      });
+      await supabase.from('transactions').insert({
+        wallet_id: w.id, type: 'DEBIT', amount,
+        balance: newBalance, description: 'Payout automatico'
+      });
+      processed++;
+      sendPushToUser(w.user_id, 'Payout Automatico!', 'R$ ' + amount.toFixed(2) + ' transferido automaticamente', '/');
+    }
+    res.json({ success: true, data: { processed } });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
 });
 
 // ============ DELIVERY ZONES ============
