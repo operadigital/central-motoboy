@@ -598,7 +598,6 @@ async function api(path,opts={}){
   const r=await fetch(API+path,{...opts,headers:h});
   const d=await r.json();
   if(!r.ok){
-    if(r.status===401){TOKEN='';USER=null;localStorage.clear();showLogin();}
     throw new Error(d.message||'Erro');
   }
   return d;
@@ -1329,8 +1328,8 @@ function showApp(){
     buildNav();buildBottomNav();
     navigate(USER.role==='ADMIN'?'admin-dash':USER.role==='CLIENT'?'client-dash':'motoboy-dash');
     connectSSE();
-    initPushNotifications();
-    if(USER.role==='MOTOBOY')startLocationTracking();
+    try{initPushNotifications();}catch(e){console.log('Push init skipped:',e);}
+    if(USER.role==='MOTOBOY')try{startLocationTracking();}catch(e){console.log('Location skipped:',e);}
   }catch(e){console.error('showApp error:',e);alert('Erro ao carregar painel: '+e.message);}
 }
 
