@@ -399,7 +399,6 @@ body.dark .autocomplete-item .ac-icon{background:#1e3a2a}
 <div class="mobile-header" id="mobile-header">
   <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
     <img src="/logo.png" alt="Rodae" style="height:54px;width:auto;object-fit:contain">
-    <div class="logo" style="font-size:22px;font-weight:800;color:var(--d)">Rodae</div>
   </div>
   <div class="hdr-right">
     <div style="width:46px;height:46px;border-radius:50%;background:rgba(0,0,0,.05);display:flex;align-items:center;justify-content:center;cursor:pointer" onclick="toggleDarkMode()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
@@ -468,7 +467,7 @@ body.dark .autocomplete-item .ac-icon{background:#1e3a2a}
     </div>
 
     <div id="reg-step3" class="card" style="padding:28px;display:none">
-      <h2 style="font-size:18px;font-weight:800;margin-bottom:20px">&#128690; Dados do Veiculo</h2>
+      <h2 style="font-size:18px;font-weight:800;margin-bottom:20px">&#128690; Dados do Veículo</h2>
       <div class="form-g"><label class="label">Placa *</label><input class="input" id="reg-plate" placeholder="ABC1D23" maxlength="7" style="text-transform:uppercase" required></div>
       <div class="form-g"><label class="label">Tipo *</label>
         <select class="input" id="reg-vtype"><option value="MOTORCYCLE">Motocicleta</option><option value="MOTORCYCLE_150">Motocicleta 150cc</option><option value="MOTORCYCLE_250">Motocicleta 250cc</option><option value="SCOOTER">Scooter</option><option value="ELECTRIC">Eletrica</option></select>
@@ -507,7 +506,7 @@ body.dark .autocomplete-item .ac-icon{background:#1e3a2a}
       </div>
 
       <div style="margin-bottom:20px">
-        <label style="font-weight:700;font-size:13px;display:block;margin-bottom:8px">&#128196; Documento do Veiculo (CRLV) *</label>
+        <label style="font-weight:700;font-size:13px;display:block;margin-bottom:8px">&#128196; Documento do Veículo (CRLV) *</label>
         <div class="photo-upload" onclick="document.getElementById('input-crlv').click()">
           <input type="file" id="input-crlv" accept="image/*" capture="environment" style="display:none" onchange="handlePhoto(this,'preview-crlv','data-crlv')">
           <div id="preview-crlv"><div style="font-size:36px;margin-bottom:8px">&#128247;</div><div style="font-size:13px;color:var(--g);font-weight:500">Toque para foto do CRLV</div></div>
@@ -515,7 +514,7 @@ body.dark .autocomplete-item .ac-icon{background:#1e3a2a}
       </div>
 
       <div style="margin-bottom:20px">
-        <label style="font-weight:700;font-size:13px;display:block;margin-bottom:8px">&#128668; Foto do Veiculo (lateral) *</label>
+        <label style="font-weight:700;font-size:13px;display:block;margin-bottom:8px">&#128668; Foto do Veículo (lateral) *</label>
         <div class="photo-upload" onclick="document.getElementById('input-vehicle').click()">
           <input type="file" id="input-vehicle" accept="image/*" capture="environment" style="display:none" onchange="handlePhoto(this,'preview-vehicle','data-vehicle')">
           <div id="preview-vehicle"><div style="font-size:36px;margin-bottom:8px">&#128247;</div><div style="font-size:13px;color:var(--g);font-weight:500">Toque para foto lateral do veiculo</div></div>
@@ -570,7 +569,7 @@ body.dark .autocomplete-item .ac-icon{background:#1e3a2a}
         <div style="font-size:11px;color:var(--g);font-weight:500" id="user-role"></div>
       </div>
       <button onclick="toggleDarkMode()" style="background:none;border:none;cursor:pointer;color:var(--g);padding:6px" title="Modo Escuro"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
-      <button onclick="openPushModal()" style="background:none;border:none;cursor:pointer;color:var(--g);padding:6px;position:relative" title="Notificacoes"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></button>
+      <button onclick="openPushModal()" style="background:none;border:none;cursor:pointer;color:var(--g);padding:6px;position:relative" title="Notificações"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></button>
       <button onclick="logout()" style="background:none;border:none;cursor:pointer;color:var(--r);padding:6px" title="Sair"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
   </div>
@@ -753,7 +752,7 @@ function openPushModal(){
     '<div style="margin-bottom:16px">'+status+'</div>'+
     '<button class="btn btn-b" onclick="testPush()" style="width:100%;margin-bottom:8px">&#128276; Enviar Notificacao de Teste</button>'+
     '<button class="btn btn-s" onclick="initPushNotifications().then(()=>showNotifToast(\'&#10004; Push ativado!\',\'new\'))" style="width:100%;margin-bottom:8px">&#128232; Ativar Notificacoes</button>'+
-    '<p style="font-size:12px;color:var(--g);margin-top:12px">Se voce esta no iPhone, instale o aplicativo na tela inicial para receber notificacoes com o aplicativo fechado.</p>'+
+    '<p style="font-size:12px;color:var(--g);margin-top:12px">Se você está no iPhone, instale o aplicativo na tela inicial para receber notificações com o aplicativo fechado.</p>'+
     '</div>');
 }
 
@@ -769,7 +768,7 @@ function starSelector(currentRating, deliveryId, targetType){
 async function submitRating(deliveryId, targetType, score){
   try{
     await api('/deliveries/'+deliveryId+'/rate',{method:'POST',body:JSON.stringify({score:score})});
-    showNotifToast('&#11088; Avaliacao enviada!','new');
+    showNotifToast('&#11088; Avaliação enviada!','new');
     closeModal();
   }catch(e){showNotifToast('&#10008; '+e.message,'');}
 }
@@ -1108,10 +1107,10 @@ function requestGPS(onSuccess,onFail){
   },function(err){
     var msg='Erro ao obter localizacao';
     if(err.code===1){
-      msg='<b>Permissao negada!</b><br><br>'+
-        '<b>iPhone:</b> Configuracoes > Privacidade > Servicos de Localizacao > Safari > Permitir<br><br>'+
-        '<b>Android:</b> Configuracoes > Apps > Chrome > Permissoes > Localizacao > Permitir<br><br>'+
-        'Depois de liberar, <b>recarregue a pagina</b> e tente novamente.';
+      msg='<b>Permissão negada!</b><br><br>'+
+        '<b>iPhone:</b> Configurações > Privacidade > Serviços de Localização > Safari > Permitir<br><br>'+
+        '<b>Android:</b> Configurações > Apps > Chrome > Permissões > Localização > Permitir<br><br>'+
+        'Depois de liberar, <b>recarregue a página</b> e tente novamente.';
     }
     else if(err.code===2)msg='GPS indisponivel. Verifique se o GPS do celular esta ligado e voce esta ao ar livre.';
     else if(err.code===3)msg='Tempo esgotado. Tente ao ar livre e aguarde alguns segundos.';
@@ -1348,9 +1347,9 @@ function getNavItems(){
       {id:'admin-clients',icon:'&#128101;',label:'Clientes'},
       {id:'admin-deliveries',icon:'&#128230;',label:'Entregas'},
       {id:'admin-financial',icon:'&#128176;',label:'Financeiro'},
-      {id:'admin-reports',icon:'&#128200;',label:'Relatorios'},
+      {id:'admin-reports',icon:'&#128200;',label:'Relatórios'},
       {id:'admin-withdrawals',icon:'&#128179;',label:'Saques'},
-      {id:'admin-settings',icon:'&#9881;',label:'Configuracoes'},
+      {id:'admin-settings',icon:'&#9881;',label:'Configurações'},
     ],
     CLIENT:[
       {id:'client-dash',icon:'&#127968;',label:'Inicio'},
@@ -1459,8 +1458,8 @@ async function renderAdminDash(el){
     h+='<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f1f5f9">';
     h+='<div style="font-size:20px">'+medals[i]+'</div>';
     h+='<div class="avatar" style="width:38px;height:38px;font-size:12px">'+(m.user?.firstName||'M')[0]+''+(m.user?.lastName||'B')[0]+'</div>';
-    h+='<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:13px">'+m.user?.firstName+' '+m.user?.lastName+'</div><div style="font-size:11px;color:var(--g)">'+m.vehicleModel||''+'</div></div>';
-    h+='<div style="text-align:right"><div style="font-weight:700;color:var(--gn)">&#9733; '+Number(m.averageRating).toFixed(1)+'</div><div style="font-size:11px;color:var(--g)">'+m.completedDeliveries+' entregas</div></div></div>';
+    h+='<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:13px">'+m.user?.firstName+' '+m.user?.lastName+'</div><div style="font-size:11px;color:var(--g)">'+(m.vehicleModel||'')+'</div></div>';
+    h+='<div style="text-align:right"><div style="font-weight:700;color:var(--gn)">&#9733; '+(m.averageRating?Number(m.averageRating).toFixed(1):'0.0')+'</div><div style="font-size:11px;color:var(--g)">'+(m.completedDeliveries||0)+' entregas</div></div></div>';
   });
   h+='</div></div>';
   el.innerHTML=h;
@@ -1530,7 +1529,7 @@ async function renderAdminMotoboys(el){
       h+='<div style="font-size:12px;color:var(--g)">'+m.user?.phone+'</div>';
       h+='</div></div>';
       h+='<div style="text-align:right">';
-      h+='<div style="font-size:12px;color:var(--g);margin-bottom:4px">'+m.vehiclePlate+' - '+m.vehicleModel+'</div>';
+      h+='<div style="font-size:12px;color:var(--g);margin-bottom:4px">'+(m.vehiclePlate||'')+' - '+(m.vehicleModel||'')+'</div>';
       h+='<div style="font-size:12px;color:var(--g)">'+m.vehicleColor+' | '+m.vehicleType+'</div>';
       h+='</div></div>';
 
@@ -1542,7 +1541,7 @@ async function renderAdminMotoboys(el){
         ['CNH Frente',hasCnhF],
         ['CNH Verso',hasCnhB],
         ['CRLV',hasCrlv],
-        ['Foto Veiculo',hasVehicle],
+        ['Foto Veículo',hasVehicle],
         ['Selfie',hasSelfie]
       ];
       docItems.forEach(function(d){
@@ -1593,7 +1592,7 @@ async function renderAdminMotoboys(el){
   }
 
   // Lista de todos os motoboys
-  h+='<div class="card"><div class="card-h">&#128101; Todos os Motoboys ('+data.length+')</div><div class="table-w"><table><thead><tr><th>Motoboy</th><th>Telefone</th><th>Status</th><th>Veiculo</th><th>Avaliacao</th><th>Entregas</th></tr></thead><tbody>';
+  h+='<div class="card"><div class="card-h">&#128101; Todos os Motoboys ('+data.length+')</div><div class="table-w"><table><thead><tr><th>Motoboy</th><th>Telefone</th><th>Status</th><th>Veículo</th><th>Avaliação</th><th>Entregas</th></tr></thead><tbody>';
   data.forEach(function(m){
     var statusBadge=m.user?.status==='PENDING'?'<span class="badge by">Pendente</span>':m.user?.status==='ACTIVE'?'<span class="badge bg">Ativo</span>':'<span class="badge br">Inativo</span>';
     var isPending=!m.approvedAt;
@@ -1601,7 +1600,7 @@ async function renderAdminMotoboys(el){
     h+='<td><div style="display:flex;align-items:center;gap:10px"><div class="avatar" style="width:34px;height:34px;font-size:11px">'+(m.user?.firstName||'M')[0]+''+(m.user?.lastName||'B')[0]+'</div><div><div style="font-weight:700;font-size:13px">'+m.user?.firstName+' '+m.user?.lastName+'</div><div style="font-size:11px;color:var(--g)">'+m.user?.email+'</div></div></div></td>';
     h+='<td>'+(m.user?.phone||'-')+'</td><td>'+statusBadge+'</td>';
     h+='<td style="font-size:12px">'+(m.vehiclePlate||'-')+' '+(m.vehicleModel||'')+'</td>';
-    h+='<td style="font-weight:700;color:var(--gn)">&#9733; '+Number(m.averageRating).toFixed(1)+'</td>';
+    h+='<td style="font-weight:700;color:var(--gn)">&#9733; '+(m.averageRating?Number(m.averageRating).toFixed(1):'0.0')+'</td>';
     h+='<td>'+(m.completedDeliveries||0)+'</td></tr>';
   });
   h+='</tbody></table></div></div>';
@@ -1654,19 +1653,19 @@ async function viewMotoboyDetail(id){
 
   // Info do veiculo
   h+='<div style="background:var(--gl);border-radius:12px;padding:14px;margin-bottom:16px">';
-  h+='<div style="font-size:12px;font-weight:700;color:var(--g);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">&#128668; Veiculo</div>';
+  h+='<div style="font-size:12px;font-weight:700;color:var(--g);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">&#128668; Veículo</div>';
   h+='<div class="grid2" style="margin-bottom:0;font-size:13px">';
   h+='<div><span style="color:var(--g)">Placa:</span> <b>'+m.vehiclePlate+'</b></div>';
-  h+='<div><span style="color:var(--g)">Tipo:</span> <b>'+m.vehicleType+'</b></div>';
-  h+='<div><span style="color:var(--g)">Marca:</span> <b>'+m.vehicleBrand+'</b></div>';
-  h+='<div><span style="color:var(--g)">Modelo:</span> <b>'+m.vehicleModel+'</b></div>';
-  h+='<div><span style="color:var(--g)">Ano:</span> <b>'+m.vehicleYear+'</b></div>';
-  h+='<div><span style="color:var(--g)">Cor:</span> <b>'+m.vehicleColor+'</b></div>';
+  h+='<div><span style="color:var(--g)">Tipo:</span> <b>'+(m.vehicleType||'')+'</b></div>';
+  h+='<div><span style="color:var(--g)">Marca:</span> <b>'+(m.vehicleBrand||'')+'</b></div>';
+  h+='<div><span style="color:var(--g)">Modelo:</span> <b>'+(m.vehicleModel||'')+'</b></div>';
+  h+='<div><span style="color:var(--g)">Ano:</span> <b>'+(m.vehicleYear||'')+'</b></div>';
+  h+='<div><span style="color:var(--g)">Cor:</span> <b>'+(m.vehicleColor||'')+'</b></div>';
   h+='</div></div>';
 
   // Metricas
   h+='<div class="grid3" style="margin-bottom:16px">';
-  h+='<div style="background:var(--gl);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--gn)">&#9733; '+Number(m.averageRating).toFixed(1)+'</div><div style="font-size:10px;color:var(--g);font-weight:600">Avaliacao</div></div>';
+  h+='<div style="background:var(--gl);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--gn)">&#9733; '+(m.averageRating?Number(m.averageRating).toFixed(1):'0.0')+'</div><div style="font-size:10px;color:var(--g);font-weight:600">Avaliação</div></div>';
   h+='<div style="background:var(--gl);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800">'+(m.completedDeliveries||0)+'</div><div style="font-size:10px;color:var(--g);font-weight:600">Entregas</div></div>';
   h+='<div style="background:var(--gl);border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800">'+(m.isOnline?'&#128994;':'&#128308;')+'</div><div style="font-size:10px;color:var(--g);font-weight:600">'+(m.isOnline?'Conectado':'Desconectado')+'</div></div>';
   h+='</div>';
@@ -1678,7 +1677,7 @@ async function viewMotoboyDetail(id){
     ['CNH Frente',docs.cnhFront],
     ['CNH Verso',docs.cnhBack],
     ['CRLV',docs.crlv],
-    ['Foto Veiculo',docs.vehiclePhoto],
+    ['Foto Veículo',docs.vehiclePhoto],
     ['Selfie',docs.selfie]
   ];
   allDocs.forEach(function(d){
@@ -1805,7 +1804,7 @@ async function renderAdminClients(el){
 async function renderAdminReports(el){
   var rep=(await api('/reports/dashboard')).data;
   var s=(await api('/admin/stats')).data;
-  var h='<div class="header-bar"><h1 style="font-size:22px;font-weight:800">Relatorios</h1></div>';
+  var h='<div class="header-bar"><h1 style="font-size:22px;font-weight:800">Relatórios</h1></div>';
   h+='<div class="mobile-grid-patch"><div class="grid3" style="margin-bottom:20px">';
   h+=buildAdminKPI('Entregas Dia',rep.deliveries.daily,'&#128230;','#3b82f6,#2563eb');
   h+=buildAdminKPI('Entregas Semana',rep.deliveries.weekly,'&#128197;','#8b5cf6,#7c3aed');
@@ -1818,17 +1817,17 @@ async function renderAdminReports(el){
   h+=buildMiniStat('Receita Semana',fmt(rep.revenue.weekly),'#3b82f6','&#128176;');
   h+=buildMiniStat('Receita Mes',fmt(rep.revenue.monthly),'#8b5cf6','&#128176;');
   h+='</div></div>';
-  h+='<div class="card" style="margin-bottom:20px"><div class="card-h">&#127942; Ranking Motoboys</div><div class="card-b table-w"><table><thead><tr><th>#</th><th>Motoboy</th><th>Avaliacao</th><th>Entregas</th><th>Comissao</th></tr></thead><tbody>';
+  h+='<div class="card" style="margin-bottom:20px"><div class="card-h">&#127942; Ranking Motoboys</div><div class="card-b table-w"><table><thead><tr><th>#</th><th>Motoboy</th><th>Avaliação</th><th>Entregas</th><th>Comissão</th></tr></thead><tbody>';
   (rep.topMotoboys||[]).forEach(function(m,i){
     var medals=['&#129351;','&#129352;','&#129353;','&#127942;','&#127942;'];
     h+='<tr><td style="font-size:20px">'+medals[i]+'</td>';
-    h+='<td><div style="display:flex;align-items:center;gap:10px"><div class="avatar" style="width:34px;height:34px;font-size:11px">'+(m.user?.firstName||'M')[0]+''+(m.user?.lastName||'B')[0]+'</div><div><div style="font-weight:700">'+m.user?.firstName+' '+m.user?.lastName+'</div><div style="font-size:11px;color:var(--g)">'+m.vehicleModel+'</div></div></div></td>';
-    h+='<td style="font-weight:700;color:var(--gn)">&#9733; '+Number(m.averageRating).toFixed(1)+'</td>';
-    h+='<td>'+m.completedDeliveries+'</td>';
+    h+='<td><div style="display:flex;align-items:center;gap:10px"><div class="avatar" style="width:34px;height:34px;font-size:11px">'+(m.user?.firstName||'M')[0]+''+(m.user?.lastName||'B')[0]+'</div><div><div style="font-weight:700">'+m.user?.firstName+' '+m.user?.lastName+'</div><div style="font-size:11px;color:var(--g)">'+(m.vehicleModel||'')+'</div></div></div></td>';
+    h+='<td style="font-weight:700;color:var(--gn)">&#9733; '+(m.averageRating?Number(m.averageRating).toFixed(1):'0.0')+'</td>';
+    h+='<td>'+(m.completedDeliveries||0)+'</td>';
     h+='<td>'+fmt(m.totalCommissions||0)+'</td></tr>';
   });
   h+='</tbody></table></div></div>';
-  h+='<div class="card"><div class="card-h">&#128202; Metricas Gerais</div><div class="card-b">';
+  h+='<div class="card"><div class="card-h">&#128202; Métricas Gerais</div><div class="card-b">
   var metrics=[
     ['Tempo Medio de Entrega',rep.avgDeliveryTime+' min','&#9201;'],
     ['Total de Usuarios',s.totalUsers,'&#128100;'],
@@ -1860,7 +1859,7 @@ async function renderAdminReports(el){
 
 async function renderAdminSettings(el){
   var s=(await api('/admin/settings')).data||{};
-  var h='<div class="header-bar"><h1 style="font-size:22px;font-weight:800">Configuracoes</h1></div>';
+  var h='<div class="header-bar"><h1 style="font-size:22px;font-weight:800">Configurações</h1></div>';
   h+='<div class="mobile-grid-patch"><div class="admin-bottom-grid">';
   h+='<div class="card"><div class="card-h">&#128176; Precificacao</div><div class="card-b">';
   h+='<div class="form-g"><label class="label">Preco Base (R$)</label><input class="input" type="number" id="cfg-base-price" value="'+(s.base_price||8)+'" min="0" step="0.01"></div>';
@@ -1868,7 +1867,7 @@ async function renderAdminSettings(el){
   h+='<div class="form-g"><label class="label">Preco por Km Extra (R$)</label><input class="input" type="number" id="cfg-price-per-km" value="'+(s.price_per_km||0.80)+'" min="0" step="0.01"></div>';
   h+='<div class="form-g"><label class="label">Taxa Cartao Credito (R$)</label><input class="input" type="number" id="cfg-card-fee" value="'+(s.card_fee||0.36)+'" min="0" step="0.01"></div>';
   h+='<div class="form-g"><label class="label">Ganho Motoboy Base (R$)</label><input class="input" type="number" id="cfg-motoboy-base" value="'+(s.motoboy_base||7)+'" min="0" step="0.01"></div>';
-  h+='<div class="form-g"><label class="label">Comissao Plataforma (R$)</label><input class="input" type="number" id="cfg-platform-commission" value="'+(s.platform_commission||1)+'" min="0" step="0.01"></div>';
+  h+='<div class="form-g"><label class="label">Comissão Plataforma (R$)</label><input class="input" type="number" id="cfg-platform-commission" value="'+(s.platform_commission||1)+'" min="0" step="0.01"></div>';
   h+='<button class="btn btn-p" style="width:100%;margin-top:8px" onclick="saveSettings()">&#128190; Salvar Precificacao</button></div></div>';
   h+='<div class="card"><div class="card-h">&#128690; Entregas</div><div class="card-b">';
   h+='<div class="form-g"><label class="label">Max Entregas Simultaneas</label><input class="input" type="number" id="cfg-max-active" value="'+(s.max_active_deliveries||3)+'" min="1" max="10"></div>';
@@ -1901,7 +1900,7 @@ async function saveSettings(){
   };
   try{
     await api('/admin/settings',{method:'PUT',body:JSON.stringify(body)});
-    showNotifToast('&#10004; Configuracoes salvas com sucesso!','new');
+    showNotifToast('&#10004; Configurações salvas com sucesso!','new');
   }catch(e){showNotifToast('&#10060; Erro ao salvar: '+e.message,'error');}
 }
 
@@ -2297,7 +2296,7 @@ async function renderMotoboyDash(el){
   h+=buildMiniStat('Ganhos Hoje',fmt(e.daily),'#22c55e','&#128176;');
   h+=buildMiniStat('Ganhos Semana',fmt(e.weekly),'#3b82f6','&#128176;');
   h+=buildMiniStat('Ganhos Mes',fmt(e.monthly),'#8b5cf6','&#128176;');
-  h+=buildMiniStat('Avaliacao','&#9733; '+Number(e.averageRating).toFixed(1),'#f59e0b','&#11088;');
+  h+=buildMiniStat('Avaliação','&#9733; '+(e.averageRating?Number(e.averageRating).toFixed(1):'0.0'),'#f59e0b','&#11088;');
   h+='</div></div>';
 
   h+='<div class="mobile-grid-patch"><div class="card" style="margin-bottom:16px"><div class="card-h" style="display:flex;justify-content:space-between"><span>&#128506; Mapa</span><span id="gps-status" style="font-size:12px;color:var(--g);font-weight:500"></span></div><div class="card-b" style="padding:0;position:relative"><div id="motoboy-map" class="map-box" style="height:320px;width:100%"></div><button onclick="activateGPS()" style="position:absolute;bottom:12px;right:12px;z-index:1000;width:48px;height:48px;border-radius:50%;background:#fff;border:none;box-shadow:0 2px 12px rgba(0,0,0,.25);cursor:pointer;font-size:22px;display:flex;align-items:center;justify-content:center" title="Minha localizacao">&#128205;</button></div></div></div>';
@@ -2618,7 +2617,7 @@ async function viewMotoboyProfile(motoboyId){
       '<h3 style="font-size:18px;font-weight:700">'+m.name+'</h3>'+
       '<div style="color:var(--g);font-size:13px;margin:4px 0">'+(m.vehicle||'')+'</div>'+
       '<div style="display:flex;justify-content:center;gap:20px;margin:16px 0">'+
-      '<div><div style="font-size:24px;font-weight:800;color:var(--y)">&#9733; '+Number(m.rating||0).toFixed(1)+'</div><div style="font-size:11px;color:var(--g)">Avaliacao</div></div>'+
+      '<div><div style="font-size:24px;font-weight:800;color:var(--y)">&#9733; '+Number(m.rating||0).toFixed(1)+'</div><div style="font-size:11px;color:var(--g)">Avaliação</div></div>'+
       '<div><div style="font-size:24px;font-weight:800;color:var(--gn)">'+(m.completedDeliveries||0)+'</div><div style="font-size:11px;color:var(--g)">Entregas</div></div>'+
       '</div>'+
       '<button class="btn btn-s" onclick="closeModal()" style="width:100%;margin-top:8px">Fechar</button></div>');
@@ -2637,8 +2636,8 @@ async function renderMotoboyEarnings(el){
     '<div class="mobile-grid-patch"><div class="grid4">'+
     '<div class="stat-c" style="text-align:center"><div class="stat-v">'+e.completedDeliveries+'</div><div class="stat-l">Concluidas</div></div>'+
     '<div class="stat-c" style="text-align:center"><div class="stat-v">'+e.cancelledDeliveries+'</div><div class="stat-l">Canceladas</div></div>'+
-    '<div class="stat-c" style="text-align:center"><div class="stat-v">&#9733; '+Number(e.averageRating).toFixed(1)+'</div><div class="stat-l">Avaliacao</div></div>'+
-    '<div class="stat-c" style="text-align:center"><div class="stat-v">'+e.acceptanceRate+'%</div><div class="stat-l">Aceitacao</div></div>'+
+    '<div class="stat-c" style="text-align:center"><div class="stat-v">&#9733; '+(e.averageRating?Number(e.averageRating).toFixed(1):'0.0')+'</div><div class="stat-l">Avaliação</div></div>'+
+    '<div class="stat-c" style="text-align:center"><div class="stat-v">'+(e.acceptanceRate||0)+'%</div><div class="stat-l">Aceitação</div></div>'+
     '</div></div>';
 }
 

@@ -331,6 +331,7 @@ app.get('/api/admin/motoboys', auth, admin, async (req, res) => {
   const data = (mbs || []).map(m => ({
     ...m, id: m.id, vehiclePlate: m.vehicle_plate, vehicleModel: m.vehicle_model, vehicleBrand: m.vehicle_brand,
     vehicleYear: m.vehicle_year, vehicleColor: m.vehicle_color, vehicleType: m.vehicle_type,
+    averageRating: m.average_rating, completedDeliveries: m.completed_deliveries || 0,
     isOnline: m.is_online, approvedAt: m.approved_at, documents: m.documents,
     user: m.users ? mapUser(m.users) : null
   }));
@@ -1257,7 +1258,7 @@ app.get('/api/reports/dashboard', auth, admin, async (req, res) => {
       monthly: dels.reduce((s, d) => s + Number(d.total_price || 0), 0)
     },
     avgDeliveryTime: 22,
-    topMotoboys: (mbs || []).map((m, i) => ({ ...m, rank: i + 1, user: m.users ? { firstName: m.users.first_name, lastName: m.users.last_name } : { firstName: 'M', lastName: 'B' } }))
+    topMotoboys: (mbs || []).map((m, i) => ({ ...m, rank: i + 1, averageRating: m.average_rating, completedDeliveries: m.completed_deliveries || 0, vehicleModel: m.vehicle_model, vehiclePlate: m.vehicle_plate, totalCommissions: m.total_commissions || 0, user: m.users ? { firstName: m.users.first_name, lastName: m.users.last_name } : { firstName: 'M', lastName: 'B' } }))
   }});
 });
 
