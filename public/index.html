@@ -1310,7 +1310,7 @@ function showApp(){
   document.getElementById('login-page').style.display='none';
   document.getElementById('register-page').style.display='none';
   document.getElementById('app').style.display='flex';
-  document.getElementById('mobile-header').style.display='flex';
+  document.getElementById('mobile-header').style.display=window.innerWidth<=768?'flex':'none';
   document.getElementById('user-name').textContent=USER.firstName+' '+USER.lastName;
   document.getElementById('user-avatar').textContent=USER.firstName[0]+USER.lastName[0];
   document.getElementById('m-avatar').textContent=USER.firstName[0]+USER.lastName[0];
